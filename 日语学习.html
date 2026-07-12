@@ -596,6 +596,7 @@
 <div class="tab-nav">
   <button class="tab-btn active" data-tab="speaking" onclick="switchTab('speaking')">🗣️ 口语练习</button>
   <button class="tab-btn" data-tab="listening" onclick="switchTab('listening')">🎧 跟读练习</button>
+  <button class="tab-btn" data-tab="listening-en" onclick="switchTab('listening-en')">🎤 英语跟读</button>
 </div>
 
 <div class="container">
@@ -612,11 +613,20 @@
 
     <div id="tab-listening" class="tab-content">
       <div class="topic-controls">
-        <button class="btn btn-secondary" onclick="loadNextWeek()">📅 加载下一周 (7 篇)</button>
-        <button class="btn btn-ghost btn-small" onclick="refreshPresetContent()">🔄 更新讲稿</button>
+        <button class="btn btn-secondary" onclick="loadNextWeek('jp')">📅 加载下一周 (7 篇)</button>
+        <button class="btn btn-ghost btn-small" onclick="refreshPresetContent('jp')">🔄 更新讲稿</button>
         <span id="listening-progress" style="font-size:12px;color:#888;"></span>
       </div>
       <div id="listening-list"></div>
+    </div>
+
+    <div id="tab-listening-en" class="tab-content">
+      <div class="topic-controls">
+        <button class="btn btn-secondary" onclick="loadNextWeek('en')">📅 加载下一周 (7 篇)</button>
+        <button class="btn btn-ghost btn-small" onclick="refreshPresetContent('en')">🔄 更新讲稿</button>
+        <span id="listening-en-progress" style="font-size:12px;color:#888;"></span>
+      </div>
+      <div id="listening-en-list"></div>
     </div>
   </div>
 
@@ -720,6 +730,8 @@ let state = {
   vocab: [],
   listening: [],
   listeningDisplayCount: 7,
+  listeningEn: [],
+  listeningEnDisplayCount: 7,
   activeTab: 'speaking',
   settings: { apiKey: '', geminiKey: '', groqKey: '', voiceLang: 'ja-JP' }
 };
@@ -1329,6 +1341,2225 @@ const PRESET_LISTENING = [
     audioFile: 'audio.m4a',
     title_cn: "50.欢迎来到不公平的世界",
     title_jp: '', speaker: '', paragraphs: [], vocab: []
+  }
+];
+
+// ============ PRESET LISTENING (英语跟读，结构与 PRESET_LISTENING 相同) ============
+// 每篇格式同上：presetId / folder（对应素材文件夹）/ audioFile / title_cn / title_jp（此处存英文标题）/
+// speaker / paragraphs: [{ jp: 英文原文, cn: 中文翻译 }] / vocab: [{ word, meaning }]
+// 文字稿和音频待补充后再填入此数组
+const PRESET_LISTENING_EN = [
+  {
+    "presetId": "ted_en_01",
+    "folder": "E01.真正厉害的人都戒掉了玻璃心",
+    "audioFile": "audio.m4a",
+    "title_cn": "真正厉害的人都戒掉了玻璃心",
+    "title_jp": "Why we all need to practice emotional first aid",
+    "speaker": "Guy Winch",
+    "paragraphs": [
+      {
+        "jp": "I grew up with my identical twin, who was an incredibly loving brother. Now, one thing about being a twin is, it makes you an expert at spotting favoritism. If his cookie was even slightly bigger than my cookie, I had questions. And clearly, I wasn't starving.",
+        "cn": "我和我的双胞胎哥哥一起长大, 他是个富有爱心的好兄弟。 要知道, 作为双胞胎,你很快 就在一件事上成为专家, 就是注意到偏爱。 如果 他的饼干比我的大 哪怕一点点,我就会质疑。 当然我也没被饿着。"
+      },
+      {
+        "jp": "When I became a psychologist, I began to notice favoritism of a different kind; and that is, how much more we value the body than we do the mind. I spent nine years at university earning my doctorate in psychology, and I can't tell you how many people look at my business card and say, \"Oh -- a psychologist. So, not a real doctor,\" as if it should say that on my card.This favoritism we show the body over the mind -- I see it everywhere.",
+        "cn": "当我成为一个心理学家,我开始 注意到另一种不同的偏爱, 那就是我 们赋予我们的身体 比精神更多的价值。 我花了九年时间 获得心理学博 士学位, 但不知道有多少人看了我的名片说, “哦,心理学家, 原来 不是真正的医生。” 就好像我的名片上就该明确说明似的。这种对身体 多于精神的偏爱随处可见。"
+      },
+      {
+        "jp": "I recently was at a friend's house, and their five-year-old was getting ready for bed. He was standing on a stool by the sink, brushing his teeth, when he slipped and scratched his leg on the stool when he fell. He cried for a minute, but then he got back up, got back on the stool, and reached out for a box of Band- Aids to put one on his cut.",
+        "cn": "我最近在朋友家, 他们五岁的小孩准备上床睡觉。 他站在小凳子上, 在水池边刷牙, 然后他滑了一下, 摔倒的时候刮了他的腿。 他哭了一 下, 随后就爬起来了, 站回小凳子上,拿了一个创可贴 贴在他的伤又 上。"
+      },
+      {
+        "jp": "Now, this kid could barely tie his shoelaces, but he knew you have to cover a cut so it doesn't become infected, and you have to care for your teeth by brushing twice a day. We all know how to maintain our physical health and how to practice dental hygiene, right? We've known it since we were five years old. But what do we know about maintaining our psychological health? Well, nothing. What do we teach our children about emotional hygiene? Nothing. How is it that we spend more time taking care of our teeth than we do our minds? Why is it that our physical health is so much more important to us than our psychological health?",
+        "cn": "这孩子刚学会系鞋带儿, 但他都知道要保护伤又以免感染, 同时还要 一天刷两次牙来保护牙齿。 我们都知道怎样保持身体的健康 还有怎样 保持牙齿卫生,对不对? 我们从五岁起就知道这些东西了。 但是我们 知道怎样 保持精神上的健康吗? 完全不知道。 我们教给孩子们情绪保 健吗? 完全没有。 为什么我们花在牙齿的时间 比花在精神的时间上还 多呢? 为什么我们那么重视身体健康 远远多于心理健康呢?"
+      },
+      {
+        "jp": "We sustain psychological injuries even more often than we do physical ones, injuries like failure or rejection or loneliness. And they can also get worse if we ignore them, and they can impact our lives in dramatic ways. And yet, even though there are scientifically proven techniques we could use to treat these kinds of psychological injuries, we don't. It doesn't even occur to us that we should. \"Oh, you're feeling depressed? Just shake it off; it's all in your head.\" Can you imagine saying that to somebody with a broken leg: \"Oh, just walk it off; it's all in your leg.\"",
+        "cn": "我们承受心理上的伤害 比身体上的多得多, 例如失败,被拒绝,孤 独。 如果我们忽视它们, 情况也会恶化, 它们同样会给我们的生活 带来重大的影响。 然而,虽然有科学证实的疗法 来帮助我们治疗 这些 心理上的伤害, 我们却不采取行动。 我们甚至都没意识到 我们应该采 取行动。 “哦,你感到抑郁么? 别去想了,都在你脑袋里。” 你能想象 对一个 骨折了的人说这样的话吗? “哦,走走就好了,都在你腿上。”"
+      },
+      {
+        "jp": "It is time we closed the gap between our physical and our psychological health. It's time we made them more equal, more like twins.Speaking of which, my brother is also a psychologist. So he's not a real doctor, either.",
+        "cn": "我们应该消除这种对身体和 精神健康的区别对待。 应该把两者对等 起来, 像双胞胎一样。说起双胞胎, 我哥哥也是个心理医生。 所以 他也不是真正的医生。"
+      },
+      {
+        "jp": "We didn't study together, though. In fact, the hardest thing I've ever done in my life is move across the Atlantic to New York City to get my doctorate in psychology. We were apart then for the first time in our lives, and the separation was brutal for both of us. But while he remained among family and friends, I was alone in a new country. We missed each other terribly, but international phone calls were really expensive then, and we could only afford to speak for five minutes a week. When our birthday rolled around, it was the first we wouldn't be spending together. We decided to splurge, and that week, we would talk for 10 minutes.",
+        "cn": "我们不是在一起上的学。 事实上,我这辈子 经历过的最困难的事 就 是跨过大西洋搬到纽约 来读心理学的博士学位。 那是我们俩第一次 分隔两地, 这个分离对我俩来说都很残酷。 当他和家人朋友一起 时, 我却孤单的在一个新的国度。 我们都非常想念对方, 但那时候 国际长途都很贵 我们一周只打的起五分钟的电话。 当我们生日快到 了的时候, 那是我们第一个 没在一起过的生日。 我们决定奢侈一 把, 在那个星期聊上十分钟。"
+      },
+      {
+        "jp": "I spent the morning pacing around my room, waiting for him to call -- and waiting ... and waiting. But the phone didn't ring.",
+        "cn": "我那天早上在房间里踱来踱去, 等着我哥哥给我打过来 - 我等啊等 啊,电话就是不响。"
+      },
+      {
+        "jp": "Given the time difference, I assumed, \"OK, he's out with friends, he'll call later.\" There were no cell phones then. But he didn't. And I began to realize that after being away for over 10 months, he no longer missed me the way I missed him. I knew he would call in the morning, but that night was one of the saddest and longest nights of my life. I woke up the next morning. I glanced down at the phone, and I realized I had kicked it off the hook when pacing the day before. I stumbled out of bed, I put the phone back on the receiver, and it rang a second later. And it was my brother, and boy, was he pissed.",
+        "cn": "由于时差的关系,我就想, “好吧,他一定是和朋友在一起, 他晚点 儿会打来的。” 那时候也没有手机。 但他始终没打来。 我开始意识 到, 在我离开十个月以后, 他不再像我想他那样想我了。 我知道他 早上会打来, 但那一晚是我一生中 最伤心,最漫长的一晚。 第二天 一早醒来, 我瞅了一眼电话,我意识到, 来回踱步时 我把电话线踹下 来了 我迷迷糊糊的跳下床, 我刚把电话插回接又, 一秒钟之后电话 就响了。 是我哥哥,他可气坏了。"
+      },
+      {
+        "jp": "It was the saddest and longest night of his life as well. Now, I tried to explain what happened, but he said, \"I don't understand. If you saw I wasn't calling you, why didn't you just pick up the phone and call me?\" He was right. Why didn't I call him? I didn't have an answer then. But I do today, and it's a simple one: loneliness.",
+        "cn": "那也是他一生中 最伤心漫长的一夜。 当我跟他解释事情的经过,他 说, “我不明白。你看我没给你打, 你为什么不打给我呢?” 他说的 对。 我为什么不打给他呢? 我当时无法解释, 但我现在明白了, 非 常简单的原因:孤独。"
+      },
+      {
+        "jp": "Loneliness creates a deep psychological wound, one that distorts our perceptions and scrambles our thinking. It makes us believe that those around us care much less than they actually do. It make us really afraid to reach out, because why set yourself up for rejection and heartache when your heart is already aching more than you can stand? I was in the grips of real loneliness back then, but I was surrounded by people all day, so it never occurred to me. But loneliness is defined purely subjectively. It depends solely on whether you feel emotionally or socially disconnected from those around you. And I did.",
+        "cn": "孤独导致深重的心理创伤, 扭曲我们的感知能力, 剥夺我们的思考能 力。 它使我们相信 身边的人不再在乎我们。 它使我们不敢与人联络, 为什么给自取其辱被拒绝呢? 你的心痛的还不够多么? 我那个时候被 孤独紧紧包裹着, 但我总和别人在一起, 我自己都没意识到。 但孤独 是完全从主观上定义的。 它完全取决于你是否觉得 在情绪上或是交际 上 和你周围的人相隔绝。 我当时是这样的。"
+      },
+      {
+        "jp": "There is a lot of research on loneliness, and all of it is horrifying. Loneliness won't just make you miserable; it will kill you. I'm not kidding. Chronic loneliness increases your likelihood of an early death by 14 percent. Fourteen percent! Loneliness causes high blood pressure, high cholesterol. It even suppress the functioning of your immune system, making you vulnerable to all kinds of illnesses and diseases. In fact, scientists have concluded that taken together, chronic loneliness poses as significant a risk for your long-term health and longevity as cigarette smoking.",
+        "cn": "我们有很多关于孤独的研究, 都很可怕。 孤独不仅让你觉得凄惨, 它 还可能致死。 我可不是开玩笑。 长期的孤独 会增加你早逝的可能性 高 达14%之多。 孤独可能导致 高血压,高胆固醇。 它甚至会影响你的免 疫系统, 使你容易患上各种疾病。 事实上,科学家已经得出结论, 长 期的孤独对你的健康和长寿 的负面影响比抽烟还要糟。"
+      },
+      {
+        "jp": "Now, cigarette packs come with warnings saying, \"This could kill you.\" But loneliness doesn't. And that's why it's so important that we prioritize our psychological health, that we practice emotional hygiene. Because you can't treat a psychological wound if you don't even know you're injured. Loneliness isn't the only psychological wound that distorts our perceptions and misleads us.",
+        "cn": "香烟的包装上还有 “吸烟致命”的警句。 可孤独没有。 这就是我们为 什么 要重视心理健康, 要注意保持情绪健康。 因为,你无法治愈心 理上的创伤, 如果你都不知道 自己受到了伤害的话。 孤独不是唯一 可能扭曲及误导 我们的心理创伤。"
+      },
+      {
+        "jp": "Failure does that as well. I once visited a day care center, where I saw three toddlers play with identical plastic toys. You had to slide the red button, and a cute doggie would pop out. One little girl tried pulling the purple button, then pushing it, and then she just sat back and looked at the box with her lower lip trembling. The little boy next to her watched this happen, then turned to his box and burst into tears without even touching it. Meanwhile, another little girl tried everything she could think of until she slid the red button, the cute doggie popped out, and she squealed with delight.",
+        "cn": "失败也有同样效果。 我曾访问过一个幼儿园, 在那儿我观察了三个 儿童, 在玩完全一样的塑料玩具。 你得把一个红色的钮滑开, 然后一 个可爱的小狗就会跳出来。 一个小女孩 对紫色的钮又拉又按, 然后 她就坐下来,瞧着那盒子, 下嘴唇开始发颤。 她旁边的一个小男孩 看到这一幕, 再看着他的盒子, 都没动手就哇哇大哭了。 与此同 时, 另一个小女孩试了各种方法 直到她滑动了那个红钮, 可爱的小 狗跳了出来, 她开心的叫了起来。"
+      },
+      {
+        "jp": "So: three toddlers with identical plastic toys, but with very different reactions to failure. The first two toddlers were perfectly capable of sliding a red button. The only thing that prevented them from succeeding was that their mind tricked them into believing they could not. Now, adults get tricked this way as well, all the time. In fact, we all have a default set of feelings and beliefs that gets triggered whenever we encounter frustrations and setbacks.",
+        "cn": "同样的塑料玩具 给了这三个幼儿, 但他们对失败的反应截然不同。 前两个小孩完全 有能力滑动那个红钮。 唯一阻止他们成功的因素 就 是他们被自己 做不成的想法给骗了。 成年人也经常中这样的圈套。 事实上,我们都有 一个固定的思维感知模式, 每当我们感到沮丧, 受到挫折, 我们便会进入这个模式。"
+      },
+      {
+        "jp": "Are you aware of how your mind reacts to failure? You need to be. Because if your mind tries to convince you you're incapable of something, and you believe it, then like those two toddlers, you'll begin to feel helpless and you'll stop trying too soon, or you won't even try at all. And then you'll be even more convinced you can't succeed. You see, that's why so many people function below their actual potential. Because somewhere along the way, sometimes a single failure convinced them that they couldn't succeed, and they believed it.",
+        "cn": "你清不清楚你是怎么对应失败的? 你应该清楚。 因为如果你的头脑 告诉你 你不能做成什么事 而你相信了的话, 你就会像那前两个小孩 似的, 开始感到无助 然后你很快就放弃了, 甚至都不去试一下。 然 后你就更加确信你成功不了。 你看,这就是为什么那么多人 都无法 充分发挥他们的潜能。 因为不一定在什么地方, 有那么一次失败 让 他们认定了自己不能成功。"
+      },
+      {
+        "jp": "Once we become convinced of something, it's very difficult to change our mind. I learned that lesson the hard way when I was a teenager with my brother. We were driving with friends down a dark road at night, when a police car stopped us. There had been a robbery in the area and they were looking for suspects. The officer approached the car, and shined his flashlight on the driver, then on my brother in the front seat, and then on me. And his eyes opened wide and he said, \"Where have I seen your face before?\"And I said, \"In the front seat.\"But that made no sense to him whatsoever, so now he thought I was on drugs.",
+        "cn": "我们一旦被某件事说服, 往往就很难改变主意。 我十几岁的时候, 和我哥哥一起, 吃了点苦头才明白这道理。 有一天晚上,我俩和朋 友们 在一条很黑的路上开着车。 一辆警车把我们拦下了。 附近发生 了抢劫, 警察在追踪嫌犯。 警察走到车边, 对司机晃了晃手电筒, 又照了照坐在副驾驶的我哥哥, 然后照到了我。 他瞪大了眼睛说 得, “我在哪儿见过你?” 我说,“副驾驶座上。” 但对他来说, 我的 回答莫名其妙。 所以他认为我嗑了药。"
+      },
+      {
+        "jp": "So he drags me out of the car, he searches me, he marches me over to the police car, and only when he verified I didn't have a police record, could I show him I had a twin in the front seat. But even as we were driving away, you could see by the look on his face he was convinced that I was getting away with something.",
+        "cn": "于是他把我拖出车子, 又搜了我的身, 他把我押到警车那儿, 直到 他验证了 我并没有犯罪记录, 我才有机会解释 我和副驾驶座位上的 是双胞胎。 但是直到我们开走了, 你仍可以看到他的表情 他认定我 一定干了什么坏事。"
+      },
+      {
+        "jp": "Our mind is hard to change once we become convinced. So it might be very natural to feel demoralized and defeated after you fail. But you cannot allow yourself to become convinced you can't succeed. You have to fight feelings of helplessness. You have to gain control over the situation. And you have to break this kind of negative cycle before it begins.",
+        "cn": "一旦我们认定了的事情, 我们很难改变看法。 所以当你失败了, 感 觉士气低落是很自然的。 但是你不能允许自己 相信你不可能成功。 你要和那种无助的感觉斗争。 你要重新控制局面。 而且你必须在 这 种负能量循环开始前打破它。"
+      },
+      {
+        "jp": "Our minds and our feelings -- they're not the trustworthy friends we thought they were. They're more like a really moody friend, who can be totally supportive one minute, and really unpleasant the next. I once worked with this woman who, after 20 years marriage and an extremely ugly divorce, was finally ready for her first date. She had met this guy online, and he seemed nice and he seemed successful, and most importantly, he seemed really into her. So she was very excited, she bought a new dress, and they met at an upscale New York City bar for a drink. Ten minutes into the date, the man stands up and says, \"I'm not interested,\" and walks out. Rejection is extremely painful. The woman was so hurt she couldn't move.",
+        "cn": "我们的想法和感觉, 它们不是像我们想象的 那么忠诚的朋友。 它们 更像是一个非常情绪化的朋友, 有时非常支持你, 而有时令人不愉 快。 我以前的一个女同事 她结婚20年之后离婚了, 婚离的很惨烈, 然后她终于准备好 开始新的约会了。 她在网上认识了这个男的。 他 看上去人很好,也很成功, 最重要的是, 他似乎对她非常感兴趣。 她非常兴奋, 还为约会买了新裙子, 然后他们约在纽约的 一个高级 酒吧里喝一杯。 约会才进行了10分钟, 那位男士站起来说, “我没兴 趣了,” 然后就走了。 被拒绝是极其痛苦的。 这位女士非常受伤,以 致于都动不了了。"
+      },
+      {
+        "jp": "All she could do was call a friend. Here's what the friend said: \"Well, what do you expect? You have big hips, you have nothing interesting to say. Why would a handsome, successful man like that ever go out with a loser like you?\" Shocking, right, that a friend could be so cruel? But it would be much less shocking if I told you it wasn't the friend who said that. It's what the woman said to herself. And that's something we all do, especially after a rejection. We all start thinking of all our faults and all our shortcomings, what we wish we were, what we wish we weren't. We call ourselves names. Maybe not as harshly, but we all do it. And it's interesting that we do, because our self-esteem is already hurting. Why would we want to go and damage it even further? We wouldn't make a physical injury worse on purpose. You wouldn't get a cut on your arm and decide, \"Oh! I know -- I'm going to take a knife and see how much deeper I can make it.\"",
+        "cn": "于是她给一个朋友打电话。 她朋友是这样说的: “那你还想怎样? 你 又胖又没有什么好聊的, 为什么任何一个英俊的成功男士 会和你这 样的失败者约会呢?“ 太不像话了,是不是, 朋友怎么可以这样冷酷 无情? 这或许听上去不太过分, 要是我告诉你 这话不是朋友说的。 这其实是那位女士 对她自己说的。 我们都干过这事儿, 尤其是被拒 绝之后。 我们开始去想 我们犯的错,我们的缺点, 我们要是这样就 好了, 我们要是不那样就好了, 我们给自己起外号。 也许程度不 同, 但我们都干过这事。 我们为什么会这样做。 我们的自尊已经被 伤害了。 为什么我们要进一步伤害它呢? 要是身体受伤了, 我们不 会故意去把它弄的更糟。 你要是胳膊上有个伤又, 你不会说,“啊, 我知道! 我要拿刀看我到底能捅多深。“"
+      },
+      {
+        "jp": "But we do that with psychological injuries all the time. Why? Because of poor emotional hygiene. Because we don't prioritize our psychological health.",
+        "cn": "但是我们经常如此对待心理伤害。 为什么?由于糟糕的心理保健意 识。 因为我们不重视心理健康。"
+      },
+      {
+        "jp": "We know from dozens of studies that when your self-esteem is lower, you are more vulnerable to stress and to anxiety; that failures and rejections hurt more, and it takes longer to recover from them. So when you get rejected, the first thing you should be doing is to revive your self-esteem, not join Fight Club and beat it into a pulp. When you're in emotional pain, treat yourself with the same compassion you would expect from a truly good friend.",
+        "cn": "很多研究表明, 如果你的自尊心低落, 你就更容易感到压力和焦虑, 失败和拒绝会伤害你更深, 你也需要更多的时间复原。 所以如果你被 拒绝了, 首要的事情是应该 重新激活你的自尊心,而不是 去拳击俱 乐部打拳来发泄。 当你在经历感情上痛苦, 像一个真正的好朋友那样 同情你自己。"
+      },
+      {
+        "jp": "We have to catch our unhealthy psychological habits and change them. And one of unhealthiest and most common is called rumination. To ruminate means to chew over. It's when your boss yells at you or your professor makes you feel stupid in class, or you have big fight with a friend and you just can't stop replaying the scene in your head for days, sometimes for weeks on end. Now, ruminating about upsetting events in this way can easily become a habit, and it's a very costly one, because by spending so much time focused on upsetting and negative thoughts, you are actually putting yourself at significant risk for developing clinical depression, alcoholism, eating disorders, and even cardiovascular disease.",
+        "cn": "我们需要改变不健康的心理习惯。 最常见又最不健康的习惯之一 就是 穷思竭虑。 就是事后反复咀嚼回味一件事。 比如你的老板冲你发脾气 了, 或是教授在课上让你感到愚蠢, 或是你和好朋友吵架了, 然后 你不断的在脑海里 回放当时的情况,好几天, 甚至好几个礼拜都不 停。 反复回味不愉快的事 很容易变成习惯, 而这个习惯代价很大。 因为当你在不愉快和 负面的事情上花这么多时间, 你把自己放在一个 非常危险的境地, 可能诱发抑郁症,酗酒,饮食失调, 甚至心血管疾 病。"
+      },
+      {
+        "jp": "The problem is, the urge to ruminate can feel really strong and really important, so it's a difficult habit to stop. I know this for a fact, because a little over a year ago, I developed the habit myself. You see, my twin brother was diagnosed with stage 3 non-Hodgkin's lymphoma. His cancer was extremely aggressive. He had visible tumors all over his body. And he had to start a harsh course of chemotherapy. And I couldn't stop thinking about what he was going through. I couldn't stop thinking about how much he was suffering, even though he never complained, not once. He had this incredibly positive attitude. His psychological health was amazing. I was physically healthy, but psychologically, I was a mess. But I knew what to do. Studies tell us that even a two-minute distraction is sufficient to break the urge to ruminate in that moment.",
+        "cn": "问题在于那种反复回味的需要 会变得非常强烈,非常紧迫, 所以这 种习惯会很难打破。 我知道事实如此, 因为就在一年多以前, 我自 己就经历了这个习惯。 我的双胞胎哥哥 被确诊为三期非霍奇金淋巴 瘤。 他的癌症来势汹汹。 全身都有看得到的肿瘤。 他要做一轮大剂 量的化疗。 我情不自禁去想 他所经历的这一切。 情不自禁去想 他受 的这些罪, 尽管他从没抱怨过, 一次都没有。 他有着这种不可思议 的积极态度。 他的心理健康程度太了不起了。 我身体上很健康, 但 心理上我那时是一团糟。 但我知道该怎样做。 研究表明, 哪怕只是 分心短短两分钟 都足以打破那一刻 你穷思竭虑的需求。"
+      },
+      {
+        "jp": "And so each time I had a worrying, upsetting, negative thought, I forced myself to concentrate on something else until the urge passed. And within one week, my whole outlook changed and became more positive and more hopeful.Nine weeks after he started chemotherapy, my brother had a CAT scan, and I was by his side when he got the results.",
+        "cn": "所以每次当我担心, 烦恼,或带有负面情绪时, 我就强迫自己专注 于其他的事情, 直到那种感觉过去。 仅仅一周时间, 我的视角就全 变了 变得更积极,更充满希望。做了化疗九周之后, 我哥哥做了电 脑断层扫描, 出结果的时候, 我就在他身边。"
+      },
+      {
+        "jp": "All the tumors were gone. He still had three more rounds of chemotherapy to go, but we knew he would recover . This picture was taken two weeks ago.",
+        "cn": "所有的肿瘤都消失了。 他还得再做三轮化疗, 但是我们知道他能恢 复。 这张照片是两周前照的。"
+      },
+      {
+        "jp": "By taking action when you're lonely, by changing your responses to failure, by protecting your self-esteem, by battling negative thinking, you won't just heal your psychological wounds, you will build emotional resilience, you will thrive. A hundred years ago, people began practicing personal hygiene, and life expectancy rates rose by over 50 percent in just a matter of decades. I believe our quality of life could rise just as dramatically if we all began practicing emotional hygiene.",
+        "cn": "当你在孤独的时候采取行动, 当你改变对待失败的反应, 当你保护自 己的自尊心, 当你与负面的想法做斗争, 你不仅可以治愈心理上的创 伤, 你会建立起情绪恢复能力, 你会变得更强。 一百年以前, 人们 开始注重个人卫生, 人的寿命延长了50%还多 这仅用了十年就实现 了。 我相信,我们的生活质量 也会有同样程度的提高 如果我们开始 关注情绪上的保健。"
+      },
+      {
+        "jp": "Can you imagine what the world would be like if everyone was psychologically healthier? If there were less loneliness and less depression? If people knew how to overcome failure? If they felt better about themselves and more empowered? If they were happier and more fulfilled? I can, because that's the world I want to live in. And that's the world my brother wants to live in as well. And if you just become informed and change a few simple habits, well -- that's the world we can all live in.",
+        "cn": "能想象一下么, 这个世界会是什么样子 如果每个人都在心理上更健康 如果世上少一些孤独和抑郁 如果人们了解 如何走出失败的阴影 如果 人们更自信,充满力量。 如果人们更幸福,更满足。 我能,因为那是 一个 我想置身其中的世界, 也是我哥哥想置身其中的世界。 只要你 了解这些知识, 并改变一些简单的习惯, 那将是一个 我们都能置身 其中的世界。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "identical",
+        "meaning": "adj.相同的"
+      },
+      {
+        "word": "slightly",
+        "meaning": "adv.轻微地"
+      },
+      {
+        "word": "psychologist",
+        "meaning": "n.心理学家"
+      },
+      {
+        "word": "favoritism",
+        "meaning": "n.偏袒"
+      },
+      {
+        "word": "doctorate",
+        "meaning": "n.博士学位"
+      },
+      {
+        "word": "slip",
+        "meaning": "v.滑倒"
+      },
+      {
+        "word": "scratch",
+        "meaning": "v.挠"
+      },
+      {
+        "word": "stool",
+        "meaning": "n.凳子"
+      },
+      {
+        "word": "shoelaces",
+        "meaning": "n.鞋带"
+      },
+      {
+        "word": "dental hygiene",
+        "meaning": "牙齿卫生"
+      },
+      {
+        "word": "scientifically",
+        "meaning": "adv.系统地"
+      },
+      {
+        "word": "technique",
+        "meaning": "n.技巧,工艺"
+      },
+      {
+        "word": "separation",
+        "meaning": "n.分离"
+      },
+      {
+        "word": "brutal",
+        "meaning": "adj.残酷的"
+      },
+      {
+        "word": "saddest",
+        "meaning": "最伤心"
+      },
+      {
+        "word": "kick off",
+        "meaning": "开始;踢掉"
+      },
+      {
+        "word": "stumble",
+        "meaning": "v.绊倒"
+      },
+      {
+        "word": "loneliness",
+        "meaning": "n.孤独"
+      },
+      {
+        "word": "perception",
+        "meaning": "n.知觉"
+      },
+      {
+        "word": "scramble",
+        "meaning": "v.爬,攀登"
+      },
+      {
+        "word": "heartache",
+        "meaning": "n.头痛"
+      },
+      {
+        "word": "subjectively",
+        "meaning": "adv.主观地"
+      },
+      {
+        "word": "horrifying",
+        "meaning": "adj.令人震惊的"
+      },
+      {
+        "word": "cholesterol",
+        "meaning": "n.胆固醇"
+      },
+      {
+        "word": "vulnerable",
+        "meaning": "adj.脆弱的"
+      },
+      {
+        "word": "warnings",
+        "meaning": "n.警告信息"
+      },
+      {
+        "word": "prioritize",
+        "meaning": "v.优先处理"
+      },
+      {
+        "word": "toddler",
+        "meaning": "n.学步的儿童"
+      },
+      {
+        "word": "slide",
+        "meaning": "v.滑动"
+      },
+      {
+        "word": "squeal",
+        "meaning": "v.尖叫"
+      },
+      {
+        "word": "plastic toys",
+        "meaning": "塑料玩具"
+      },
+      {
+        "word": "frustration",
+        "meaning": "n.沮丧"
+      },
+      {
+        "word": "setback",
+        "meaning": "n.挫折"
+      },
+      {
+        "word": "robbery",
+        "meaning": "n.盗窃;抢劫"
+      },
+      {
+        "word": "suspects",
+        "meaning": "n.嫌疑人"
+      },
+      {
+        "word": "flashlight",
+        "meaning": "n.手电筒"
+      },
+      {
+        "word": "search",
+        "meaning": "v.搜查"
+      },
+      {
+        "word": "march",
+        "meaning": "v.强迫"
+      },
+      {
+        "word": "demoralize",
+        "meaning": "v.使泄气"
+      },
+      {
+        "word": "defeated",
+        "meaning": "v.击败"
+      },
+      {
+        "word": "trustworthy",
+        "meaning": "adj.值得信赖的"
+      },
+      {
+        "word": "divorce",
+        "meaning": "n.离婚"
+      },
+      {
+        "word": "shocking",
+        "meaning": "adj.令人震惊的"
+      },
+      {
+        "word": "cruel",
+        "meaning": "adj.残酷的"
+      },
+      {
+        "word": "shortcoming",
+        "meaning": "n.缺点"
+      },
+      {
+        "word": "harshly",
+        "meaning": "adv.严厉地"
+      },
+      {
+        "word": "psychological injuries",
+        "meaning": "心理伤害"
+      },
+      {
+        "word": "emotional hygiene",
+        "meaning": "心理保健"
+      },
+      {
+        "word": "dozens of",
+        "meaning": "几十,许多"
+      },
+      {
+        "word": "self-esteem",
+        "meaning": "自尊"
+      },
+      {
+        "word": "pulp",
+        "meaning": "n.纸浆,果肉"
+      },
+      {
+        "word": "rumination",
+        "meaning": "n.沉思"
+      },
+      {
+        "word": "alcoholism",
+        "meaning": "n.酒精中毒"
+      },
+      {
+        "word": "cardiovascular disease",
+        "meaning": "心血管疾病"
+      },
+      {
+        "word": "diagnose",
+        "meaning": "v.诊断"
+      },
+      {
+        "word": "non-Hodgkin's lymphoma",
+        "meaning": "非霍奇金淋巴瘤"
+      },
+      {
+        "word": "chemotherapy",
+        "meaning": "n.化学疗法"
+      },
+      {
+        "word": "distraction",
+        "meaning": "n.分心"
+      },
+      {
+        "word": "CAT scan",
+        "meaning": "断层扫描"
+      },
+      {
+        "word": "hygiene",
+        "meaning": "n.卫生;保健学"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_02",
+    "folder": "E02.真正拉开你与周围人的差距 是知道自己贵在哪里",
+    "audioFile": "audio.m4a",
+    "title_cn": "真正拉开你与周围人的差距 是知道自己贵在哪里",
+    "title_jp": "Know your worth, and then ask for it",
+    "speaker": "Casey Brown",
+    "paragraphs": [
+      {
+        "jp": "No one will ever pay you what you're worth. No one will ever pay you what you're worth. They'll only ever pay you what they think you're worth. And you control their thinking, not like this, although that would be cool.",
+        "cn": "没有人会为你的价值买单。 永远没有人根据你的价值 来支付你的薪 酬。 他们只按自己所认可的 你的价值支付你薪酬。 你能控制他们的想 法, 但不是这样控制的, 尽管那样很赞。"
+      },
+      {
+        "jp": "That would be really cool. Instead, like this: clearly defining and communicating your value are essential to being paid well for your excellence. Anyone here want to be paid well? OK, good, then this talk is for everyone. It's got universal applicability. It's true if you're a business owner, if you're an employee, if you're a job seeker. It's true if you're a man or a woman.",
+        "cn": "能那样可太赞了。 然而,实际上应该这样做: 清楚地定义并传达自己 的价值 对于为自己的优秀 赢得等价回报是十分重要的。在座有人想要 优厚的工资吗? 嗯,很好, 那么这个演讲适用于每一位。 这个方法具 有普适性。 无论你是老板,还是雇员, 也许你正在找工作, 无论你是 男是女,都适用。"
+      },
+      {
+        "jp": "Now, I approach this today through the lens of the woman business owner, because in my work I've observed that women underprice more so than men. The gender wage gap is a well- traveled narrative in this country. According to the Bureau of Labor Statistics, a woman employee earns just 83 cents for every dollar a man earns.",
+        "cn": "今天,我会从女性公司 老板的视角来阐述, 因为我在工作中观察到 女 性的价值相比男性被低估的更多。 男女不同酬在美国很普遍。 根据劳 动局的统计, 男性每赚1美元,女性只能赚到0.83美元。"
+      },
+      {
+        "jp": "What may surprise you is that this trend continues even into the entrepreneurial sphere. A woman business owner earns just 80 cents for every dollar a man earns. In my work, I've often heard women express that they're uncomfortable communicating their value, especially early on in business ownership. They say things like, \"I don't like to toot my own horn.\" \"I'd rather let the work speak for itself.\" \"I don't like to sing my own praises.\"",
+        "cn": "令人惊讶的是, 这种形势也延伸到了创业圈。 男老板赚1美元时, 女 老板只赚0.8美元。 在我的工作中,常听到女性说, 她们不太喜欢讨论 自己的价值, 尤其是在创业初期。 她们会说: “我不喜欢自吹自擂。” “我宁愿用工作成绩说话。” “我不喜欢自夸。”"
+      },
+      {
+        "jp": "I hear very different narratives in working with male business owners, and I think this difference is costing women 20 cents on the dollar.",
+        "cn": "但男老板的说法就大不同。 我认为,就是这些差异 使女性比男性少赚 了20%。"
+      },
+      {
+        "jp": "I'd like to tell you the story of a consulting firm that helps their clients dramatically improve their profitability. That company is my company. After my first year in business, I saw the profit increases that my clients were realizing in working with me, and I realized that I needed to reevaluate my pricing. I was really underpriced relative to the value I was delivering. It's hard for me to admit to you, because I'm a pricing consultant.",
+        "cn": "我来说一个顾问公司的故事, 这家公司帮助客户大幅提升利润, 而这 家公司就是我的公司。 在我的公司运行1年后, 我看到了客户通过与我 合作 实现的利润增长。 我觉得应该重新评估一下我的报价了。 与我提 供的服务相比, 我的收费太低。 这有点尴尬,因为本人就是定价顾 问。"
+      },
+      {
+        "jp": "It's what I do. I help companies price for value. But nonetheless, it's what I saw, and so I sat down to evaluate my pricing, evaluate my value, and I did that by asking key value questions. What are my clients' needs and how do I meet them? What is my unique skill set that makes me better qualified to serve my clients? What do I do that no one else does? What problems do I solve for clients? What value do I add?",
+        "cn": "这就是我的工作; 我帮企业按价值定价格。 不管怎样,我注意到这问题 了, 因此我仔细衡量了自己的收费与价值。 我问了自己几个关键价值问 题: 我的客户需要什么? 我如何帮他们实现?对客户来说,我与别人相 比 独特的专长是什么? 我提供的什么服务是独一无二的? 我为客户解决 了哪些问题? 为客户的公司增加了多大价值?"
+      },
+      {
+        "jp": "I answered these questions and defined the value that my clients get from working with me, calculated their return on investment, and what I saw was that I needed to double my price, double it. Now, I confess to you, this terrified me. I'm supposed to be the expert in this, but I'm not cured. I knew the value was there. I was convinced the value was there, and I was still scared out of my wits. What if nobody would pay me that? What if clients said, \"That's ridiculous. You're ridiculous.\"",
+        "cn": "我回答了这些问题, 从而明确算出客户因为 我提供的服务而获得的价 值, 并算出客户的投资回报率。 结果发现,我的收费应该加倍, 整整两 倍。 但我要坦白说,这吓到我了。 我是这方面的专家, 但仍为此忐忑不 安! 我明知自己有这个价值, 我也说服自己值得这个价值, 但还是不敢 相信。 如果没人愿意付这个价钱呢? 如果客户说:这价格离谱了, 你简 直不可理喻!"
+      },
+      {
+        "jp": "Was I really worth that? Not my work, mind you, but me. Was I worth that? I'm the mother of two beautiful little girls who depend upon me. I'm a single mom. What if my business fails? What if I fail?",
+        "cn": "我真的值这么高价吗? 这并不是工作的问题, 请注意,这是我自己的疑 惑。 我值不值这么多钱? 我是个单亲妈妈, 独自抚养两个漂亮的 小姑 娘。 如果公司失败了怎么办? 如果我失败了怎么办?"
+      },
+      {
+        "jp": "But I know how to take my own medicine, the medicine that I prescribe to my clients. I had done the homework. I knew the value was there. So when prospects came, I prepared the proposals with the new higher pricing and sent them out and communicated the value. How's the story end? Clients continued to hire me and refer me and recommend me, and I'm still here. And I share this story because doubts and fears are natural and normal. But they don't define our value, and they shouldn't limit our earning potential.",
+        "cn": "但我知道如何解决自己的问题, 就用那些我开给客户的药方。 我做了功 课, 我清楚自己有这个价值。 所以当机会来临, 我把准备好的提价方 案 发给客户, 并与客户探讨其中的价值。 结果呢? 客户不但继续与我 合作, 还把我推荐给更多人, 我的生意还在。 与你们分享这故事, 是 因为疑惑与恐惧都是自然正常的。 但这些都不决定你的价值, 也不应该 制约我们赚钱的能力。"
+      },
+      {
+        "jp": "I'd like to share another story, about a woman who learned to communicate her value and found her own voice. She runs a successful web development company and employs several people. When she first started her firm and for several years thereafter, she would say, \"I have a little web design company.\" She'd actually use those words with clients. \"I have a little web design company.\" In this and in many other small ways, she was diminishing her company in the eyes of prospects and clients, and diminishing herself. It was really impacting her ability to earn what she was worth.",
+        "cn": "我还想分享另一个故事, 是一位女性如何学会 向他人传达自己的价值, 进而找到自己的说话方式。 她运营着一家成功的网站开发公司, 拥有多 名员工。 在创业初始以及之后几年, 她总说,自己有个 “小小的网站设 计公司”。 她真的也这样对客户说: “我有一家小小的网站设计公司。” 通过这样的说法和其他细节, 她让潜在的客户、现有客户 轻视了她的公 司, 也轻视了她自己。 这影响到她应得的收入 以及真正的价值。"
+      },
+      {
+        "jp": "I believe her language and her style communicated that she didn't believe she had much value to offer. In her own words, she was practically giving her services away. And so she began her journey to take responsibility for communicating value to clients and changing her message.",
+        "cn": "我认为由于她的语言和方式, 表达着她自己也不相信 自己有能力挖掘 价值。 用她自己的说法, 她简直在赠送自己公司的服务。 所以她开始 行动, 负起向客户传达价值的责任, 并改变她的说话方式。"
+      },
+      {
+        "jp": "One thing I shared with her is that it's so important to find your own voice, a voice that's authentic and true to you. Don't try to channel your sister-in-law just because she's a great salesperson or your neighbor who tells a great joke if that's not who you are. Give up this notion that it's tooting your own horn. Make it about the other party. Focus on serving and adding value, and it won't feel like bragging. What do you love about what you do? What excites you about the work that you do? If you connect with that, communicating your value will come naturally.",
+        "cn": "我与她分享了 一件非常重要的事: 找到自己的声音, 一个对你而言, 准确且真实的声音。 不用学你善于销售的嫂子, 也不用学特别会说笑 话的邻居, 因为那都不是你。 试着放下“自吹自擂”的成见, 从对方的 角度观察, 关注服务和价值的提升, 就不会觉得自夸。 你喜欢工作的 哪部分? 工作中什么事让你充满热情? 如果将这些联系起来, 必定会 传递你的价值。"
+      },
+      {
+        "jp": "So she embraced her natural style, found her voice and changed her message. For one thing, she stopped calling herself a little web design company. She really found a lot of strength and power in communicating her message.",
+        "cn": "于是她选择用自己最自然的方式, 找到自己的声音, 以及改变所传递 的信息。 首先,她不再称自己 有家小小的网络设计公司。 她真的在信 息沟通过程中 获得了很多力量。"
+      },
+      {
+        "jp": "She's now charging three times as much for web design, and her business is growing. She told me about a recent meeting with a gruff and sometimes difficult client who had called a meeting questioning progress on search engine optimization. She said in the old days, that would have been a really intimidating meeting for her, but her mindset was different.",
+        "cn": "现在她的网页设计 收费是以前的三倍。 而她的事业蒸蒸日上。 她提起最 近的一个会议, 一个蛮横难缠的客户, 在询问搜索引擎优化项目的进 度。 如果是以前, 这是她最害怕的会议。 但现在心态不同了。"
+      },
+      {
+        "jp": "She said, she prepared the information, sat down with the client, said this isn't about me, it's not personal, it's about the client. She took them through the data, through the numbers, laid out the trends and the progress in her own voice and in her own way, but very directly said, \"Here's what we've done for you.\" The client sat up and took notice, and said, \"OK, I got it.\" And she said in describing that meeting, \"I didn't feel scared or panicky or small, which is how I used to feel. Instead I feel like, 'OK, I got this. I know what I'm doing. I'm confident.'\"",
+        "cn": "她说自己准备好资料, 与客户坐下来, 说这不是她自己的事, 不针对个 人, 而是与客户相关。 她给客户展示所有资料和数据, 用她自己的声音 和方式 阐述趋势和进度, 用非常直接的方式说 “这些是我为贵公司做的工 作。” 客户调整一下坐姿,表示明白, 说:“好,我知道了。” 她是这样形 容那个会议的: “我一点都不害怕或紧张, 也不觉得渺小, 虽然我以前会 这样感觉。 这次我觉得自己“很好,胸有成竹, 我清楚自己的工作,我有 信心。”"
+      },
+      {
+        "jp": "Being properly valued is so important. You can hear in this story that the implications range far beyond just finances into the realm of self-respect and self-confidence.",
+        "cn": "能被正确的评价是很重要的。 从这件事可以看出, 影响范围不但超出了 金钱, 而且还进入了自尊自信的范畴。"
+      },
+      {
+        "jp": "Today I've told two stories, one about defining our value and the other about communicating our value, and these are the two elements to realizing our full earning potential. That's the equation. And if you're sitting in the audience today and you're not being paid what you're worth, I'd like to welcome you into this equation. Just imagine what life could be like, how much more we could do, how much more we could give back, how much more we could plan for the future, how validated and respected we would feel if we could earn our full potential, realize our full value.",
+        "cn": "今天我分享了两个故事: 一个是确定自我价值; 另一个是传达自我价 值。 这两个要素, 让我们意识到了自己赚钱的潜力。 这就是核心公式。 如果今天坐在观众席的你, 拿到的薪水与你的价值不等, 我欢迎你使用 这个等式。 想象一下生活会怎样变化, 我们能更多地做些什么, 我们能 更多地回赠些什么, 能更多地为未来做出哪些计划, 会发觉自己多踏实 自信。 如果我们能够获得 与我们潜力相对应的收入, 实现自我最大的价 值。"
+      },
+      {
+        "jp": "No one will ever pay you what you're worth. They'll only ever pay you what they think you're worth, and you control their thinking.",
+        "cn": "没有人会按你的价值买单。 他们只按自己认可的你的价值买单。 但你可 以掌控他们的i想法。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "applicability",
+        "meaning": "n.普适性"
+      },
+      {
+        "word": "underprice",
+        "meaning": "v.低估;要价过低"
+      },
+      {
+        "word": "narrative",
+        "meaning": "adj.叙述的;描述"
+      },
+      {
+        "word": "entrepreneurial sphere",
+        "meaning": "创业圈"
+      },
+      {
+        "word": "toot",
+        "meaning": "n.嘟嘟声;v.使发出嘟嘟声"
+      },
+      {
+        "word": "dramatically",
+        "meaning": "adv.戏剧性地"
+      },
+      {
+        "word": "profitability",
+        "meaning": "n.利益率"
+      },
+      {
+        "word": "reevaluate",
+        "meaning": "v.再评估"
+      },
+      {
+        "word": "delivering",
+        "meaning": "v.发表"
+      },
+      {
+        "word": "nonetheless",
+        "meaning": "adv.尽管如此"
+      },
+      {
+        "word": "qualified",
+        "meaning": "v.具有资格"
+      },
+      {
+        "word": "client",
+        "meaning": "n.客户"
+      },
+      {
+        "word": "confess",
+        "meaning": "v.承认"
+      },
+      {
+        "word": "ridiculous",
+        "meaning": "adj.荒谬的"
+      },
+      {
+        "word": "medicine",
+        "meaning": "n.药方"
+      },
+      {
+        "word": "prospect",
+        "meaning": "n.可能性"
+      },
+      {
+        "word": "proposal",
+        "meaning": "n.提议;建议"
+      },
+      {
+        "word": "diminish",
+        "meaning": "v.减少;贬低"
+      },
+      {
+        "word": "authentic",
+        "meaning": "adj.真正的"
+      },
+      {
+        "word": "channel",
+        "meaning": "n.渠道;方式"
+      },
+      {
+        "word": "brag",
+        "meaning": "v.吹嘘"
+      },
+      {
+        "word": "gruff",
+        "meaning": "adj.生硬的;粗暴的"
+      },
+      {
+        "word": "optimization",
+        "meaning": "n.最优化"
+      },
+      {
+        "word": "intimidating",
+        "meaning": "adj.吓人的"
+      },
+      {
+        "word": "panicky",
+        "meaning": "adj.焦虑不安的"
+      },
+      {
+        "word": "realm",
+        "meaning": "n.领域"
+      },
+      {
+        "word": "equation",
+        "meaning": "n.方程式;等式"
+      },
+      {
+        "word": "validated",
+        "meaning": "v.确认;证实"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_03",
+    "folder": "E03.怎样走出负面情绪",
+    "audioFile": "audio.m4a",
+    "title_cn": "怎样走出负面情绪",
+    "title_jp": "A simple trick to improve positive thinking",
+    "speaker": "Alison Ledgerwood",
+    "paragraphs": [
+      {
+        "jp": "Hi everyone. Gosh, I wish I could dance, but I can't, and you really don't want me to. So instead I thought I would talk a little today about how people think. I'm fascinated by this question. I'm a social psychologist, which basically means I'm a professional people watcher.",
+        "cn": "大家好! 唉,我希望我会跳舞,可惜我不会。 你们也不会想看我跳 舞。 所以今天我将分享一点我对人类如何思考的认识。 我对此非常感 兴趣。 作为一名社会心理学家, 我是个专业的人群观察者。"
+      },
+      {
+        "jp": "So, this is what I do; I try to figure out how humans think and how we might be able to think better. Here's something I noticed a few years ago about how I seem to think; here's a typical week in my life, which usually seems to revolve entirely around publishing papers.",
+        "cn": "我的工作就是去研究人类如何思考, 以及如何更好地思考。 几年前我 发现了一些关于我如何思考的事情。 这是我生活中典型的一周, 一切 围绕着发表论文展开。"
+      },
+      {
+        "jp": "So here I am, at maximum of my artistic abilities as a stick figure, going along at baseline, and a paper gets accepted. I get this rush, this blip of happiness, and then I'm back to baseline by about lunch time. A few days later, a paper might get rejected, and that feels pretty awful. And I wait for that blip to end, but somehow I just can't stop thinking about it.",
+        "cn": "我在这里, 以我最大的美术能力画出来的火柴人, 在基准线上前行。 当一篇文章通过审稿时, 我迅速到达了兴奋的顶峰。 接近午餐时,我 回到了基准线状态。 几天后,一篇文章也许被拒绝了, 我很难受, 并 等待这阵糟糕情绪的结束。 但是不知怎么地,我就是停不下来地想着 这件事。"
+      },
+      {
+        "jp": "Here's the craziest part: even if another paper gets accepted the next day, well, that's nice, but somehow I can't get that pesky rejection out of my head. So, what is going on here? Why does a failure seem to stick in our minds so much longer than a success? Together with my colleague Amber Boydstun in the Political Science Department, I started thinking about this question, this question of, \"do our minds get stuck in the negatives?\" We all know intuitively that there are different ways of thinking about things.",
+        "cn": "更疯狂的是, 即使第二天另外一篇文章通过审核,我本可以高兴起 来, 之前文章收到的烦人的拒绝也始终在我脑海中徘徊。 发生了什么 呢? 为什么感觉失败比成功 在我们脑海里停留的时间长得多? 我与我 在政治系的同事Amber Boydstun, 一起开始了对此问题的研究。 为什 么我们的大脑被困在负面情绪里? 我们都本能地知道, 人们对于事情 有很多不同的思考方式。"
+      },
+      {
+        "jp": "The same glass, the saying goes can be seen as half-full or half- empty. There's a lot of research in the social sciences showing that depending on how you describe the glass to people, as half- full or half-empty, it changes how they feel about it. So if you describe the glass as half-full, this is called the gain frame, because you're focusing on what's gained, then people like it. But if you describe the same glass as half-empty, a loss frame, then people don't like it. But we wondered what happens when you try to switch from thinking about it one way to thinking about it another way.",
+        "cn": "盛有半杯水的杯子就可以被看成半满和半空的。 社会科学上有大量研 究表示, 当你向人们描述这个杯子的时候, 半满和半空的表达 会改变 人们对其的感受。 如果你说这个杯子是半满的,你是在获益框架下思 考, 因为你关注的是得到的那部分。 人们便会喜欢这个杯子。 相反, 如果你认为这个杯子是半空的,你则是在损失框架下思考, 人们也就 不会喜欢这个杯子。 如果你试着去改变思维方式, 又会发生什么呢?"
+      },
+      {
+        "jp": "Can people shift back and forth, or do they get stuck in one way of thinking about it? Does one of these labels, in other words, tend to stick more in the mind? Well, to investigate this question, we conducted a simple experiment. We told participants in our experiment about a new surgical procedure, and we randomly assigned them to one of two conditions.",
+        "cn": "人们是否能反复改变思考的角度? 还是会被困于一种固定的思考模式? 换句话说,是否会有一种模式更容易被长期使用? 为了解答以上问题, 我们开展了一个简单的实验。 我们告知实验参与者,此实验有关于一个 新手术。 然后我们将他们随机分成两组。"
+      },
+      {
+        "jp": "For participants in the first condition, the first group, we described the surgical procedure in terms of gains; we said it had a 70% success rate. For participants in the second group, we described the procedure in terms of losses; we said it had a 30% failure rate. So it's the exact same procedure, we're just focusing people's attention on the part of the glass that's full, or the part of the glass that's empty. Perhaps unsurprisingly, people like the procedure when it's described as having a 70% success rate, and they don't like it when it's described as having a 30% failure rate. But then we added a twist: we told participants in the first group, \"You know, you could think of this as a 30% failure rate.\" And now they don't like it anymore; they've changed their minds.",
+        "cn": "对于第一组参与者, 我们强调手术的正面效果。 即其有70%的成功率。 而对于第二组参与者, 我们强调手术的负面影响。 即其有30%的失败 率。 手术步骤完全相同。 我们使这些参与者的注意力放于杯子里有水的 那一半, 或者空着的那一半上。 也许并不奇怪,当人们得知手术成功率 为70%时, 他们会肯定这个手术。 如果他们关注于30%的失败率, 则不 会接受这个手术。 但是我们随后 告知第一组实验者, “你们也可以认为 手术有三成可能失败。” 他们改变了想法,不再倾向于这个手术。"
+      },
+      {
+        "jp": "We told participants in the second group, \"You know, you could think of this as a 70% success rate\", but unlike the first group, they stuck with their initial opinion; they seemed to be stuck in the initial loss frame that they saw at the beginning of the study. We conducted another experiment.",
+        "cn": "我们也告诉第二组实验者, “你们也可以认为手术有七成可能成功。” 与 第一组不同的是,他们保持了原有意见, 他们似乎从始至终都在 一开始 的损失框架下思考。 我们还做了另外一个实验。"
+      },
+      {
+        "jp": "This time we told participants about the current governor of an important state who is running for re-election against his opponent. We again had two groups of participants, and we described the current governor's track record to them in one of two ways. We said that when the current governor took office, statewide budget cuts were expected to affect of about 10,000 jobs, and then half of the participants read that under the current governor's leadership 40% of these jobs had been saved.",
+        "cn": "这一次我们告诉实验参与者 一个重要州的时任州长 正在参与改选。 同 样还是两组实验者, 我们以两种不同的方式来阐述这位州长的业绩。 我 们告诉实验者在时任州长刚上任时, 州际预算缩减被估计会大约影响一 万个工作岗位。 一组实验者了解到 在这位州长的带领下, 40%的职位被 保留了下来。"
+      },
+      {
+        "jp": "They like the current governor; they think he is doing a great job. The rest of the participants read that under the current governor's leadership, 60% of these jobs had been lost, and they don't like the current governor; they think he's doing a terrible job. But then, once more, we added a twist.",
+        "cn": "因此,他们认为时任州长业绩不错,从而欣赏他的表现。 另一组实验者 则了解到 在这位州长的领导下, 职位减少了60%。 他们由此认为州长业 绩很差而不支持他。 再一次地,我们改变了表达方式。"
+      },
+      {
+        "jp": "For participants in the first group, we reframed the information in terms of losses, and now they didn't like the current governor anymore. For participants in the second group, we reframed the information in terms of gains, but just like in the first study, this didn't seem to matter. People in this group still didn't like the current governor. So notice what this means. Once the loss frame gets in there, it sticks. People can't go back to thinking about jobs saved once they thought about jobs lost. So in both of these scenarios actually the current governor gets ousted in favor of his opponent.",
+        "cn": "对于第一组来说, 在我们更换了表达方式以强调负面影响后, 他们不再 认可时任州长。 在面对第二组实验者时, 我们的表达突出了正面的效 果。 但与第一个实验相同,他们并没有改变对州长的态度。 第二组实验 者们始终不欣赏时任州长。 所以以上两个实验告诉我们: 损失框架会一 直延续, 人们一旦想到职位减少, 就无法反过来考虑保留下来的工作岗 位。 所以在这两个实验组的情景下, 时任州长都会被他的改选对手打 败。"
+      },
+      {
+        "jp": "At this point we were getting curious: why does this happen? Could it be that it's actually mentally harder for people to convert from losses to gains than it is for them to go from gains to losses? So we conducted the third study to test how easily people could covert from one frame to another. This time we told participants, \"Imagine there's been an outbreak of an unusual disease and six hundred lives are at stake.\" We asked participants in one group, \"If a hundred lives are saved, how many will be lost?\" And we asked participants in the other group, \"If a hundred lives are lost, how many will be saved?\"",
+        "cn": "相信大家听到这里会有些好奇。为什么会发生这种现象呢? 是不是对于 人类来说, 思想上从损失到获益的转换 比从获益到损失的转换更难呢? 于是我们又进行了第三项研究, 旨在探索人们转换思考框架的难易程 度。 这一次我们告诉实验者 ”想象现在一种罕见的疾病开始大规模爆发 600个生命可能会受到影响。” 第一组实验者被问到: ”如果100人得到救 助,有多少人将因疾病失去生命?“ 第二组则被问到: ”如果100人因病 离世,有多少人将获救?"
+      },
+      {
+        "jp": "So everyone just has to calculate 600 minus 100, and come up with the answer of 500 but whereas people in one group have to convert from gains to losses in order to do that, people in the second group have to convert from losses to gains. We timed how long it took them to solve this simple math problem, and what we found was that when people had to convert from gains to losses, they could solve the problem quite quickly; it took them about 7 seconds on average. But when they had to convert from losses to gains, well now it took them far longer, almost 11 seconds. “",
+        "cn": "他们只需简单计算—— 600 减去 100 等于 500。 但是第一组实验者需要 将思维模式从获益转换到损失, 而在计算的同时, 第二组实验者则要将 思维模式从损失转换到获益。 我们对两组人们计算这个简单的数学问题 进行了计时。 并发现 从获益转换到损失模式的人们 计算速度更快, 平 均需要7秒钟。 而从损失转换到获益模式的人们 则需要更长的11秒钟来 完成计算。"
+      },
+      {
+        "jp": "So this suggests that once we think about something as a loss, that way of thinking about it tends to stick in our heads and to resist our attempts to change it. What I take away from this research and from related research is that our view of the world has a fundamental tendency to tilt toward the negative. It's pretty easy to go from good to bad, but far harder to shift from bad to good. We literally have to work harder to see the upside of things. And this matters. So, think about the economy. Here's economic well-being from 2007 to 2010. You can see it tanked, just like we all remember, and then by late 2010 it has recovered by most objective measures.",
+        "cn": "所以,一旦我们从损失的角度思考, 这种思维模式更容易长久存在, 也 更难被改变。 我从此项和其他相关研究中发现 我们对世界的认识 从根 本上倾向于负面影响。 从好到坏很简单,但从坏到好的转变就会难得 多。 我们需要付出更多的努力去看到事物积极的一面。 而这很重要 所 以,想想当今的经济。 这是从2007到2010年的经济情况。 如我们记忆中 的一样, 你可以看到经济状况的不景气。 2010年后期,根据大多数客观 测量,经济已经开始复苏。"
+      },
+      {
+        "jp": "But here's consumer confidence over the same time period. You can see it tanks right along with the economy, but then it seems to get stuck. Instead of rebounding with the economy itself, consumers seem to be psychologically stuck back there in the recession. So oddly then, it may take more effort to change our minds about how the economy is doing then to change the economy itself.",
+        "cn": "但是这是同时期消费者信心的情况。 你可以发现它随着经济情况一起下 降。 但是它似乎没有好转。 消费者们的心理始终被低潮所困, 并没有 随着经济复苏而上升。 奇怪地,相比真正改变经济,我们需要付出更多 才能改变我们对经济的态度。"
+      },
+      {
+        "jp": "On the more personal level, what this research means to me is that you have to work to see the up-side. Literally, this takes work, this takes effort. And you can practice this; you can train your mind to do this better. There's research out at UC Davis, showing that just writing for a few minutes each day about things that you're grateful for can dramatically boost your happiness and well-being, and even your health. We can also rehearse good news and share it with others. We tend to think, right, that misery loves company, that venting will help get rid of our negative emotions, that we'll feel better if we just talk about how terrible our day was.",
+        "cn": "从个人的层面上说,这项研究告诉我 人们需要努力才能看到正面的效果 毫不夸张地说,这必须要努力,需要尝试。 而且你可以练习,训练你的 思想更积极正面的思考 我们加利福利亚大学戴维斯分校有一项研究表 明, 每天花几分钟时间写一写 你想感谢的事情, 就能明显地提高你的快 乐和幸福感受, 以及你的健康。 我们也可以复述好消息并与其他人分 享。 我们常认为痛苦需要陪伴, 发泄可以帮助我们减轻负面情绪, 说 出了我们这一天过得多糟糕,感觉就好多了。"
+      },
+      {
+        "jp": "And so we talk, and we talk, and we talk about the boss who’s driving us crazy, and that friend who never called us back, and that meeting at work where every little thing that could go wrong, did. But we forget to talk about the good stuff. And yet, that's exactly where our minds need the most practice. So, my husband who has this disconcerting habit of listening to what I say other people should do, and then pointing out that, technically speaking, I'm a person, too, has taken to listening to me for about two minutes on days when I come home all grumpy and complaining about everything, and he listens, and he says, \"Okay, but what happened today that was good?\"",
+        "cn": "所以我们不停地谈论那些把我们逼疯了的领导、 那些从不回电话的朋 友、 还有那些恼人的 任何细节都可能出错的工作会议。 但是我们忘记了 倾诉那些好事情, 可这正是我们的大脑需要的。 我的丈夫有个烦人的习 惯 总是听我说其他人应该怎么做, 然后点明 严格意义上讲,我也是人类 的一员。他花两分钟的时间听我回家后 脾气暴躁地抱怨一切事情, 他倾 听着,并提示我 ”很好,那今天有发生什么好的事情吗?"
+      },
+      {
+        "jp": "So I tell him about the student who came up to me after class with this really interesting, insightful question, and I tell him about the friend who emailed me out of the blue this morning just to say, \"hello\". And somewhere in the telling, I start to smile, and I start to think that maybe my day was pretty decent after all. I think we can also work in our communities to focus on the upside. We can be more aware that bad tends to stick. One mean comment can stick with somebody all day, all week even, and bad tends to propagate itself, right? “",
+        "cn": "我告诉他我的学生在下课时 来问我了一个很有趣、很有意义的问题。 然 后我告诉他早上一个朋友出乎意料地 给我发邮件,只为了问好。 在讲述 这些事情的时候,我开始微笑, 我开始想,我的一天终究还是很顺利 的。 我想我们可以携手努力, 去关注正面的一切。 我们了解了负面影响 更容易留存。 一句刻薄的评论可以影响人一整天,甚至一整个星期。 负 面情绪更会被传递给别人,对吧?"
+      },
+      {
+        "jp": "Somebody snaps at you and you snap back, and you snap at the next guy, too. But what if the next time somebody snapped at you, you forgave them? What if the next time you had a really grumpy waitress, you left her an extra large tip? Our minds may be built to look for negative information and to hold on to it, but we can also retrain our minds if we put some effort into it and start to see that the glass may be a little more full than we initially thought.",
+        "cn": "当有人谩骂你的时候,你会骂回去,甚至不放过下一个人。 但是如果下 一次有人再谩骂你, 你原谅了他们呢? 如果下一次你面对着一位很暴躁 的女服务员, 你给了她更多的小费呢?我们的大脑的构造也许就是为了 寻找负面信息 并且牢牢记住。 但是如果我们愿意努力,就可以重新训练 我们的大脑, 并开始意识到玻璃杯里 有比我们起初认为更多的水。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "psychologist",
+        "meaning": "n.心理学家"
+      },
+      {
+        "word": "typical",
+        "meaning": "adj.典型的"
+      },
+      {
+        "word": "baseline",
+        "meaning": "n.基线"
+      },
+      {
+        "word": "rejection",
+        "meaning": "n.拒绝"
+      },
+      {
+        "word": "intuitively",
+        "meaning": "adv.直觉地"
+      },
+      {
+        "word": "describe",
+        "meaning": "v.描述1"
+      },
+      {
+        "word": "label",
+        "meaning": "n.标签"
+      },
+      {
+        "word": "surgical",
+        "meaning": "adj.外科手术的"
+      },
+      {
+        "word": "randomly",
+        "meaning": "adv.随机的"
+      },
+      {
+        "word": "unsurprisingly",
+        "meaning": "adv.不出所料地"
+      },
+      {
+        "word": "initial",
+        "meaning": "adj.最初的"
+      },
+      {
+        "word": "reframed",
+        "meaning": "v.给(照片)换框"
+      },
+      {
+        "word": "scenarios",
+        "meaning": "n.情节;脚本"
+      },
+      {
+        "word": "outbreak",
+        "meaning": "n.爆发"
+      },
+      {
+        "word": "fundamental",
+        "meaning": "adj.根本的;必须的"
+      },
+      {
+        "word": "tendency",
+        "meaning": "n.趋势"
+      },
+      {
+        "word": "objective",
+        "meaning": "adj.客观的"
+      },
+      {
+        "word": "rebounding",
+        "meaning": "v.弹回;回升"
+      },
+      {
+        "word": "recession",
+        "meaning": "n.衰退"
+      },
+      {
+        "word": "dramatically",
+        "meaning": "adv.剧烈地,明显地"
+      },
+      {
+        "word": "rehearse",
+        "meaning": "v.排练;排演"
+      },
+      {
+        "word": "disconcerting",
+        "meaning": "adj.令人不安的"
+      },
+      {
+        "word": "grumpy",
+        "meaning": "adj.脾气坏的"
+      },
+      {
+        "word": "insightful",
+        "meaning": "adj.富有洞察力的"
+      },
+      {
+        "word": "decent",
+        "meaning": "adj.得体的1"
+      },
+      {
+        "word": "waitress",
+        "meaning": "n.女服务员"
+      },
+      {
+        "word": "initially",
+        "meaning": "adv.起初地"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_04",
+    "folder": "E04.瑜伽如何作用于身体和大脑",
+    "audioFile": "audio.m4a",
+    "title_cn": "瑜伽如何作用于身体和大脑",
+    "title_jp": "What yoga does to your body",
+    "speaker": "",
+    "paragraphs": [
+      {
+        "jp": "At some point between the 1st and 5th century CE, the Hindu sage Patañjali began to codify the ancient, meditative traditions practiced throughout India. He recorded techniques nearly as old as Indian civilization itself in 196 manuals called the Yoga Sutras. These texts defined yoga as the ‘yoking’ or restraining of the mind from focusing on external objects in efforts to reach a state of pure consciousness. Over time, yoga came to incorporate physical elements from gymnastics and wrestling. Today, there are a multitude of approaches to modern yoga— though most still maintain the three core elements of Patañjali’s practice: physical postures, breathing exercises, and spiritual contemplation.",
+        "cn": "在公元一世纪和五世纪间, 印度智者帕坦伽利 (Patañjali)开始 整理编纂 在整个印度施行的 古老的冥想传统做法。 他在 196 颂的 著作《瑜伽经》中 记录了几乎与印度文明 一样古老的技术。 这些 经文将瑜伽定义为 “控制”, 或是限制大脑对外部事物的关注, 以 达到一种纯粹的意识状态。 随着时间的推移,瑜伽融入了源于 体 操和摔跤的体育元素。 如今,现代瑜伽 有很多种不同的练习方 式, 然而,大多数仍保留了帕坦伽利 所提出的的三个核心要素: 身体姿势,呼吸练习, 和精神冥思。"
+      },
+      {
+        "jp": "This blend of physical and mental exercise is widely believed to have a unique set of health advantages. Such as improving strength and flexibility, boosting heart and lung function, and enhancing psychological well-being. But what have contemporary studies shown regarding the benefits of this ancient tradition?",
+        "cn": "很多人认为这种身心结合的练习 有着独特的健康效益。 比如提高 机体的力量和柔韧性, 增强心肺功能,和改善心理健康。 但是对 于这项古老的传统所带来的益处, 当代研究到底为我们展现了什 么呢?"
+      },
+      {
+        "jp": "Despite attempts by many researchers, it's tough to make specific claims about yoga's advantages. Its unique combination of activities makes it difficult to determine which component is producing a specific health benefit.",
+        "cn": "尽管很多科学家都尝试过, 但仍然很难明确瑜伽的优点。 瑜伽将 不同动作做了独特组合, 因此,判断哪方面 让健康获益变得颇有 难度。"
+      },
+      {
+        "jp": "Additionally, yoga studies are often made up of small sample sizes that lack diversity, and the heavy reliance on self- reporting makes results subjective. However, there are some health benefits that have more robust scientific support than others.",
+        "cn": "此外,瑜伽方面的研究 通常由缺乏多样性的小样本组成, 以及过 于依赖参与者主观感受 都使研究结果缺乏客观性。 然而,有些瑜 伽对身体的好处 和其他可能带来的好处相比 有着更有力的科学依 据作为支持。"
+      },
+      {
+        "jp": "Let’s start with flexibility and strength. Twisting your body into yoga’s physical postures stretches multiple muscle groups. In the short term, stretching can change the water content of these muscles, ligaments, and tendons to make them more elastic. Over time, regular stretching stimulates stem cells which then differentiate into new muscle tissue and other cells that generate elastic collagen. Frequent stretching also reduces the body’s natural reflex to constrict muscles, improving your pain tolerance for feats of flexibility.",
+        "cn": "让我们从柔韧性和力量说起。 将你的身体扭转成瑜伽的姿势 可以 拉伸多个肌肉群 拉伸在短期内可以改变被拉伸的 肌肉,韧带,以 及肌腱中的含水量, 让它们变得更有弹性。 一段时间后, 定期拉 伸会刺激干细胞, 使其分化形成新的肌肉组织 和其他的会生成弹 性胶原纤维的细胞。 频繁拉伸也会减少 人体肌肉收缩的自然反 射, 从而提高你对疼痛的耐受力 并以此获得更好的柔韧性。"
+      },
+      {
+        "jp": "Researchers haven’t found that any one form of yoga improves flexibility more than another, so the impact of specific postures is unclear. But like other low-impact exercises, yoga reliably improves fitness and flexibility in healthy populations.",
+        "cn": "研究人员还没有发现 有某种瑜伽形式 比其他的瑜伽形式 可以更好的 提高身体的柔韧性, 因此具体瑜伽姿势 对柔韧性的影响还不明确。 但是像其他低强度的运动一样, 瑜伽能以可靠的方式提高 健康人的 身体素质和柔韧性。"
+      },
+      {
+        "jp": "The practice has also been shown to be a potentially powerful therapeutic tool. In studies involving patients with a variety of musculo-skeletal disorders, yoga was more helpful at reducing pain and improving mobility than other forms of low-impact exercise.",
+        "cn": "瑜伽练习也被证实 有可能成为强大的治疗工具, 在针对各种骨骼肌 肉疾病患者的研究中, 与其他低强度运动相比, 瑜伽在减轻疼痛 和 增强运动能力方面更胜一筹。"
+      },
+      {
+        "jp": "Adding yoga to an existing exercise routine can improve strength and flexibility for hard to treat conditions like chronic lower back pain, rheumatoid arthritis, and osteoporosis.",
+        "cn": "将瑜伽加入日常锻炼计划中 可以增强机体力量和柔韧性, 从而帮助 人们应对 慢性腰痛,类风湿性关节炎, 以及骨质疏松等难以治愈的 疾病。"
+      },
+      {
+        "jp": "Yoga’s mix of physical exercise and regimented breathing has proven similarly therapeutic for lung health. Lung diseases like chronic bronchitis, emphysema, and asthma shrink the passageways that carry oxygen, while weakening the membrane that brings oxygen into the blood.",
+        "cn": "瑜伽中体育锻炼与 有规律呼吸的结合 被证实对肺部健康 也有同样的 保健作用。 如慢性支气管炎, 肺气肿和哮喘等肺部疾病, 会使气道 缩紧, 也让肺泡薄变得脆弱"
+      },
+      {
+        "jp": "But breathing exercises like those found in yoga relax the muscles constricting those passageways and improve oxygen diffusion. Increasing the blood’s oxygen content is especially helpful for those with weak heart muscles who have difficulty pumping enough oxygen throughout the body. And for those with healthy hearts, this practice can lower blood pressure and reduce risk factors for cardiovascular disease.",
+        "cn": "但是瑜伽中针对呼吸的锻炼, 让本来使气道收缩的肌肉放松 从而 提高氧气的透过率。 增加血液中氧气的含量, 对那些心肌薄弱难 以为身体 泵入足够氧气的人们特别有帮助。 对于那些拥有健康心 脏的人们来说, 这项练习可以降低血压, 以及降低使心血管疾病 发生的危险因素。"
+      },
+      {
+        "jp": "Yoga’s most widely celebrated benefit may be the most difficult to prove: its psychological effects. Despite the longstanding association between yoga and psychological wellbeing, there’s little conclusive evidence on how the practice affects mental health. One of the biggest claims is that yoga improves symptoms of depression and anxiety disorders. Since diagnosis of these conditions varies widely as do their origin and severity, it’s difficult to quantify yoga’s impact.",
+        "cn": "瑜伽最广为人知的好处 可能是最难被证实的: 是它对心理的影 响。 尽管瑜伽和心理健康方面 有着长期的联系 但是很少有确凿的 证据 证明瑜伽练习是 如何影响心理健康的。 其中最大的一种说法 是 瑜伽可以改善由抑郁症和 焦虑症所引起的症状。 由于这些病的 诊断,起源, 和严重程度都有着很大的差异, 因此,瑜伽对其的 影响 是很难被量化的。"
+      },
+      {
+        "jp": "However, there is evidence to suggest that yoga can help reduce the symptoms of stress, as well as meditation or relaxation.",
+        "cn": "然而,有证据表明 瑜伽可以帮助人们减轻压力, 以及帮助人们冥 想和放松。"
+      },
+      {
+        "jp": "Research on the effects of yoga is still evolving. In the future, we’ll need larger studies, incorporating diverse participants, which can measure yoga’s impact on heart attacks, cancer rates, cognitive function and more. But for now, yoga can continue its ancient traditional as a way to exercise,reflect, and relax.",
+        "cn": "对于瑜伽的研究仍在继续, 将来,我们需要更大规模的研究, 并 纳入不同的参与者, 来衡量瑜伽对于 心脏病,癌症发病率, 以 及认知功能等多方面的影响。 但目前,瑜伽可以继续其古老的传 统, 作为一种供人们 锻炼、反思和放松的方式。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "and brain meditative traditions",
+        "meaning": "冥想传统"
+      },
+      {
+        "word": "Indian civilization",
+        "meaning": "印度文明"
+      },
+      {
+        "word": "restraining",
+        "meaning": "adj.抑制的"
+      },
+      {
+        "word": "gymnastics",
+        "meaning": "n.体操;体育"
+      },
+      {
+        "word": "spiritual contemplation",
+        "meaning": "精神冥思"
+      },
+      {
+        "word": "flexibility",
+        "meaning": "n.灵活性"
+      },
+      {
+        "word": "contemporary",
+        "meaning": "当代"
+      },
+      {
+        "word": "combination",
+        "meaning": "n.合作;组合"
+      },
+      {
+        "word": "determine",
+        "meaning": "v.下决心"
+      },
+      {
+        "word": "diversity",
+        "meaning": "n.多样化"
+      },
+      {
+        "word": "multiple muscle groups",
+        "meaning": "多个肌肉群"
+      },
+      {
+        "word": "differentiate into",
+        "meaning": "分化形成"
+      },
+      {
+        "word": "muscle tissue",
+        "meaning": "肌肉组织"
+      },
+      {
+        "word": "healthy population",
+        "meaning": "健康人群"
+      },
+      {
+        "word": "potentially",
+        "meaning": "adv.潜在地"
+      },
+      {
+        "word": "therapeutic tool",
+        "meaning": "治疗工具"
+      },
+      {
+        "word": "chronic",
+        "meaning": "adj.慢性的"
+      },
+      {
+        "word": "rheumatoid arthritis",
+        "meaning": "类风湿关节炎"
+      },
+      {
+        "word": "osteoporosis",
+        "meaning": "骨质疏松"
+      },
+      {
+        "word": "chronic bronchitis",
+        "meaning": "慢性支气管炎"
+      },
+      {
+        "word": "emphysema",
+        "meaning": "n.气肿"
+      },
+      {
+        "word": "passageways",
+        "meaning": "n.通道;走廊"
+      },
+      {
+        "word": "cardiovascular disease",
+        "meaning": "心血管疾病"
+      },
+      {
+        "word": "psychological",
+        "meaning": "adj.心理的"
+      },
+      {
+        "word": "association",
+        "meaning": "n.协会"
+      },
+      {
+        "word": "diagnosis",
+        "meaning": "n.诊断"
+      },
+      {
+        "word": "participant",
+        "meaning": "n.参与者"
+      },
+      {
+        "word": "cognitive function",
+        "meaning": "认知功能"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_05",
+    "folder": "E05.运动改变大脑",
+    "audioFile": "audio.m4a",
+    "title_cn": "运动改变大脑",
+    "title_jp": "The brain-changing benefits of exercise",
+    "speaker": "Wendy Suzuki",
+    "paragraphs": [
+      {
+        "jp": "What if I told you there was something that you can do right now that would have an immediate, positive benefit for your brain including your mood and your focus? And what if I told you that same thing could actually last a long time and protect your brain from different conditions like depression, Alzheimer's disease or dementia. Would you do it? Yes!",
+        "cn": "如果我告诉你有件事你马上去做的话 就会对你的大脑,包括情绪和专 注力 立刻产生积极作用? 如果我告诉你它可长期维持 并保护你的大脑 免受 如抑郁、老年痴呆或是失智症等 不同病况的侵袭。 你会愿意去做 这件事吗? 愿意!"
+      },
+      {
+        "jp": "I am talking about the powerful effects of physical activity. Simply moving your body, has immediate, long-lasting and protective benefits for your brain. And that can last for the rest of your life. So what I want to do today is tell you a story about how I used my deep understanding of neuroscience, as a professor of neuroscience, to essentially do an experiment on myself in which I discovered the science underlying why exercise is the most transformative thing that you can do for your brain today. Now, as a neuroscientist, I know that our brains, that is the thing in our head right now, that is the most complex structure known to humankind. But it's one thing to talk about the brain, and it's another to see it.",
+        "cn": "我所说的就是体育运动的強大效果。 简单地让你的身体动起来, 就能 够对你的大脑产生 即时的和长期的保护功效。 而且可以持续一生的时 间。 所以我今天想要分享一个故事, 关于我如何使用 我所深度理解的 神经科学, 作为一名神经科学教授, 我在自己身上做了一项实验, 在 这个实验中我发现了 为什么运动最易转化成 对你的大脑有益的东西。 作为一名神经科学家, 我知道我们的大脑, 就是我们脑袋中的东西, 是对人类所知的最为复杂的结构。 但是谈论大脑, 和亲眼看到它是两 件事。"
+      },
+      {
+        "jp": "So here is a real preserved human brain. And it's going to illustrate two key areas that we are going to talk about today. The first is the prefrontal cortex, right behind your forehead, critical for things like decision-making, focus, attention and your personality. The second key area is located in the temporal lobe, shown right here. You have two temporal lobes in your brain, the right and the left, and deep in the temporal lobe is a key structure critical for your ability to form and retain new long-term memories for facts and events. And that structure is called the hippocampus.",
+        "cn": "这是一个真实保存的人类大脑。 它会展示我们今天所要讨论的 两个关 键部分。 第一部分是前额皮层, 就在你额头后面, 对做决定、专注 力、注意力及性格等 至关重要。 第二个重要的区域是在颞叶, 右边 这里。 在大脑里有两个颞叶, 右边一个左边一个, 在颞叶深处有一 个非常关键的结构 它对你的能力至关重要 能够形成和保存对事实、事 件的 长期记忆。 它被称作海马体。"
+      },
+      {
+        "jp": "So I've always been fascinated with the hippocampus. How could it be that an event that lasts just a moment, say, your first kiss, or the moment your first child was born, can form a memory that has changed your brain, that lasts an entire lifetime? That's what I want to understand. I wanted to start and record the activity of individual brain cells in the hippocampus as subjects were forming new memories. And essentially try and decode how those brief bursts of electrical activity, which is how neurons communicate with each other, how those brief bursts either allowed us to form a new memory, or did not.",
+        "cn": "我一直对海马体非常着迷。 一件短暂的事情, 比如说,你的初吻, 或者你第一个孩子诞生的时刻, 如何形成一个能够改变你的大脑 且持 续终生的记忆? 这是我想要去弄明白的。 我想要去开始记录 当形成 新的记忆的时候 海马体中每个单独细胞活动。 从本质上尝试解码 这 些电流活动的短暂爆发, 这是神经元相互交流的方式, 这些短暂的爆 发或让我们 形成一段新的记忆,或没有。"
+      },
+      {
+        "jp": "But a few years ago, I did something very unusual in science. As a full professor of neural science, I decided to completely switch my research program. Because I encountered something that was so amazing, with the potential to change so many lives that I had to study it. I discovered and I experienced the brain- changing effects of exercise. And I did it in a completely inadvertent way. I was actually at the height of all the memory work that I was doing -- data was pouring in, I was becoming known in my field for all of this memory work. And it should have been going great. It was, scientifically. But when I stuck my head out of my lab door, I noticed something. I had no social life. I spent too much time listening to those brain cells in a dark room, by myself.",
+        "cn": "但是几年之前, 我做了一些科学界中很少见的实验。 作为一个神经科 学的全职教授, 我决定完全扭转我的研究计划。 因为我遇到了如此神 奇的事物, 它有可能改变众多人的生命 我必须要去研究它。 我发现并 亲身经历了 运动对大脑的改变。 而且是一种完全 \"无心插柳柳成荫\"的 方式。 事实上当时我正处于 所有记忆工作的最高点—— 数据如潮水般 涌入, 因为记忆研究工作, 我在那一领域正在声名鹊起。 它可以变得 更出色, 从科学角度来讲,它正是如此。 但当我在实验室外时, 我注 意到一件事, 那就是我没有社交生活。 我花费了太多时间倾听那些脑 细胞上 在黑暗的屋子里,独自一人。"
+      },
+      {
+        "jp": "I didn't move my body at all. I had gained 25 pounds. And actually, it took me many years to realize it, I was actually miserable. And I shouldn't be miserable. And I went on a river- rafting trip -- by myself, because I had no social life. And I came back -- thinking, \"Oh, my God, I was the weakest person on that trip.\" And I came back with a mission. I said, \"I'm never going to feel like the weakest person on a river-rafting trip again.\"",
+        "cn": "我完全不运动。 我已经长胖了25磅。 事实上,我花费了很多年 才意识 到这个问题。 我当时是很糟糕的, 而我本不该如此。 我自己一个人去 做了一次漂流, 因为我没朋友啊。 然后当我回来后——想着,“天哪, 我是那趟旅程最弱的一个。” 我回来后给自己下了一个任务。 我对自 己说,“我再也不要这种感受, 再也不要做 一个漂流之中最弱的那个。"
+      },
+      {
+        "jp": "And that's what made me go to the gym. And I focused my type-A personality on going to all the exercise classes at the gym. I tried everything. I went to kickbox, dance, yoga, step class, and at first it was really hard. But what I noticed is that after every sweat-inducing workout that I tried, I had this great mood boost and this great energy boost. And that's what kept me going back to the gym. Well, I started feeling stronger. I started feeling better, I even lost that 25 pounds.",
+        "cn": "这个想法促使我走进了健身房。 我的A型人格促使我 尝试了健身房所 有运动。 我尝试了一切。 我做了拳击训练,舞蹈,瑜伽, 踏步教 程, 开始的时候确实很难。 但我注意到每一次汗水挥洒后, 我的情 绪都变得非常好, 精力也更好。 那促使我一直不断走进健身房。 然 后我开始感受到自己变得强壮。 我感受非常好, 甚至还减掉了那25 磅。"
+      },
+      {
+        "jp": "And now, fast-forward a year and a half into this regular exercise program and I noticed something that really made me sit up and take notice. I was sitting at my desk, writing a research grant, and a thought went through my mind that had never gone through my mind before. And that thought was, \"Gee, grant-writing is going well today.\" And all the scientists -- yeah, all the scientists always laugh when I say that, because grant-writing never goes well. It is so hard; you're always pulling your hair out, trying to come up with that million-dollar- winning idea.",
+        "cn": "现在,自我经常去参加运动后 已经一年半过去了, 我注意到有些东西 值得我坐下来记录。 当时我正坐在桌旁, 写着一份研究基金申请, 一个想法突然从脑海冒出来, 此前我从未这样想过。 这个想法就是, “天哪, 申请材料今天写的很顺利嘛。” 所有的科学家——对,所有科 学家都会在 我这样说的时候大笑, 因为基金申请写作从来都不好写。 它太难了,你总是绞尽脑汁, 试图想出能够赢得百万美金的想法。"
+      },
+      {
+        "jp": "But I realized that the grant-writing was going well, because I was able to focus and maintain my attention for longer than I had before. And my long-term memory -- what I was studying in my own lab -- seemed to be better in me. And that's when I put it together.",
+        "cn": "但我意识到那次写作很顺利, 因为我能够专注地保持我的注意力 比以 前时间都要久。 我的长期记忆—— 就是我实验室里研究的东西 显示 也更好了。 从那时起我将它们联系在一起。"
+      },
+      {
+        "jp": "Maybe all that exercise that I had included and added to my life was changing my brain. Maybe I did an experiment on myself without even knowing it. So as a curious neuroscientist, I went to the literature to see what I could find about what we knew about the effects of exercise on the brain. And what I found was an exciting and a growing literature that was essentially showing everything that I noticed in myself. Better mood, better energy, better memory, better attention. And the more I learned, the more I realized how powerful exercise was. Which eventually led me to the big decision to completely shift my research focus.",
+        "cn": "或许我所有的运动 都在改变我的大脑。 或许我在自己没有意识到的情 况下 对我自己进行了一项实验。 作为一个好奇的神经学家, 我去文 献里面查找现有已知的 关于运动对于大脑的影响。 我发现一项让人欣 喜的且正在增长的 文献记载 记载了几乎所有发生在我身上的事 更好 的情绪、精力、记忆力和 专注力。 我所了解越多, 我就越认识到运 动的魅力, 这也指引我做了一个重大决定 来完全扭转我的研究方向。"
+      },
+      {
+        "jp": "And so now, after several years of really focusing on this question, I've come to the following conclusion: that exercise is the most transformative thing that you can do for your brain today for the following three reasons. Number one: it has immediate effects on your brain. A single workout that you do will immediately increase levels of neurotransmitters like dopamine, serotonin and noradrenaline. That is going to increase your mood right after that workout, exactly what I was feeling.",
+        "cn": "现在,经过几年对 这个问题的专注研究, 我得到了以下结论: 运动 是当下你所能做的对大脑最好的 最具转化性的东西, 有以下三个原 因:原因一:它对你的大脑有 立刻的影响。 你所做的每一点运动 都 会立刻提升你神经递质的水平 像是海马体、血清素和 去甲肾上腺素。 所以它会立马提升你的情绪, 就像我所体会到的。"
+      },
+      {
+        "jp": "My lab showed that a single workout can improve your ability to shift and focus attention, and that focus improvement will last for at least two hours. And finally, studies have shown that a single workout will improve your reaction times which basically means that you are going to be faster at catching that cup of Starbucks that falls off the counter, which is very, very important. But these immediate effects are transient, they help you right after.",
+        "cn": "我的实验显示,单个短暂的运动 可以提升你转移和集中注意力的能 力, 这种提升可以持续至少两个小时。 最后,研究还显示, 运动本 身可以提高你的反应时间 这意味着 你在接星巴克杯子的时候更迅速 如果它掉下柜台的话, 这一点可以说是相当重要了。这些效果之所以 能够长期有用 是因为运动改变了大脑的解剖结构, 生理机能和功能。"
+      },
+      {
+        "jp": "And these effects are long-lasting because exercise actually changes the brain's anatomy, physiology and function. Let's start with my favorite brain area, the hippocampus. The hippocampus -- or exercise actually produces brand new brain cells, new brain cells in the hippocampus, that actually increase its volume, as well as improve your long-term memory, OK? And that including in you and me.",
+        "cn": "这些效果之所以能够长期有用 是因为运动改变了大脑的解剖结构, 生 理机能和功能。 让我们从我最喜欢的大脑区域开始, 海马体。 海马体 —— 或者说是运动实际上 能够产生全新的脑细胞, 海马体中的全新脑 细胞能够增加它的数量, 同时提升你的长期记忆力。 这些对你我都适 用。"
+      },
+      {
+        "jp": "Number two: the most common finding in neuroscience studies, looking at effects of long-term exercise, is improved attention function dependent on your prefrontal cortex. You not only get better focus and attention, but the volume of the hippocampus increases as well. And finally, you not only get immediate effects of mood with exercise but those last for a long time. So you get long-lasting increases in those good mood neurotransmitters.",
+        "cn": "原因二: 在神经科学研究中最常见的发现 是长期运动的影响 它能够单 独提升你的注意力 或是你的前额皮层。 你不仅能够得到更好的专注 力, 同时也增加了你的海马体数量。 最后一点是你不仅能够 获得即时 的愉悦心情 这种情绪还能够维持较长的时间。 所以你获得的是能够长 期存在的 情绪转化神经元。"
+      },
+      {
+        "jp": "But really, the most transformative thing that exercise will do is its protective effects on your hippocampus. Here you can think about the brain like a muscle. The more you're working out, the bigger and stronger your hippocampus and prefrontal cortex gets.",
+        "cn": "但实际上,运动所做的 最具变革意义的事情是 它对于大脑的保护作 用。 你可以将大脑想象成是一块肌肉。 你运动的越多, 你的海马体和 前额皮层 就越大越强壮。"
+      },
+      {
+        "jp": "Why is that important? Because the prefrontal cortex and the hippocampus are the two areas that are most susceptible to neurodegenerative diseases and normal cognitive decline in aging. So with increased exercise over your lifetime, you're not going to cure dementia or Alzheimer's disease, but what you're going to do is you're going to create the strongest, biggest hippocampus and prefrontal cortex so it takes longer for these diseases to actually have an effect. You can think of exercise, therefore, as a supercharged 401K for your brain, OK? And it's even better, because it's free.",
+        "cn": "为什么这一点很重要呢? 因为前额皮层和海马体 是最易神经退化疾病 影响的两个区域 并容易随着年龄增长认知能力下降。 所以增加运动 量, 你不仅能够预防痴呆和 阿兹海默综合症, 你更能够创造 最强壮有 力的海马体和前额皮层 所以能够更有效低于这些疾病。 因此,你可以 把运动想象成是 为你的大脑额外提供的401退休金计划, 对不对? 而且 更棒的是,它是免费的。"
+      },
+      {
+        "jp": "So this is the point in the talk where everybody says, \"That sounds so interesting, Wendy, but I really will only want to know one thing. And that is, just tell me the minimum amount of exercise I need to get all these changes.\"",
+        "cn": "所以重点来了,大家都会说, “这听起来很不错啊,温蒂, 但我事实上 只想知道一件事。 告诉我吧,运动的最低量是多少 如果我想要实现你 所说的这些变化。“"
+      },
+      {
+        "jp": "And so I'm going to tell you the answer to that question. First, good news: you don't have to become a triathlete to get these effects. The rule of thumb is you want to get three to four times week exercise minimum 30 minutes an exercise session, and you want to get aerobic exercise in. That is, get your heart rate up.",
+        "cn": "我马上就会给出答案。 首先,好消息是:你不需要参加 铁人三项才能 获得这些改变。 首要的原则是你需每周运动三到四次 每次最低30分 钟, 要包含有氧运动。 这样能够让你的心率加快。"
+      },
+      {
+        "jp": "And the good news is, you don't have to go to the gym to get a very expensive gym membership. Add an extra walk around the block in your power walk. You see stairs -- take stairs. And power-vacuuming can be as good as the aerobics class that you were going to take at the gym.",
+        "cn": "还有一个好消息是你不需要走进健身房 来办一张昂贵的会员卡。 在你 能力范围内在周边街区多走一圈。 如果见到台阶-就走走台阶。 这些能 量的聚集和有氧课程是一样的 就像你在健身房上的一样。"
+      },
+      {
+        "jp": "So I've gone from memory pioneer to exercise explorer. From going into the innermost workings of the brain, to trying to understand how exercise can improve our brain function, and my goal in my lab right now is to go beyond that rule of thumb that I just gave you -- three to four times a week, 30 minutes. I want to understand the optimum exercise prescription for you, your age, at your fitness level, for your genetic background, to maximize the effects of exercise today and also to improve your brain and protect your brain the best for the rest of your life.",
+        "cn": "所以我从记忆先锋 变成了运动探索者。 从深入大脑内部的运作, 到尝 试了解运动 如何来提升大脑的性能, 我现在的实验室目标是 超越我刚 刚所给你们的首要原则—— 每周三到四次大于30分钟。 我想要为你了 解运动的最佳配方 根据你们年龄,健身的情况, 以及基因背景, 来实 现当前运动效果的最大化 同时为你的余生来提升 和保护你的大脑。"
+      },
+      {
+        "jp": "But it's one thing to talk about exercise, and it's another to do it. So I'm going to invoke my power as a certified exercise instructor, to ask you all to stand up.We're going to do just one minute of exercise. It's call-and-response, just do what I do, say what I say, and make sure you don't punch your neighbor, OK? Music!",
+        "cn": "但是知易行难, 所以让我来以一个 认证运动教练的身份来呼吁你们, 请大家起身,我们来做一个一分钟的运动。 名字叫“我说你应”, 请做 我所做,说我所说, 当然确保你不要打到邻座, 准备好了吗? 音乐!"
+      },
+      {
+        "jp": "Five, six, seven, eight, it's right, left, right, left. And I say, I am strong now. Let's hear you. Audience: I am strong now. Wendy Suzuki: Ladies, I am Wonder Woman-strong. Let's hear you! Audience: I am Wonder Woman-strong. WS: New move -- uppercut, right and left. I am inspired now. You say it! Audience: I am inspired now. WS: Last move -- pull it down, right and left, right and left. I say, I am on fire now! You say it. Audience: I am on fire now. WS: And done! OK, good job!",
+        "cn": "五六七八,右左右左。 现在我要说,我很强壮。 请跟我重复。 观众:我很强壮。 女士们,我是神奇女侠。 请跟我重复。 观众:我是神奇女侠。 新动作——勾拳,右左。 我激情澎湃。请跟我重复。 观众:我激情澎湃。 最后一个——往下走,右左,右左。 我在燃烧!跟我重复。 观众:我在燃烧。 好,做的很棒!"
+      },
+      {
+        "jp": "Thank you. I want to leave you with one last thought. And that is, bringing exercise in your life will not only give you a happier, more protective life today, but it will protect your brain from incurable diseases. And in this way it will change the trajectory of your life for the better.",
+        "cn": "谢谢。 我想要和你们分享最后一点心得。 把运动引入你的生活 不仅仅 能够给你一个更开心的、 备受保护的当下生活, 它还可以使你的大脑 免受 无法治愈的疾病侵袭。 从而改变你人生的轨迹, 让它变得更好。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "depression",
+        "meaning": "n.抑郁"
+      },
+      {
+        "word": "dementia",
+        "meaning": "n.痴呆"
+      },
+      {
+        "word": "long-lasting",
+        "meaning": "持续的"
+      },
+      {
+        "word": "neuroscience",
+        "meaning": "n.神经科学"
+      },
+      {
+        "word": "neuroscientist",
+        "meaning": "n.神经科学家"
+      },
+      {
+        "word": "illustrate",
+        "meaning": "v.说明"
+      },
+      {
+        "word": "forehead",
+        "meaning": "额头"
+      },
+      {
+        "word": "temporal lobe",
+        "meaning": "额叶"
+      },
+      {
+        "word": "hippocampus",
+        "meaning": "海马体"
+      },
+      {
+        "word": "individual",
+        "meaning": "adj.个人的,单独的1"
+      },
+      {
+        "word": "neural science",
+        "meaning": "神经科学"
+      },
+      {
+        "word": "encounter",
+        "meaning": "v.遭遇,偶遇"
+      },
+      {
+        "word": "inadvertent",
+        "meaning": "adj.疏忽的"
+      },
+      {
+        "word": "scientifically",
+        "meaning": "adv.系统的"
+      },
+      {
+        "word": "miserablenes",
+        "meaning": "adj.痛苦的"
+      },
+      {
+        "word": "kickbox",
+        "meaning": "v.踢拳"
+      },
+      {
+        "word": "sweat-inducing",
+        "meaning": "汗水挥洒"
+      },
+      {
+        "word": "literature",
+        "meaning": "n.文学"
+      },
+      {
+        "word": "transformative",
+        "meaning": "adj.转化性的"
+      },
+      {
+        "word": "neurotransmitter",
+        "meaning": "神经递质"
+      },
+      {
+        "word": "dopamine",
+        "meaning": "多巴胺"
+      },
+      {
+        "word": "serotonin",
+        "meaning": "血清素"
+      },
+      {
+        "word": "noradrenaline",
+        "meaning": "甲肾上腺素"
+      },
+      {
+        "word": "Starbucks",
+        "meaning": "星巴克"
+      },
+      {
+        "word": "anatomy",
+        "meaning": "解剖结构"
+      },
+      {
+        "word": "prefrontal cortex",
+        "meaning": "前额皮层"
+      },
+      {
+        "word": "susceptible",
+        "meaning": "adj.易受影响的"
+      },
+      {
+        "word": "neurodegenera tive diseases",
+        "meaning": "神经退化疾病"
+      },
+      {
+        "word": "supercharged",
+        "meaning": "adj.超动力的"
+      },
+      {
+        "word": "triathlete",
+        "meaning": "参加三项全能比赛运动员"
+      },
+      {
+        "word": "a thumb",
+        "meaning": "n.拇指"
+      },
+      {
+        "word": "aerobic",
+        "meaning": "adj.需氧的"
+      },
+      {
+        "word": "power-vacuuming",
+        "meaning": "能力范围内"
+      },
+      {
+        "word": "optimum",
+        "meaning": "adj.最优的"
+      },
+      {
+        "word": "at background",
+        "meaning": "n.出身背景"
+      },
+      {
+        "word": "certified",
+        "meaning": "adj.adj.被证明的"
+      },
+      {
+        "word": "trajectory",
+        "meaning": "n.轨道"
+      },
+      {
+        "word": "incurable",
+        "meaning": "adj.不能治愈的"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_06",
+    "folder": "E06.运气对成功有多重要",
+    "audioFile": "audio.m4a",
+    "title_cn": "运气对成功有多重要",
+    "title_jp": "What role does luck play",
+    "speaker": "Barry Schwartz",
+    "paragraphs": [
+      {
+        "jp": "Hello, everybody. I'm honored to be here to talk to you, and what I'm going to talk about today is luck and justice and the relation between them.",
+        "cn": "大家好。 我非常荣幸能跟大家 进行这次谈话。 我今天要谈论的主 题是 幸运和公正, 还有两者之间的联系。"
+      },
+      {
+        "jp": "Some years ago, a former student of mine called me to talk about his daughter. It turns out his daughter was a high school senior, was seriously interested in applying to Swarthmore, where I taught, and he wanted to get my sense of whether she would get in. Swarthmore is an extremely hard school to get into. So I said, \"Well, tell me about her.\" And he told me about her, what her grades were like, her board scores, her extracurricular activities. And she just sounded like a superstar, wonderful, wonderful kid. So I said, \"She sounds fabulous. She sounds like just the kind of student that Swarthmore would love to have.\" And so he said, \"Well, does that mean that she'll get in?\"",
+        "cn": "若干年前, 我曾经的一个学生给我打来电话, 聊起了他的女儿。 他的女儿是一名高三学生, 她对于申请我所任教的 斯沃斯莫尔学 院很感兴趣, 所以他想要从我这里了解 他的女儿是否能进入这所 学院。 因为斯沃斯莫尔学院 是一所非常难进的学校。 所以我说: “好啊, 那简单介绍一下她的情况吧。” 于是他跟我说了 他女儿的 一些情况, 比如她的成绩如何, 标化考试成绩如何, 还有她的课 外活动。 她听起来就像一个超级明星, 一个非常、非常优秀的孩 子。 所以我说:“听起来她很好, 她就像是斯沃斯莫尔学院 非常 想要的 那一类学生。” 接下来他说:“那就意味着 她可以进入这所 学院吗?"
+      },
+      {
+        "jp": "And I said, \"No. There just aren't enough spots in the Swarthmore class for everybody who's good. There aren't enough spots at Harvard or Yale or Princeton or Stanford. There aren't enough spots at Google or Amazon or Apple. There aren't enough spots at the TED Conference. There are an awful lot of good people, and some of them are not going to make it.\" So he said, \"Well, what are we supposed to do?\" And I said, \"That's a very good question.\" “",
+        "cn": "我说:“不是。 即使申请的人都很优秀, 斯沃斯莫尔学院 也没有足 够的名额给他们。 就像哈佛大学、耶鲁大学、普林斯顿大学 或是斯坦 福大学录取的名额有限, 在谷歌或亚马逊 或苹果公司的工作岗位有 限, TED 会议的参会名额也很有限。 这个世界上有 太多太多优秀的 人了, 所以一些人肯定 无法得偿所愿。” 于是他问:“那我们该怎么办 呢?” 我答道:“这是个很好的问题。”"
+      },
+      {
+        "jp": "What are we supposed to do? And I know what colleges and universities have done. In the interest of fairness, what they've done is they've kept ratcheting up the standards because it doesn't seem fair to admit less qualified people and reject better qualified people, so you just keep raising the standards higher and higher until they're high enough that you can admit only the number of students that you can fit.",
+        "cn": "我们该怎么办呢? 我很清楚很多大学和学院 为此所做出的努力。 为 了公平, 大学一直在提高录取要求, 因为录取不够资质的人 而拒绝 更优秀的人 是不公平的。 所以对申请者的标准会越来越高, 直到这 个标准足够高, 只有一定数量的学生 才符合标准。"
+      },
+      {
+        "jp": "And this violates a lot of people's sense of what justice and fairness is. People in American society have different opinions about what it means to say that some sort of process is just, but I think there's one thing that pretty much everyone agrees on, that in a just system, a fair system, people get what they deserve.",
+        "cn": "但这却违反了大多数人 对于正义和公平的理解。 对于某种过程是公正 的意义, 美国人民有不同的理解, 但我认为有一个观念 是差不多人 人都会同意的, 那就是在一个正义和公平的体制下, 人们会得到他们"
+      },
+      {
+        "jp": "And what I was telling my former student is that when it comes to college admissions, it just isn't true that people get what they deserve. Some people get what they deserve, and some people don't, and that's just the way it is.",
+        "cn": "就像我对我的这名学生所说的一样, 当人们面对大学入学申请时, 人们并不一定会美梦成真。 的确有一些人会得偿所愿, 但另一些人 则不会, 现实往往就是这样。"
+      },
+      {
+        "jp": "When you ratchet up requirements as colleges have done, what you do is you create a crazy competition among high school kids, because it's not adequate to be good, it's not adequate to be good enough, you have to be better than everybody else who is also applying. And what this has done, or what this has contributed to, is a kind of epidemic of anxiety and depression that is just crushing our teenagers. We are wrecking a generation with this kind of competition.",
+        "cn": "当那些大学抬高录取标准时, 就会创造一种面对高中学生的 疯狂的 竞争机制, 因为成为优秀的学生还不够, 成为足够优秀的学生也不 够, 你必须比其他所有申请者都要优秀。 这种竞争所带来的, 或者 说它所导致的, 是一种焦虑和抑郁的泛滥, 而这些正在摧毁我们的 青少年。 这种竞争机制正在摧毁 我们下一代的身心健康。"
+      },
+      {
+        "jp": "As I was thinking about this, it occurred to me there's a way to fix this problem. And here's what we could do: when people apply to college, we distinguish between the applicants who are good enough to be successful and the ones who aren't, and we reject the ones who aren't good enough to be successful, and then we take all of the others, and we put their names in a hat, and we just pick them out at random and admit them.",
+        "cn": "在我思考这个问题时, 我想到了一种解决的方法。 我们可以尝试这 样做: 当人们申请大学时, 我们可以将足够优秀、 值得取得成功的 学生 与不够优秀的学生进行区分, 我们拒绝那些不够优秀的学生, 接下来我们将所有 其他学生放到一个候选池中, 从中随机选择 并录 取他们。"
+      },
+      {
+        "jp": "In other words, we do college admissions by lottery, and maybe we do job offers at tech companies by lottery, and -- perish the thought -- maybe we even make decisions about who gets invited to talk at TED by lottery.",
+        "cn": "换句话说,我们通过类似彩票的方式 来进行入学筛选, 或许科技 公司也可以 通过这种彩票方式来雇佣人员, 甚至, 或许我们可以 用彩票的方式来决定 被邀请到 TED 演讲的人选。"
+      },
+      {
+        "jp": "Now, don't misunderstand me, a lottery like this is not going to eliminate the injustice. There will still be plenty of people who don't get what they deserve. But at least it's honest. It reveals the injustice for what it is instead of pretending otherwise, and it punctures the incredible pressure balloon that our high school kids are now living under.",
+        "cn": "请不要误解我的观点, 这种彩票的方式并不会消灭不公平, 仍然 会有很多人 得不到他们应得的。 但至少这个过程是透明的。 它能 够揭露不公平本身, 而不是去伪装公平, 同时也戳破了 悬在我们 的高中生头顶的压力气球。"
+      },
+      {
+        "jp": "So why is it that this perfectly reasonable proposal, if I do say so myself, doesn't get any serious discussion? I think I know why. I think it's that we hate the idea that really important things in life might happen by luck or by chance, that really important things in our lives are not under our control. I hate that idea. It's not surprising that people hate that idea, but it simply is the way things are.",
+        "cn": "那么为什么这个 看似完美的合理提议—— 至少我认为很合理, —— 却没有人对其进行认真的讨论? 我想我知道原因。 我想是因 为, 我们都讨厌这个主意, 那就是生活中真正重要的事 是通过运 气来随机决定的, 这些事情并不在我们的控制范围内。 我个人就 很讨厌这个主意, 如果其他人也讨厌这个主意, 我一点也不惊 讶, 但事情原本就是这样。"
+      },
+      {
+        "jp": "First of all, college admissions already is a lottery. It's just that the admissions officers pretend that it isn't. So let's be honest about it.",
+        "cn": "首先,大学录取系统 本身已经相当于买彩票了。 只是录取委员会 在 假装这不是靠运气。 不如我们都坦诚一些吧。"
+      },
+      {
+        "jp": "And second, I think if we appreciated that it was a lottery, it would also get us to acknowledge the importance of good fortune in almost every one of our lives.",
+        "cn": "其次, 我认为如果我们都能 意识到这靠的是运气, 也能帮我们认识 到 好运对于我们每一个人的重要性。"
+      },
+      {
+        "jp": "Take me. Almost all the most significant events in my life have occurred, to a large degree, as a result of good luck. When I was in seventh grade, my family left New York and went to Westchester County. Right at the beginning of school, I met a lovely young girl who became my friend, then she became my best friend, then she became my girlfriend and then she became my wife. Happily, she's been my wife now for 52 years. I had very little to do with this. This was a lucky accident.",
+        "cn": "拿我自己来举例。 几乎每一件 在我身上发生的重大事情, 在很大程 度上来说, 都是好运气带来的。 当我在七年级时, 我的家庭离开了 纽约 搬去了威彻斯特县。 就在刚开学时, 我遇见了一个可爱的女 生, 我们成为了朋友, 随后她成为了我最好的朋友, 然后她成为了 我的女朋友, 最后又成为了我的妻子。 令人开心的是, 她现在还是 我的妻子, 我们在一起 52 年了。 对此,我并没做什么, 这只是一 个幸运的巧合。"
+      },
+      {
+        "jp": "I went off to college, and in my first semester, I signed up for a class in introduction to psychology.",
+        "cn": "我上了大学, 在第一学期,我报了 一门心理学入门的课程。"
+      },
+      {
+        "jp": "I didn't even know what psychology was, but it fit into my schedule and it met requirements, so I took it. And by luck, the class was taught by a superstar introductory psychology teacher, a legend. Because of that, I became a psychology major.",
+        "cn": "那时的我甚至不知道 心理学是什么, 但这门课程适合我的日程安排, 也满足了我的学位要求, 所以我就选了这门课。 然后非常幸运的, 这门课程是由一名教授 心理学入门课程的传奇老师授课。 正因为如 此, 我成为了一名心理学专业的学生。"
+      },
+      {
+        "jp": "Went off to graduate school. I was finishing up. A friend of mine who taught at Swarthmore decided he didn't want to be a professor anymore, and so he quit to go to medical school. The job that he occupied opened up, I applied for it, I got it, the only job I've ever applied for. I spent 45 years teaching at Swarthmore, an institution that had an enormous impact on the shape that my career took.",
+        "cn": "我后来还去了研究生院。 在研究生快毕业时, 我的一个在斯沃斯莫尔 学院 任教的朋友 决定不再当教授, 所以他辞职并去了医学院。 他的 职位就空缺了, 于是我就申请 并得到了这个职位, 这也是我唯一申 请过的工作。 我在斯沃斯莫尔学院学院 任教了 45 年, 这所机构对我 职业生涯 产生了巨大的影响。"
+      },
+      {
+        "jp": "And to just give one last example, I was giving a talk about some of my work in New York, and there was somebody in the audience who came up to me after my talk. He introduced himself. He said, \"My name is Chris. Would you like to give a talk at TED?\" And my response was, \"What's TED?\" Well, I mean, he told me, and TED then wasn't what it is now. But in the intervening years, the talks I've given at TED have been watched by more than 20 million people.",
+        "cn": "最后再举一个例子, 我曾经在纽约发表过 一些关于我个人研究的演 讲, 在演讲结束后, 观众席中的一个人找到了我。 他介绍了他自 己。 他说:“我叫克里斯。 你愿意来 TED 做一个演讲吗?” 而我的回 答是:“TED是什么?” 然后他向我解释了 TED 是什么, 那时 TED 的 知名度 还远不像现在这样高。 但在随后几年里, 我在 TED 所发表的 演讲 已经被超过 2000 万人观看。"
+      },
+      {
+        "jp": "So the conclusion is, I'm a lucky man. I'm lucky about my marriage. I'm lucky about my education. I'm lucky about my career. And I'm lucky to have had a platform and a voice at something like TED.",
+        "cn": "所以结论就是, 我是一个幸运的男人。 我为自己的婚姻感到幸运。 我为自己所接受的教育感到幸运。 我为自己的职业生涯感到幸运。 我也为有 TED 这样的平台, 为能在此发声感到幸运。"
+      },
+      {
+        "jp": "Did I deserve the success I've had? Sure I deserve that success, just as you probably deserve your success. But lots of people also deserve successes like ours who haven't had it.",
+        "cn": "我值得我现在所拥有的成功吗? 我当然值得获得这些成功, 就像你 或许也值得 你所拥有的成功一样。 但同时也有很多人 本应获得像我 们一样的成功, 然而他们却与其失之交臂。"
+      },
+      {
+        "jp": "So do people get what they deserve? Is society just? Of course not. Working hard and playing by the rules is just no guarantee of anything. If we appreciate the inevitability of this kind of injustice and the centrality of good fortune, we might ask ourselves what responsibilities do we have to the people we are now celebrating as heroes in this time of the pandemic when a serious illness befalls their family to make sure that they remain whole and their lives aren't ruined by the cost of dealing with the illness? What do we owe people who struggle, work hard and are less lucky than we are?",
+        "cn": "所以,人们会得到 他们应得的吗? 这个社会是公平的吗? 当然不 是。 努力工作,按照规则生活 并不能保证任何事情。 如果我们能意 识到这种 不可避免的不公平的存在, 了解到好运所占有的重要地 位, 我们或许可以问自己, 在这场疫情大肆传播的时候, 我们对于 被我们视作英雄的人们 负有什么样的责任—— 当严重的疾病 降临到 他们的家庭时, 我们能否保证他们的身心健康, 他们的正常生活不 会被 高昂的医疗费用击垮吗? 我们亏欠那些正在挣扎的人什么? 我 们亏欠努力工作 却没有我们幸运的人什么?"
+      },
+      {
+        "jp": "About a half century ago, the philosopher John Rawls wrote a book called \"A Theory of Justice,\" and in that book, he introduced a concept that he called \"the veil of ignorance.\" The question he posed was: If you didn't know what your position in society was going to be, what kind of a society would you want to create? And what he suggested is that when we don't know whether we're going to enter society at the top or at the bottom, what we want is a society that is pretty damn equal, so that even the unlucky will be able to live decent, meaningful and satisfying lives.",
+        "cn": "大约在半个世纪前, 哲学家约翰·罗尔斯(John Rawls) 写过一 本书,名为《正义理论》。 在那本书中,他引出了一个概念, 并 将其命名为“无知的面纱”。 他提出的问题是: 如果你不知道将来 在社会中 会处于什么样的地位, 你会想要创造什么样的社会? 他 所建议的是: 当我们不知道 我们在社会上的地位会是在 上层或是 下层时, 我们想要的是 一个非常平等的社会, 所以即使那些不幸 运的人 也可以过着体面、 有意义且美满的生活。"
+      },
+      {
+        "jp": "So bring this back, all of you lucky, successful people, to your communities, and do what you can to make sure that we honor and take care of people who are just as deserving of success as we are, but just not as lucky.",
+        "cn": "所以回归原题, 在座的所有幸运、成功的各位, 请力所能及的去 确保 我们能够尊重并关爱 那些本应和我们一样成功的人, 他们只 是没我们那么幸运而已。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "extremely",
+        "meaning": "adv.极其地"
+      },
+      {
+        "word": "extracurricular activity",
+        "meaning": "课外活动"
+      },
+      {
+        "word": "fabulous",
+        "meaning": "adj.难以置信的"
+      },
+      {
+        "word": "ratcheting",
+        "meaning": "n.棘轮效应"
+      },
+      {
+        "word": "justice and fairness",
+        "meaning": "公平和正义"
+      },
+      {
+        "word": "admission",
+        "meaning": "n.准许进入"
+      },
+      {
+        "word": "crazy competition",
+        "meaning": "疯狂竞争机制"
+      },
+      {
+        "word": "wrecking",
+        "meaning": "n.失事"
+      },
+      {
+        "word": "distinguish",
+        "meaning": "v.辨别"
+      },
+      {
+        "word": "misunderstand",
+        "meaning": "v.误解"
+      },
+      {
+        "word": "injustice",
+        "meaning": "n.不公正"
+      },
+      {
+        "word": "reasonable proposal",
+        "meaning": "合理提议"
+      },
+      {
+        "word": "lottery",
+        "meaning": "n.彩票"
+      },
+      {
+        "word": "acknowledge",
+        "meaning": "v.承认"
+      },
+      {
+        "word": "lucky accident",
+        "meaning": "幸运的巧合"
+      },
+      {
+        "word": "semester",
+        "meaning": "n.学期"
+      },
+      {
+        "word": "psychology",
+        "meaning": "n.心理学"
+      },
+      {
+        "word": "psychology major",
+        "meaning": "心理学专业"
+      },
+      {
+        "word": "enormous",
+        "meaning": "adj.巨大的"
+      },
+      {
+        "word": "conclusion",
+        "meaning": "n.结束;结尾"
+      },
+      {
+        "word": "platform",
+        "meaning": "n.平台"
+      },
+      {
+        "word": "centrality",
+        "meaning": "n.中心"
+      },
+      {
+        "word": "responsibility",
+        "meaning": "n.责任"
+      },
+      {
+        "word": "philosopher",
+        "meaning": "n.哲学家"
+      },
+      {
+        "word": "meaningful",
+        "meaning": "adj.有意义的"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_07",
+    "folder": "E07.再艰难,也要跳出舒适圈",
+    "audioFile": "audio.m4a",
+    "title_cn": "再艰难,也要跳出舒适圈",
+    "title_jp": "Living beyond limits",
+    "speaker": "Amy Purdy",
+    "paragraphs": [
+      {
+        "jp": "If your life were a book and you were the author, how would you want your story to go? That's the question that changed my life forever. Growing up in the hot Last Vegas desert, all I wanted was to be free. I would daydream about traveling the world, living in a place where it snowed, and I would picture all of the stories that I would go on to tell.",
+        "cn": "如果你的人生是一本书,你是书的作者,你会怎么写你的故事? 这个 问题永远改变了我的一生。生长在拉斯维加斯的炎热沙漠,我一直向 往自由,我做着白日梦,梦想周游世界。住在能看见雪的地方,编我 想讲述的所有故事。"
+      },
+      {
+        "jp": "At the age of 19, the day after I graduated high school, I moved to a place where it snowed and I became a massage therapist. With this job all I needed were my hands and my massage table by my side and I could go anywhere. For the first time in my life, I felt free, independent and completely in control of my life. That is, until my life took a detour. I went home from work early one day with what I thought was the flu, and less than 24 hours later I was in the hospital on life support with less than a two percent chance of living. It wasn't until days later as I lay in a coma that the doctors diagnosed me with bacterial meningitis, a vaccine-preventable blood infection. 19",
+        "cn": "岁那年,在我从高中毕业后,我搬到了能见到雪的地方,我成为一 名按摩师。这份工作只需要双手,以及身边的按摩桌,而且我可以去 任何地方。有生以来头一次我感到自由、独立、对生活充满把握,直 到人生出现了一个转折。一天我下班比往常早,以为自己得了流感。 24小时不到,我就进了医院,生命垂危,只有2%的存活几率。之后的 几天,我陷入昏迷。医生诊断我得了细菌性脑膜炎,疫苗可预防性血 液感染。"
+      },
+      {
+        "jp": "Over the course of two and a half months I lost my spleen, my kidneys, the hearing in my left ear and both of my legs below the knee. When my parents wheeled me out of the hospital I felt like I had been pieced back together like a patchwork doll. I thought the worst was over until weeks later when I saw my new legs for the first time. The calves were bulky blocks of metal with pipes bolted together for the ankles and a yellow rubber foot with a raised rubber line from the toe to the ankle to look like a vein. I didn't know what to expect, but I wasn't expecting that.",
+        "cn": "在为期两个半月的治疗中,我切除了脾和肾,左耳失聪,膝盖以下截 肢。当父母把我推出医院时,我感到自己被重新拼凑起来,像一个拼 布娃娃。我以为最惨的事已完结,直到我第一次见到自己的新腿。小 腿是笨重的金属块,脚踝用管子和螺丝固定,外加黄色的橡胶脚,突 起的橡胶线从脚趾延伸到脚踝。为了使它们看起来像血管,我不知道 我想要的结果是什么,但绝不会是这个。"
+      },
+      {
+        "jp": "With my mom by my side and tears streaming down our faces, I strapped on these chunky legs and I stood up. They were so painful and so confining that all I could think was, how am I ever going to travel the world in these things? How was I ever going to live the life full of adventure and stories, as I always wanted? And how was I going to snowboard again? That day, I went home, I crawled into bed and this is what my life looked like for the next few months: me passed out, escaping from reality, with my legs resting by my side. I was absolutely physically and emotionally broken.",
+        "cn": "妈妈站在我旁边,两个人泪水肆意。我绑上这两条粗短腿,然后站起 来,它们让我感到十分痛苦,并且充满限制,我脑子里只有一个想 法: 用这些破玩意我怎么能周游世界? 我如何才能过我 一直想要的 异彩纷呈的生活? 我如何才能再玩单板滑雪? 那天,我回到家,爬上 床,这是我接下来几个月的生活状态: 我躺在床上, 淡出生活,逃离现 实。我的腿放在床边,我在生理上和心理上完全崩溃了。"
+      },
+      {
+        "jp": "But I knew that in order to move forward, I had to let go of the old Amy and learn to embrace the new Amy. And that is when it dawned on me that I didn't have to be five-foot-five anymore. I could be as tall as I wanted! Or as short as I wanted, depending on who I was dating. And if I snowboarded again, my feet aren't going to get cold. And best of all, I thought, I can make my feet the size of all the shoes that are on the sales rack. And I did! So there were benefits here.",
+        "cn": "但是我知道为了向前走,我必须放开过去的艾米,学着接受新的艾 米。那时我突然想到我再也不只有5.5英尺高了,我可以想多高有多 高,或者想多矮有多矮,这得看我和谁约会。如果我再玩单板滑雪脚 再也不会冷。我觉得最棒的是,我可以调整脚的大小来适合货架上任 何尺码的鞋子。我真那么干了! 所以这还是有些好处的。"
+      },
+      {
+        "jp": "It was this moment that I asked myself that life-defining question: If my life were a book and I were the author, how would I want the story to go? And I began to daydream. I daydreamed like I did as a little girl and I imagined myself walking gracefully, helping other people through my journey and snowboarding again. And I didn't just see myself carving down a mountain of powder, I could actually feel it. I could feel the wind against my face and the beat of my racing heart as if it were happening in that very moment. And that is when a new chapter in my life began.",
+        "cn": "那一刻我问了自己一个决定人生走向的问题,如果人生是一本书,而 我是作者,我会怎么写这个故事? 我开始做白日梦,想小时候那样做 梦,我想象自己优雅地前行,在路途中帮助别人,再次玩单板滑雪。 我并不是仅仅看到自己从山上滑下来,我可以真切感受到那个场景。 我可以感受到风扑面而来,感受到心脏的韵律,如同那一刻正在真实 发生。"
+      },
+      {
+        "jp": "Four months later I was back up on a snowboard, although things didn't go quite as expected: My knees and my ankles wouldn't bend and at one point I traumatized all the skiers on the chair lift when I fell and my legs, still attached to my snowboard —— went flying down the mountain, and I was on top of the mountain still. I was so shocked, I was just as shocked as everybody else, and I was so discouraged, but I knew that if I could find the right pair of feet that I would be able to do this again. And this is when I learned that our borders and our obstacles can only do two things: one, stop us in our tracks or two, force us to get creative.",
+        "cn": "那就是我开启人生新篇章的时刻 4个月之后,我重拾单板滑雪。虽然事 情并不像我期待的那样,我的膝盖和脚踝无法弯曲,在某一点上我吓坏 了升降椅上所有的滑雪者。就是当我摔倒时, 我的腿还连着滑板。它们 一起飞落到山脚 而我依然在山顶 。我被惊到了,同其他人一样,我惊 呆了,而且很失落。但是我知道,如果我找到了两条合适的腿,我完全 可以成功。这时,我明白了艰难险阻只能做两件事: 一是将我们困在原 来的轨道;二是迫使我们充满创造力。"
+      },
+      {
+        "jp": "I did a year of research, still couldn't figure out what kind of legs to use, couldn't find any resources that could help me. So I decided to make a pair myself. My leg maker and I put random parts together and we made a pair of feet that I could snowboard in. As you can see, rusted bolts, rubber, wood and neon pink duct tape. And yes, I can change my toenail polish. It was these legs and the best 21st birthday gift I could ever receive — a new kidney from my dad — that allowed me to follow my dreams again. I started snowboarding, then I went back to work, then I went back to school.",
+        "cn": "我研究了一年仍然不知道用什么样的腿,也找不到任何有用的资源。于 是我决定自己做一副假腿。我和制作者把各种部件拼在一起,做了两条 可以玩滑板的腿。你可以看到 生锈的螺栓、橡胶、木头和荧光粉胶带。 没错,我可以换指甲颜色,这双假腿以及我21岁生日收到的最好礼物 ————我爸爸的一个肾,让我再次追逐梦想。我开始玩单板滑雪,我 重新工作,并回到学校。"
+      },
+      {
+        "jp": "Then in 2005 I cofounded a nonprofit organization for youth and young adults with physical disabilities so they could get involved with action sports. From there, I had the opportunity to go to South Africa, where I helped to put shoes on thousands of children's feet so they could attend school.And just this past February, I won two back-to-back World Cup gold medals which made me the highest ranked adaptive female snowboarder in the world. 2005",
+        "cn": "年我创办了一个非盈利组织,用来救助身体残疾的年轻人,使他们 能再次参加体育运动。从那时起,我有机会前往南非,给千百儿童带来 鞋子,这样他们就可以去上学。在刚刚过去的二月,我相继取得两块世 界金牌 ——这使我成为世界上最高级别的残疾人女子单板滑雪运动员。"
+      },
+      {
+        "jp": "Eleven years ago, when I lost my legs, I had no idea what to expect. But if you ask me today, if I would ever want to change my situation, I would have to say no. Because my legs haven't disabled me, if anything they've enabled me. They've forced me to rely on my imagination and to believe in the possibilities, and that's why I believe that our imaginations can be used as tools for breaking through borders, because in our minds, we can do anything and we can be anything. 11",
+        "cn": "年前,当我失去腿时,我不知道该期盼什么。但是如果你现在问我是 否愿意换个人生,我会回答不。因为我的双腿并没有阻碍我,如果说它 们给我带来了什么,那就是它们让我依靠想象力,让我相信一切皆有可 能。这就是为什么我相信想象可以成为工具,用来冲破障碍。因为在脑 子里,我们可以做任何事,可以成为任何人。"
+      },
+      {
+        "jp": "It's believing in those dreams and facing our fears head-on that allows us to live our lives beyond our limits. And although today is about innovation without borders, I have to say that in my life, innovation has only been possible because of my borders.",
+        "cn": "相信梦想,直面恐惧,能够让我们的生活超出局限。虽然今天在讲无边 界创新,但我不得不说,在我的生命里是我自身的种种局限让不可能变 成可能。"
+      },
+      {
+        "jp": "I've learned that borders are where the actual ends, but also where the imagination and the story begins.",
+        "cn": "我知道这些局限才是现实结束,想象产生,故事开始的地方。"
+      },
+      {
+        "jp": "So the thought that I would like to challenge you with today is that maybe instead of looking at our challenges and our limitations as something negative or bad, we can begin to look at them as blessings, magnificent gifts that can be used to ignite our imaginations and help us go further than we ever knew we could go. It's not about breaking down borders it’s about pushing off of them and seeing what amazing places they might bring us.",
+        "cn": "所以,今天我想让你们挑战的是与其把挑战、局限看做不利或者坏 事,我们可以把它们看做恩惠,可以点亮想象的神奇礼物,能帮助我 们走得更远,远到我们从未想过。这不是要打破局限,而是把局限推 得更广,然后看看它们能把我们带到 怎样美好的地方。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "daydream",
+        "meaning": "n.白日梦"
+      },
+      {
+        "word": "therapist",
+        "meaning": "n.治疗专家"
+      },
+      {
+        "word": "detour",
+        "meaning": "n.绕行v.绕道"
+      },
+      {
+        "word": "bacterial meningitis",
+        "meaning": "细菌性脑膜炎"
+      },
+      {
+        "word": "vaccine-preventable",
+        "meaning": "疫苗可预防性1"
+      },
+      {
+        "word": "spleen",
+        "meaning": "n.脾"
+      },
+      {
+        "word": "kidneys",
+        "meaning": "n.肾"
+      },
+      {
+        "word": "patchwork",
+        "meaning": "n.拼布工艺"
+      },
+      {
+        "word": "ankles",
+        "meaning": "n.脚踝"
+      },
+      {
+        "word": "strap on",
+        "meaning": "绑住"
+      },
+      {
+        "word": "chunky",
+        "meaning": "adj.矮胖的"
+      },
+      {
+        "word": "snowboard",
+        "meaning": "n.滑雪板"
+      },
+      {
+        "word": "gracefully",
+        "meaning": "adv.优雅地"
+      },
+      {
+        "word": "chapter",
+        "meaning": "n.章;回"
+      },
+      {
+        "word": "traumatize",
+        "meaning": "v.使...受损伤"
+      },
+      {
+        "word": "obstacle",
+        "meaning": "n.障碍"
+      },
+      {
+        "word": "random",
+        "meaning": "adj.随机的"
+      },
+      {
+        "word": "rusted bolts",
+        "meaning": "生锈的螺栓"
+      },
+      {
+        "word": "rubber",
+        "meaning": "n.橡胶"
+      },
+      {
+        "word": "nonprofit",
+        "meaning": "adj.非盈利的"
+      },
+      {
+        "word": "thousands of",
+        "meaning": "许多;数以千计的"
+      },
+      {
+        "word": "adaptive",
+        "meaning": "adj.适应的"
+      },
+      {
+        "word": "innovation",
+        "meaning": "n.创新1"
+      },
+      {
+        "word": "limitation",
+        "meaning": "n.限制"
+      },
+      {
+        "word": "magnificent",
+        "meaning": "adj.宏伟的"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_08",
+    "folder": "E08.如何才能幸福",
+    "audioFile": "audio.m4a",
+    "title_cn": "如何才能幸福",
+    "title_jp": "What makes happy life?",
+    "speaker": "Robert Waldinger",
+    "paragraphs": [
+      {
+        "jp": "What keeps us healthy and happy as we go through life? If you were going to invest now in your future best self, where would you put your time and your energy? There was a recent survey of millennials asking them what their most important life goals were, and over 80 percent said that a major life goal for them was to get rich. And another 50 percent of those same young adults said that another major life goal was to become famous.",
+        "cn": "在我们的人生中是什么让我们保持健康且幸福呢? 如果现在你可以 为 未来的自己投资,你会把时间和精力投资在哪里呢? 最近在千禧一代 中有这么一个调查,问他们生活中最重要的目标是什么,超过80%的人 说最大的生活目标就是要有钱,还有50%的年轻人说,另一个重要的生 活目标 就是要出名。"
+      },
+      {
+        "jp": "And we're constantly told to lean in to work, to push harder and achieve more. We're given the impression that these are the things that we need to go after in order to have a good life. Pictures of entire lives, of the choices that people make and how those choices work out for them, those pictures are almost impossible to get. Most of what we know about human life we know from asking people to remember the past, and as we know, hindsight is anything but 20/20. We forget vast amounts of what happens to us in life, and sometimes memory is downright creative.",
+        "cn": "而且我们总是被灌输 要投入工作,要加倍努力 要成就更多。 我们被灌 输了这样一种观念, 只有做到刚才说的这些 才能有好日子过。 要人们 纵观整个人生, 想象各种选择, 以及这些选择最终导致的结果, 几乎 是不可能的。 关于人的一生,我们能了解到的, 大部分都是通过人的 回忆得来, 但众所周知,大部分都是事后诸葛。 一生中,我们会忘记 很多发生过的事情, 而且记忆常常不可靠。"
+      },
+      {
+        "jp": "But what if we could watch entire lives as they unfold through time? What if we could study people from the time that they were teenagers all the way into old age to see what really keeps people happy and healthy?",
+        "cn": "但如果我们可以从头到尾地 纵观人的一生呢? 如果我们可以跟踪研究 一个人, 从他少年时代开始 一直到他步入晚年, 看看究竟是什么让人 们 保持快乐和健康呢?"
+      },
+      {
+        "jp": "We did that. The Harvard Study of Adult Development may be the longest study of adult life that's ever been done. For 75 years, we've tracked the lives of 724 men, year after year, asking about their work, their home lives, their health, and of course asking all along the way without knowing how their life stories were going to turn out.",
+        "cn": "我们做到了。 哈佛大学(进行的)这项 关于成人发展的研究, 可能是 同类研究中耗时最长的。 在75年时间里, 我们跟踪了724个人的一生, 年复一年,了解他们的工作、 家庭生活、健康状况, 当然,在这一过 程中, 我们完全不知道他们的人生 将走向何方。"
+      },
+      {
+        "jp": "Studies like this are exceedingly rare. Almost all projects of this kind fall apart within a decade because too many people drop out of the study, or funding for the research dries up, or the researchers get distracted, or they die, and nobody moves the ball further down the field. But through a combination of luck and the persistence of several generations of researchers, this study has survived. About 60 of our original 724 men are still alive, still participating in the study, most of them in their 90s.",
+        "cn": "像这样的研究少之又少。 像这样的项目几乎都会在10年内终止, 因为 有许多人会中途退出, 或者是研究资金不足, 或者是研究者转换方 向, 或者去世,然后项目无人接手。 但感谢幸运女神的眷顾 和几代研 究人员的坚持不懈, 这个项目存活下来了。 目前这724人中 仍有60人 在世, 仍然在参与研究 大多数人已经90多岁了。"
+      },
+      {
+        "jp": "And we are now beginning to study the more than 2,000 children of these men. And I'm the fourth director of the study. Since 1938, we've tracked the lives of two groups of men. The first group started in the study when they were sophomores at Harvard College. They all finished college during World War II, and then most went off to serve in the war. And the second group that we've followed was a group of boys from Boston's poorest neighborhoods, boys who were chosen for the study specifically because they were from some of the most troubled and disadvantaged families in the Boston of the 1930s. Most lived in tenements, many without hot and cold running water.",
+        "cn": "现在我们已经开始研究 他们的子孙后代, 人数多达2000多人。 我是这 个项目的第四任负责人。从1938年起,我们 开始跟踪两组人的生活。 第 一组加入这个项目的人, 当年在哈佛大学上大二。 他们在二战期间大学 毕业, 大部分人都参军作战了。 我们追踪的第二组人 是一群来自波士 顿贫民区的小男孩, 他们之所以被选中, 主要是因为他们来自 20世纪 30年代波士顿 最困难 最贫困的家庭。 大部分住在廉价公寓里, 很多都 没有冷热水供应。"
+      },
+      {
+        "jp": "When they entered the study, all of these teenagers were interviewed. They were given medical exams. We went to their homes and we interviewed their parents. And then these teenagers grew up into adults who entered all walks of life. They became factory workers and lawyers and bricklayers and doctors, one President of the United States. Some developed alcoholism. A few developed schizophrenia. Some climbed the social ladder from the bottom all the way to the very top, and some made that journey in the opposite direction.",
+        "cn": "在加入这个项目时, 这些年轻人都接受了面试。 接受了身体检查。 我 们挨家挨户走访了他们的父母。 然后这些年轻人长大成人, 进入到社会 各个阶层。 成为了工人、律师、砖匠、医生, 还有一位成了美国总统。 有人成为酒鬼,有人患了精神分裂。 有人从社会最底层 一路青云直上, 也有人恰相反,掉落云端。"
+      },
+      {
+        "jp": "The founders of this study would never in their wildest dreams have imagined that I would be standing here today, 75 years later, telling you that the study still continues. Every two years, our patient and dedicated research staff calls up our men and asks them if we can send them yet one more set of questions about their lives.",
+        "cn": "这个项目的创始人们, 可能做梦都不会想到 75年后的今天,我会站在 这里, 告诉你们这个项目还在继续。 每两年,我们耐心而专注的研究 人员 会打电话给我们的研究对象, 问他们是否愿意 再做一套关于他们 生活的问卷。"
+      },
+      {
+        "jp": "Many of the inner city Boston men ask us, \"Why do you keep wanting to study me? My life just isn't that interesting.\" The Harvard men never ask that question.",
+        "cn": "那些来自波士顿的人问我们, “为什么你们一直想研究我? 我的生活是 很无趣的。” 但哈佛的人从没这样问过。"
+      },
+      {
+        "jp": "To get the clearest picture of these lives, we don't just send them questionnaires. We interview them in their living rooms. We get their medical records from their doctors. We draw their blood, we scan their brains, we talk to their children. We videotape them talking with their wives about their deepest concerns. And when, about a decade ago, we finally asked the wives if they would join us as members of the study, many of the women said, \"You know, it's about time.\"",
+        "cn": "为了更好地了解这些人的生活, 我们不光给他们发问卷。 我们还在他 们家客厅采访他们。 从他们医生那儿拿病历。 抽他们的血,扫描他们 的大脑, 跟他们的孩子聊天。 我们拍摄下他们和妻子谈话的场景, 聊 的都是他们最关心的问题。 大约在10年前,我们 终于开又问他们的妻 子, 是否愿意加入我们的研究, 很多女士都说,“是啊, 终于轮到我们 了。”"
+      },
+      {
+        "jp": "So what have we learned? What are the lessons that come from the tens of thousands of pages of information that we've generated on these lives? Well, the lessons aren't about wealth or fame or working harder and harder. The clearest message that we get from this 75-year study is this: Good relationships keep us happier and healthier. Period.",
+        "cn": "那么我们得到了什么结论呢? 那长达几万页的数据记录, 记录了他们 的生活, 我们从这些记录中间, 到底学到了什么? 不是关于财富、名 望, 或更加努力工作。 从75年的研究中, 我们得到的最明确的结论 是: 良好的人际关系能 让人更加快乐和健康。就这样。"
+      },
+      {
+        "jp": "We've learned three big lessons about relationships. The first is that social connections are really good for us, and that loneliness kills. It turns out that people who are more socially connected to family, to friends, to community, are happier, they're physically healthier, and they live longer than people who are less well connected. And the experience of loneliness turns out to be toxic. People who are more isolated than they want to be from others find that they are less happy, their health declines earlier in midlife, their brain functioning declines sooner and they live shorter lives than people who are not lonely. And the sad fact is that at any given time, more than one in five Americans will report that they're lonely.",
+        "cn": "关于人际关系,我们得到三大结论。 第一,社会关系对我们是有益的, 而孤独寂寞有害健康。 我们发现,那些跟家庭成员更亲近的人, 更爱 与朋友、与邻居交往的人, 会比那些不善交际、离群索居的人, 更快 乐,更健康,更长寿。 孤独寂寞是有害健康的。 那些“被孤立”的人, 跟不孤单的人相比, 往往更加不快乐, 等他们人到中年时,健康状况 下降更快, 大脑功能下降得更快, 也没那么长寿。 可惜的是,长久以 来, 每5个美国人中就至少 有1个声称自己是孤独的。"
+      },
+      {
+        "jp": "And we know that you can be lonely in a crowd and you can be lonely in a marriage, so the second big lesson that we learned is that it's not just the number of friends you have, and it's not whether or not you're in a committed relationship, but it's the quality of your close relationships that matters. It turns out that living in the midst of conflict is really bad for our health. High- conflict marriages, for example, without much affection, turn out to be very bad for our health, perhaps worse than getting divorced. And living in the midst of good, warm relationships is protective.",
+        "cn": "而且即便你身在人群中, 甚至已经结婚了, 你还是可能感到孤独, 因 此我们得到的第二大结论是 不是你有多少朋友, 也不是你身边有没有伴 侣, 真正有影响的是这些关系的质量。 整天吵吵闹闹,对健康是有害 的。 比如成天吵架,没有爱的婚姻, 对健康的影响或许比离婚还大。 而关系和睦融洽, 则对我们的健康有益。"
+      },
+      {
+        "jp": "Once we had followed our men all the way into their 80s, we wanted to look back at them at midlife and to see if we could predict who was going to grow into a happy, healthy octogenarian and who wasn't. And when we gathered together everything we knew about them at age 50, it wasn't their middle age cholesterol levels that predicted how they were going to grow old. It was how satisfied they were in their relationships. The people who were the most satisfied in their relationships at age 50 were the healthiest at age 80. And good, close relationships seem to buffer us from some of the slings and arrows of getting old.",
+        "cn": "当我们的研究对象步入80岁时, 我们会回顾他们的中年生活 看我们能否 预测 哪些人会在八九十岁时过得快乐健康 哪些人不会。 我们把他们50岁 时的所有信息 进行汇总分析, 发现决定他们将如何老去的, 并不是他 们中年时的胆固醇水平。 而是他们对婚姻生活的满意度。 那些在50岁时 满意度最高的人, 在80岁时也是最健康的。 另外,良好和亲密的婚姻关 系 能减缓衰老带来的痛苦。"
+      },
+      {
+        "jp": "Our most happily partnered men and women reported, in their 80s, that on the days when they had more physical pain, their mood stayed just as happy.",
+        "cn": "参与者中那些最幸福的夫妻告诉我们, 在他们80多岁时, 哪怕身体出现 各种毛病, 他们依旧觉得日子很幸福。"
+      },
+      {
+        "jp": "But the people who were in unhappy relationships, on the days when they reported more physical pain, it was magnified by more emotional pain. And the third big lesson that we learned about relationships and our health is that good relationships don't just protect our bodies, they protect our brains.",
+        "cn": "关于婚姻和健康的关系, 我们得到的第三大结论是, 幸福的婚姻不单 能保护我们的身体, 还能保护我们的大脑。而那些婚姻不快乐的人, 身体上会出现更多不适, 因为坏情绪把身体的痛苦放大了。"
+      },
+      {
+        "jp": "It turns out that being in a securely attached relationship to another person in your 80s is protective, that the people who are in relationships where they really feel they can count on the other person in times of need, those people's memories stay sharper longer. And the people in relationships where they feel they really can't count on the other one, those are the people who experience earlier memory decline. And those good relationships, they don't have to be smooth all the time. Some of our octogenarian couples could bicker with each other day in and day out, but as long as they felt that they could really count on the other when the going got tough, those arguments didn't take a toll on their memories.",
+        "cn": "研究发现,如果在80多岁时, 你的婚姻生活还温暖和睦, 你对自己的另 一半 依然信任有加, 知道对方在关键时刻能指望得上, 那么你的记忆 力都不容易衰退。 而反过来, 那些觉得无法信任 自己的另一半的人, 记忆力会更早表现出衰退。 幸福的婚姻,并不意味着从不拌嘴。 有些 夫妻,八九十岁了, 还天天斗嘴, 但只要他们坚信,在关键时刻, 对 方能靠得住, 那这些争吵顶多只是生活的调味剂。"
+      },
+      {
+        "jp": "So this message, that good, close relationships are good for our health and well-being, this is wisdom that's as old as the hills. Why is this so hard to get and so easy to ignore? Well, we're human. What we'd really like is a quick fix, something we can get that'll make our lives good and keep them that way. Relationships are messy and they're complicated and the hard work of tending to family and friends, it's not sexy or glamorous. It's also lifelong. It never ends. The people in our 75-year study who were the happiest in retirement were the people who had actively worked to replace workmates with new playmates. Just like the millennials in that recent survey, many of our men when they were starting out as young adults really believed that fame and wealth and high achievement were what they needed to go after to have a good life. But over and over, over these 75 years, our study has shown that the people who fared the best were the people who leaned in to relationships, with family, with friends, with community.",
+        "cn": "所以请记住, 幸福和睦的婚姻对健康是有利的, 这是永恒的真理。 但 为什么我们总是办不到呢? 因为我们是人类。 我们总喜欢找捷径, 总 想一劳永逸, 找到一种方法,解决所有问题。 人际关系麻烦又复杂, 与家人、朋友相处需要努力付出, 一点也不高大上。 而且需要一辈子投 入,无穷无尽。 在我们长达75年的研究中, 那些最享受退休生活的人, 是那些主动用玩伴 来替代工作伙伴的人。 就像开头我说过的千禧一代一 样, 我们跟踪研究的很多人 在年轻的时候 坚信名望、财富和成就 是他 们过上好日子的保证。 但在75年的时间里, 我们的研究一次次地证明, 日子过得最好的, 是那些主动与人交往的人, 与家人、朋友或者邻居。"
+      },
+      {
+        "jp": "So what about you? Let's say you're 25, or you're 40, or you're 60. What might leaning in to relationships even look like?",
+        "cn": "那么你们呢? 也许你现在25岁, 或者40岁,或者60岁。 怎样才算主动与 人交往呢?"
+      },
+      {
+        "jp": "Well, the possibilities are practically endless. It might be something as simple as replacing screen time with people time or livening up a stale relationship by doing something new together, long walks or date nights, or reaching out to that family member who you haven't spoken to in years, because those all-too-common family feuds take a terrible toll on the people who hold the grudges.",
+        "cn": "嗯,我想有很多种方法吧。 最简单的,别再跟屏幕聊天了, 去跟人聊 天, 或者一起尝试些新事物, 让关系恢复活力, 一起散个步呀,晚上约 个会呀, 或者给多年未曾联系的亲戚打个电话, 因为这种家庭不和睦太 常见了, 但它带来的伤害又很大, 尤其对那些喜欢 生闷气的人来说更是 如此。"
+      },
+      {
+        "jp": "I'd like to close with a quote from Mark Twain. More than a century ago, he was looking back on his life, and he wrote this: \"There isn't time, so brief is life, for bickerings, apologies, heartburnings, callings to account. There is only time for loving, and but an instant, so to speak, for that.\"",
+        "cn": "我想引用马克•吐温的一段话来作为结束。 一个多世纪前, 他回首自己的 人生, 写下这样一段话: “时光荏苒,生命短暂, 别将时间浪费在 争 吵、道歉、伤心和责备上。 用时间去爱吧, 哪怕只有一瞬间,也不要辜 负。”"
+      },
+      {
+        "jp": "The good life is built with good relationships.",
+        "cn": "美好人生,从良好的人际关系开始。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "millennial",
+        "meaning": "n.千禧一代"
+      },
+      {
+        "word": "constantly",
+        "meaning": "adv.不断地"
+      },
+      {
+        "word": "hindsight",
+        "meaning": "n.盲视"
+      },
+      {
+        "word": "downright",
+        "meaning": "adj.彻头彻尾的;十足的"
+      },
+      {
+        "word": "unfold",
+        "meaning": "v.打开;呈现"
+      },
+      {
+        "word": "exceedingly",
+        "meaning": "adv.非常;极其"
+      },
+      {
+        "word": "combination",
+        "meaning": "n.结合体;联合"
+      },
+      {
+        "word": "participate",
+        "meaning": "v.参加;参与"
+      },
+      {
+        "word": "sophomore",
+        "meaning": "n.二年级学生"
+      },
+      {
+        "word": "specifically",
+        "meaning": "adv.特意;专门地"
+      },
+      {
+        "word": "disadvantaged",
+        "meaning": "adj.贫困的"
+      },
+      {
+        "word": "bricklayer",
+        "meaning": "n.砖匠"
+      },
+      {
+        "word": "schizophrenia",
+        "meaning": "n.精神分裂症"
+      },
+      {
+        "word": "questionnaires",
+        "meaning": "n.问卷"
+      },
+      {
+        "word": "videotape",
+        "meaning": "v.将...录到录像带"
+      },
+      {
+        "word": "physically",
+        "meaning": "adj.身体上的"
+      },
+      {
+        "word": "committed",
+        "meaning": "n.忠诚的"
+      },
+      {
+        "word": "midlife",
+        "meaning": "n.中年"
+      },
+      {
+        "word": "octogenarian",
+        "meaning": "n.80到89岁的人"
+      },
+      {
+        "word": "gather",
+        "meaning": "v.聚集"
+      },
+      {
+        "word": "slings",
+        "meaning": "n.吊物机"
+      },
+      {
+        "word": "magnified",
+        "meaning": "adj.放大的"
+      },
+      {
+        "word": "argument",
+        "meaning": "n.争论"
+      },
+      {
+        "word": "complicated",
+        "meaning": "adj.复杂的"
+      },
+      {
+        "word": "glamorous",
+        "meaning": "adj.迷人的"
+      },
+      {
+        "word": "bickering",
+        "meaning": "n.争吵"
+      },
+      {
+        "word": "heartburning",
+        "meaning": "n.心跳;情感"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_09",
+    "folder": "E09.怎样说话人们才爱听",
+    "audioFile": "audio.m4a",
+    "title_cn": "怎样说话人们才爱听",
+    "title_jp": "How to speak so that people want to listen",
+    "speaker": "Julain Treasure",
+    "paragraphs": [
+      {
+        "jp": "The human voice: It's the instrument we all play. It's the most powerful sound in the world, probably. It's the only one that can start a war or say \"I love you.\" And yet many people have the experience that when they speak, people don't listen to them. And why is that? How can we speak powerfully to make change in the world?",
+        "cn": "人类的声音: 是我们所有人都弹奏的乐器。 可能是这个世界上最有力 的声音。 它绝无仅有,或能引起战争, 或能说“我爱你”。 然而,很多 人有这种经历, 当他们说的时候,人们并不在听。 这是为什么呢? 我们怎样有力地说 而让世界发生某种改变?"
+      },
+      {
+        "jp": "What I'd like to suggest, there are a number of habits that we need to move away from. I've assembled for your pleasure here seven deadly sins of speaking. I'm not pretending this is an exhaustive list, but these seven, I think, are pretty large habits that we can all fall into.",
+        "cn": "我所提议的是, 我们需要改变一些习惯。 在此我为你们收集整理了, 说话的七宗罪。 我没打算假装这是一个详细的列表, 但这七个,我以 为是 我们相当容易犯的坏习惯。"
+      },
+      {
+        "jp": "First, gossip. Speaking ill of somebody who's not present. Not a nice habit, and we know perfectly well the person gossiping, five minutes later, will be gossiping about us.",
+        "cn": "第一就是,流言蜚语, 在背后说某些人的坏话。 这不是一个好习惯, 我们都很明白 那个说闲话的人在五分钟以后 就会在别人跟前说我们的 闲话。"
+      },
+      {
+        "jp": "Second, judging. We know people who are like this in conversation, and it's very hard to listen to somebody if you know that you're being judged and found wanting at the same time.",
+        "cn": "第二,评判。 我们知道有些人在谈话中是这样的, 这让人很难听进别 人的话, 如果你知道你被人评判 且被认为不合格。"
+      },
+      {
+        "jp": "Third, negativity. You can fall into this. My mother, in the last years of her life, became very negative, and it's hard to listen. I remember one day, I said to her, \"It's October 1 today,\" and she said, \"I know, isn't it dreadful?\" It's hard to listen when somebody's that negative.",
+        "cn": "第三,消极。 你能陷入这个泥潭。 我的母亲,在她生命的最后几年 里, 变得非常非常消极,很难让人听她说话。 我记得有一天,我对她 说, “今天是十月一号,” 她说,“我知道,这不可怕吗?” 当某人那么 消极的时候是很难让人听进去的。"
+      },
+      {
+        "jp": "And another form of negativity, complaining. Well, this is the national art of the U.K. It's our national sport. We complain about the weather, sport, about politics, about everything, but actually, complaining is viral misery. It's not spreading sunshine and lightness in the world.",
+        "cn": "另外一种消极,就是抱怨。 这是英国的全国性艺术。 是我们的全国性 运动。我们抱怨天气, 体育和政治,几乎每件事, 但实际上抱怨是病 毒性的悲催, 它不会在这个世界上传播太阳和光明。"
+      },
+      {
+        "jp": "We've all met this guy. Maybe we've all been this guy. Some people have a blamethrower. They just pass it on to everybody else and don't take responsibility for their actions, and again, hard to listen to somebody who is being like that.",
+        "cn": "我们都遇上过这个家伙。 也许我们都曾经是这个家伙。 有些人有指责 癖好。 他们怪罪任何人 而不是对自己的行为负责任, 所以,这又是 让人难以聆听的一种。"
+      },
+      {
+        "jp": "Penultimate, the sixth of the seven, embroidery, exaggeration. It demeans our language, actually, sometimes. For example, if I see something that really is awesome, what do I call it?",
+        "cn": "七件里面的老六,倒数第二, 浮夸,吹牛。 它有时贬低了我们的语 言,事实上。 比如,如果我看见 什么真的很神奇的事情, 那我该说 什么呢?"
+      },
+      {
+        "jp": "And then, of course, this exaggeration becomes lying, and we don't want to listen to people we know are lying to us. And finally, dogmatism. The confusion of facts with opinions. When those two things get conflated, you're listening into the wind. You know, somebody is bombarding you with their opinions as if they were true. It's difficult to listen to that.",
+        "cn": "当然这种夸大后来就变成了说谎。 彻头彻尾的说谎,我们就不想听 这种我们知道会说谎的人。最后是,固执己见, 把事实和意见混 淆。 当这两件事混为一谈, 你就像在听风一样。 你知道,有人用他 们自己的意见来强迫你。 这很难让我们听讲。"
+      },
+      {
+        "jp": "So here they are, seven deadly sins of speaking. These are things I think we need to avoid. But is there a positive way to think about this? Yes, there is. I'd like to suggest that there are four really powerful cornerstones, foundations, that we can stand on if we want our speech to be powerful and to make change in the world. Fortunately, these things spell a word. The word is \"hail,\" and it has a great definition as well. I'm not talking about the stuff that falls from the sky and hits you on the head.",
+        "cn": "这就是说话的七宗罪。 我认为这些是我们需要避免的。 但有没有比 较正面的呢? 的确有。 我想建议四种我们可以牢靠站立的 真正强有 力的基石或者基础, 如果我们想让我们的言语有力 并且让世界产生 变化。 幸运的是,这些事情连起来是一个单词。 这个词就是“hail”, 它有着特别好的定义。我不是讲那个天上掉下来的 砸在你头上的东 西。"
+      },
+      {
+        "jp": "I'm talking about this definition, to greet or acclaim enthusiastically, which is how I think our words will be received if we stand on these four things.",
+        "cn": "我在谈论的是 “热情地致敬或赞扬”这个定义。 我认为我们的言辞会 如此被接受, 如果我们坚持这四件事。"
+      },
+      {
+        "jp": "So what do they stand for? See if you can guess. The H, honesty, of course, being true in what you say, being straight and clear. The A is authenticity, just being yourself. A friend of mine described it as standing in your own truth, which I think is a lovely way to put it. The I is integrity, being your word, actually doing what you say, and being somebody people can trust. And the L is love. I don't mean romantic love, but I do mean wishing people well, for two reasons. First of all, I think absolute honesty may not be what we want. I mean, my goodness, you look ugly this morning. Perhaps that's not necessary. Tempered with love, of course, honesty is a great thing. But also, if you're really wishing somebody well, it's very hard to judge them at the same time. I'm not even sure you can do those two things simultaneously. So hail.",
+        "cn": "那么它们到底是什么呢? 看看你是否能猜到。 H,代表了诚实 (Honesty),当然, 说真话,直接了当并且清楚明白。 A,代表了 真实(Authenticity),做一个自然而然的自己。 我的一个朋友把它描述 为 坚持真实的自己, 我觉得这是一个优美的表述。 I,代表了正气 (Integrity),言而有信, 说到做到, 成为别人能信任的人。 L,代表 爱(Love)。 我不是指罗曼蒂克的爱情, 而是指对别人有良好的祝 愿,这出于两个原因。 第一,我认为绝对的诚实 也许不是我们所想 要的。 我的意思是,天哪,今天早上你真难看。 那可能不必要。 诚 实是很重要的。当然,适当地带着爱。 但还有,当你真的很希望别 人好, 就很难同时评判他们。 我不知道你们是否能 同时做到这两 点。 那么hail。"
+      },
+      {
+        "jp": "Also, now that's what you say, and it's like the old song, it is what you say, it's also the way that you say it. You have an amazing toolbox. This instrument is incredible, and yet this is a toolbox that very few people have ever opened. I'd like to have a little rummage in there with you now and just pull a few tools out that you might like to take away and play with, which will increase the power of your speaking.",
+        "cn": "上面提到的是你所说的内容。 另外,就像老歌里唱的,你所说的很重 要, 还有你的表达方式也很重要。 你有一个很神奇的工具盒。 里面有 难以置信的工具, 然而这个工具盒只有不多的人打开过。 我愿意跟你 们在这里 做一点儿探查,并且找出几种工具。 你也许想拿来试一下, 这些将会增加你说话的力量。"
+      },
+      {
+        "jp": "Register, for example. Now, falsetto register may not be very useful most of the time, but there's a register in between. I'm not going to get very technical about this for any of you who are voice coaches. You can locate your voice, however. So if I talk up here in my nose, you can hear the difference. If I go down here in my throat, which is where most of us speak from most of the time. But if you want weight, you need to go down here to the chest. You hear the difference? We vote for politicians with lower voices, it's true, because we associate depth with power and with authority. That's register.",
+        "cn": "比如说,音域。 假声大部分时候可能是没用的, 但在两者之间会有一 种是有用的。 对于在座的语音教练们, 我不会在这个问题上很深入。 然而,你能定位你的声音。 如果我把声音提到鼻子这儿,你可以听出 不同。 如果我把声音降到嗓子这里, 这是我们大部分人大多数时候所 做的。 但是如果你想有份量, 你需要降到胸腔。 你听出了不同吗? 我们给声音低沉的政治家投票,那是真的, 因为我们把深沉 和权力、 权威联系在一起。 那是音域。"
+      },
+      {
+        "jp": "Then we have timbre. It's the way your voice feels. Again, the research shows that we prefer voices which are rich, smooth, warm, like hot chocolate. Well if that's not you, that's not the end of the world, because you can train. Go and get a voice coach. And there are amazing things you can do with breathing, with posture, and with exercises to improve the timbre of your voice.",
+        "cn": "然后我们再说音色, 那是你的声音让人感觉如何。 研究显示我们喜欢 那种 丰厚,平滑,温暖,像热巧克力一样的声音。 当然如果你没有那 样的声音,这也不是世界末日。 因为你可以训练。 去找到一个声音教 练。 你可以做很神奇的事情, 利用呼吸,姿势,还有锻炼 来提高你 嗓音的音色。"
+      },
+      {
+        "jp": "Then prosody. I love prosody. This is the sing-song, the meta- language that we use in order to impart meaning. It's root one for meaning in conversation. People who speak all on one note are really quite hard to listen to if they don't have any prosody at all. That's where the word \"monotonic\" comes from, or monotonous, monotone. Also, we have repetitive prosody now coming in, where every sentence ends as if it were a question when it's actually not a question, it's a statement?",
+        "cn": "然后是韵律。我喜欢韵律。 那是唱歌,是元语言, 我们用来传送意 味。 在谈话中是意思的根基。 那种说话一个声调的人 很难让人听 讲, 如果他们没有一点儿韵律。 那就是单调这个词的来源, 或者说 枯燥无味,一成不变。 我们还有重复性的韵律, 每个句子的结尾好像 是一个疑问句, 但事实上,它不是疑问句,而是陈述句。"
+      },
+      {
+        "jp": "And if you repeat that one, it's actually restricting your ability to communicate through prosody, which I think is a shame, so let's try and break that habit.",
+        "cn": "如果你一遍一遍地重复某个东西, 它会限制你 用韵律来交流的能力, 我认为这是一件憾事, 让我们努力打破那个习惯。"
+      },
+      {
+        "jp": "I can get very excited by saying something really quickly, or I can slow right down to emphasize, and at the end of that, of course, is our old friend silence. There's nothing wrong with a bit of silence in a talk, is there? We don't have to fill it with ums and ahs. It can be very powerful.",
+        "cn": "语速,我可以非常非常兴奋地 飞快地说着什么, 或者我能慢下来强 调, 在结尾处,当然是我们的老朋友, 沉默。 在讲话中,有一点儿沉 默 没关系,是吗? 我们不需要用“嗯” 和“ 啊”来填充。 沉默就很有力。"
+      },
+      {
+        "jp": "Of course, pitch often goes along with pace to indicate arousal, but you can do it just with pitch. Where did you leave my keys? Where did you leave my keys? So, slightly different meaning in those two deliveries.",
+        "cn": "当然,音调常常跟语速一起 来指示兴奋度,但你能仅仅用音调就显示 出来。 你把我的钥匙放在哪儿啦? 你把我的钥匙放在哪儿啦? 那么轻 微的差别 在这两个表达中。"
+      },
+      {
+        "jp": "And finally, volume. I can get really excited by using volume. Sorry about that, if I startled anybody. Or, I can have you really pay attention by getting very quiet. Some people broadcast the whole time. Try not to do that.",
+        "cn": "最后,是音量。 我能用音量表示极端的兴奋。 如果我打扰了任何人的 话,抱歉。 或者,我能用很轻的声音 让你认真地注意。 有人全程一直 都在说话。 别那样。"
+      },
+      {
+        "jp": "That's called sodcasting,Imposing your sound on people around you carelessly and inconsiderately. Not nice. Of course, where this all comes into play most of all is when you've got something really important to do. It might be standing on a stage like this and giving a talk to people.",
+        "cn": "那叫做“公放音乐”, 把你的声音不假思索 和草率地强加给别人。不 好。当然,这些工具真正发挥作用的地方, 是当你有什么很重要的事 情要做的时候。 这可能是像这样站在演讲台上 对着人演讲。"
+      },
+      {
+        "jp": "It might be proposing marriage, asking for a raise, a wedding speech. Whatever it is, if it's really important, you owe it to yourself to look at this toolbox and the engine that it's going to work on, and no engine works well without being warmed up. Warm up your voice.",
+        "cn": "它可能是求婚, 要求加薪,或者婚礼上的讲话。 不管是什么,如果它 非常重要, 你应该看着这个工具盒, 以及将要工作运行的发动机, 没有预热的发动机不会好好工作。 预热你自己的声音。"
+      },
+      {
+        "jp": "Actually, let me show you how to do that. Would you all like to stand up for a moment? I'm going to show you the six vocal warm-up exercises that I do before every talk I ever do. Any time you're going to talk to anybody important, do these. First, arms up, deep breath in, and sigh out, ahhhhh, like that. One more time. Ahhhh, very good. Now we're going to warm up our lips, and we're going to go Ba, Ba, Ba, Ba, Ba, Ba, Ba, Ba.",
+        "cn": "让我给你演示怎样做。 你们都愿意站起来一会儿吗? 我会给你演示六 个预热声音的锻炼, 在每次演讲之前我都这么做。 在跟任何重要的人 谈话之前,做以下这些。 第一,举起双臂,吸气, 然后呼出,啊哈, 就像那样。 再来一次。 啊哈,很好。 现在我们要预热我们的嘴唇, 做出吧,吧,吧,吧, 吧,吧,吧,吧。"
+      },
+      {
+        "jp": "Very good. And now, brrrrrrrrrr, just like when you were a kid. Brrrr. Now your lips should be coming alive. We're going to do the tongue next with exaggerated la, la, la, la, la, la, la, la, la. Beautiful. You're getting really good at this. And then, roll an R. Rrrrrrr. That's like champagne for the tongue. Finally, and if I can only do one, the pros call this the siren. It's really good. It starts with \"we\" and goes to \"aw.\" The \"we\" is high, the \"aw\" is low. So you go, weeeaawww, weeeaawww.",
+        "cn": "很好。 现在,brrrrrrr, 就像你是个孩子。 brrrrr。现在你的嘴唇应该 活了。 下一个是舌头, 夸张的啦,啦,啦,啦...... 美极了。你们做得 很好。 然后,卷舌一个R,Rrrrrr。 这就像给舌头的香槟酒。 最后, 如果我只能做一个, 专业人士把这叫做警报。 这个特别好。它开始于 “we”然后转为“aw”。 “we”是高音,“aw”是低音。 那么就是, “weeeaawww......”"
+      },
+      {
+        "jp": "Fantastic. Give yourselves a round of applause. Take a seat, thank you. Next time you speak, do those in advance.",
+        "cn": "妙极了。给你自己来鼓个掌。 请坐,谢谢你们。下次你演讲之前,提 前做到这几项。"
+      },
+      {
+        "jp": "Now let me just put this in context to close. This is a serious point here. This is where we are now, right? We speak not very well to people who simply aren't listening in an environment that's all about noise and bad acoustics. I have talked about that on this stage in different phases. What would the world be like if we were speaking powerfully to people who were listening consciously in environments which were actually fit for purpose?",
+        "cn": "现在让我在结束之前作个总结。 这一点是认真的。 这就是我们的所 在,对吗? 我们说得不好, 人们也听不进去, 在一个吵闹和喧哗的环 境里。 我已经在讲台上 分阶段地谈到这个问题。 这个世界会是怎样, 如果我们有说服力, 人们有意识地听, 在一个量身定做的环境下?"
+      },
+      {
+        "jp": "Or to make that a bit larger, what would the world be like if we were creating sound consciously and consuming sound consciously and designing all our environments consciously for sound? That would be a world that does sound beautiful, and one where understanding would be the norm, and that is an idea worth spreading.",
+        "cn": "或者说得更大一些, 世界将会是怎样, 如果我们有意识地说话, 有 意识地倾听, 并且有意识地针对声音 来设计我们的周围环境? 那会 是一个听起来非常美丽的世界, 在那儿 理解会是常态。 那是一个值 得传播的理念。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "instrument",
+        "meaning": "n.乐器"
+      },
+      {
+        "word": "powerfully",
+        "meaning": "adv.有力的"
+      },
+      {
+        "word": "pretend",
+        "meaning": "v.假装"
+      },
+      {
+        "word": "exhaustive",
+        "meaning": "adj.详尽的;彻底的"
+      },
+      {
+        "word": "gossip",
+        "meaning": "n.流言蜚语"
+      },
+      {
+        "word": "Speaking ill of",
+        "meaning": "说坏话"
+      },
+      {
+        "word": "negativity",
+        "meaning": "n.消极"
+      },
+      {
+        "word": "complain",
+        "meaning": "v.抱怨"
+      },
+      {
+        "word": "misery",
+        "meaning": "n.痛苦;悲惨"
+      },
+      {
+        "word": "blamethrower",
+        "meaning": "n.指责癖好"
+      },
+      {
+        "word": "penultimate",
+        "meaning": "n.倒数第二"
+      },
+      {
+        "word": "embroidery",
+        "meaning": "n.绣花;刺绣图案"
+      },
+      {
+        "word": "exaggeration",
+        "meaning": "n.浮夸;夸张"
+      },
+      {
+        "word": "demean",
+        "meaning": "v.贬低"
+      },
+      {
+        "word": "dogmatism",
+        "meaning": "n.教条主义;独断"
+      },
+      {
+        "word": "conflate",
+        "meaning": "v.合并"
+      },
+      {
+        "word": "bombard",
+        "meaning": "v.轰炸;炮击"
+      },
+      {
+        "word": "cornerstones",
+        "meaning": "n.基础"
+      },
+      {
+        "word": "enthusiastically",
+        "meaning": "adv.热情地"
+      },
+      {
+        "word": "authenticity",
+        "meaning": "n.真实"
+      },
+      {
+        "word": "integrity",
+        "meaning": "n.正直;诚实"
+      },
+      {
+        "word": "simultaneously",
+        "meaning": "adv.同时地"
+      },
+      {
+        "word": "toolbox",
+        "meaning": "n.工具盒"
+      },
+      {
+        "word": "incredible",
+        "meaning": "adj.难以置信的"
+      },
+      {
+        "word": "hot chocolate",
+        "meaning": "热巧克力"
+      },
+      {
+        "word": "timbre",
+        "meaning": "n.音色;音质"
+      },
+      {
+        "word": "prosody",
+        "meaning": "n.韵律"
+      },
+      {
+        "word": "monotonous",
+        "meaning": "adj.单调乏味的"
+      },
+      {
+        "word": "monotone",
+        "meaning": "n.单调;单音调"
+      },
+      {
+        "word": "statement",
+        "meaning": "n.声明;报告;陈述句"
+      },
+      {
+        "word": "restrict",
+        "meaning": "v.限制"
+      },
+      {
+        "word": "emphasize",
+        "meaning": "v.强调"
+      },
+      {
+        "word": "indicate arousal",
+        "meaning": "指示兴奋度"
+      },
+      {
+        "word": "delivery",
+        "meaning": "n.递送;表达"
+      },
+      {
+        "word": "broadcast",
+        "meaning": "v.散布;传播"
+      },
+      {
+        "word": "inconsiderately",
+        "meaning": "adv.考虑不周的"
+      },
+      {
+        "word": "champagne",
+        "meaning": "n.香槟酒"
+      },
+      {
+        "word": "applause",
+        "meaning": "n.掌声"
+      },
+      {
+        "word": "acoustics",
+        "meaning": "n.声学;音质"
+      },
+      {
+        "word": "consciously",
+        "meaning": "adv.有意识地"
+      }
+    ]
+  },
+  {
+    "presetId": "ted_en_10",
+    "folder": "E10.如何在压力下保持冷静",
+    "audioFile": "audio.m4a",
+    "title_cn": "如何在压力下保持冷静",
+    "title_jp": "How to stay calm under pressure",
+    "speaker": "Noa Kageyama",
+    "paragraphs": [
+      {
+        "jp": "Your favorite athlete closes in for a victorious win. The crowd holds its breath, and, at the crucial moment, she misses the",
+        "cn": "你最爱的运动员即将迎来制胜一击, 观众们屏住呼吸, 但在这重要时 刻,她失误了。"
+      },
+      {
+        "jp": "That competitor just experienced the phenomenon known \"choking,\" where despite months, even years, of practice, person fails right when it matters most. Choking is common sports, where performance often occurs under intense pressure and depends on key moments. And yet, performance anxiety also haunts public speakers, contestants in spelling bees, and even world-famous musicians. Most people intuitively blame on their nerves, but why does being nervous undermine expert performance?",
+        "cn": "这位选手刚经历了“反胜为败”现象, 纵使进行了经年累月的练习, 们仍会在关键时刻失败。 “反胜为败”在运动界 是一种普遍现象, 运动员的表现都在压力下进行, 并且会受到比赛节点的影响。但这种 焦虑也会影响演讲者, 拼字游戏中的选手们, 以及世界著名的音乐 家。 绝大多数人凭直觉 将其归咎于精神紧张, 但为何紧张的情绪 影响专业人士的表现呢?"
+      },
+      {
+        "jp": "There are two sets of theories, which both say that primarily, choking under pressure boils down to focus.",
+        "cn": "两组理论对此进行了解释。 二者都认为压力下的“反胜为败” 归根结底 是注意力问题。"
+      },
+      {
+        "jp": "First, there are the distraction theories. These suggest that performance suffers when the mind is preoccupied with worries, doubts, or fears, instead of focusing its attention on performing the task at hand. When relevant and irrelevant thoughts compete for the same attention, something has to give. The brain can process so much information at once.",
+        "cn": "第一种理论是干扰理论。 该理论认为当担忧、疑惑和恐惧 占据了人们 的头脑, 让人们无法集中注意力 在手头的任务,其表现就会受到影 响。 当与任务相关和 无关的信息争夺注意力时, 其中一方不得不做出 让步。 大脑能够同时处理的信息量有限。"
+      },
+      {
+        "jp": "Tasks that challenge working memory, the mental “scratch we use to temporarily store phone numbers and grocery lists, especially vulnerable to pressure. In a 2004 study, a group university students were asked to perform math problems, easy, others more complex and memory-intensive. Half the students completed both problem types with nothing at stake, while the others completed them when calm and under pressure. While everyone did well on the easy problems, those who stressed performed worse on the more difficult, memory- intensive tasks.",
+        "cn": "工作记忆是我们头脑中的“速写板”, 我们用它短暂存储 电话号码和购 物清单等。 对于高度要求工作记忆的任务来说, 压力对其影响尤为严 重。 在 2004 年的一项研究中, 一组大学生被要求解答数学问题, 些题目简单,另一些 则非常困难,且需要大量记忆。 一半学生在没有 任何顾忌的 情况下解答全部题目, 另一半学生分别在 冷静状态和压力 状态下完成题目。 尽管所有人在简单问题上表现良好, 但对于更困难 且需要记忆的题目来说, 经受压力的学生表现更差。"
+      },
+      {
+        "jp": "Explicit monitoring theories make up the second group of explanations for choking under pressure. They’re concerned with how pressure can cause people to overanalyze the task hand. Here, the logic goes that once a skill becomes automatic, thinking about its precise mechanics interferes with your ability to do it.",
+        "cn": "第二套解释该现象的理论是 外部控制理论。 这一理论是关于 压力如何 使人们 过度分析当前的任务。 这种说法的逻辑在于, 一旦某种技能成 为下意识的熟练技能, 思考其精确的原理机制 就会妨碍使用该技能。"
+      },
+      {
+        "jp": "Tasks we do unconsciously seem to be most vulnerable to kind of choking. A study on competitive golfers compared performance when instructed to simply focus on putting as accurately as possible, versus when they were primed to be acutely aware of the mechanics of their putting stroke. Golfers usually perform this action subconsciously, so those who suddenly tuned in to the precise details of their own moves became worse at making accurate shots.",
+        "cn": "需要下意识完成的任务 最容易出现“反胜为败”。 一项研究对比了高尔 夫选手的表现, 一组选手只需要关注准确挥杆, 另一组则被要求时刻 想着 挥杆动作是否符合标准原理。 高尔夫选手通常 依靠潜意识完成动 作, 因此在选手突然要 调整动作达到标准时, 他们反而更难打出准确 一击。"
+      },
+      {
+        "jp": "Choking may not be inevitable for everyone though. Research suggests that some are more susceptible than others, especially those who are self-conscious, anxious, and afraid of being judged negatively by others. So, how can we avoid choking when it really counts?",
+        "cn": "虽然并非所有人 都会经历“反胜为败”, 但研究表明, 部分人群更容易 受到影响, 尤其是那些自我意识较强的, 容易焦虑的, 害怕他人负面 评价的人。既然“反胜为败”影响如此之大, 我们该如何避免它的出现 呢?"
+      },
+      {
+        "jp": "First, it helps to practice under stressful conditions. In a study expert dart players, researchers found that those who hadn’t practiced under stress performed worse when anxious, compared to those who had become accustomed to pressure.",
+        "cn": "首先, 在压力环境下练习会有所帮助。 在一项关于专业飞镖选手的研 究中, 研究者发现,从未在压力下 练习过的选手,在焦虑时 比习惯压 力的选手表现更差。"
+      },
+      {
+        "jp": "Secondly, many performers extol the virtues of a pre- performance routine, whether it’s taking a few deep breaths, repeating a cue word, or doing a rhythmic sequence of movements. Studies on golfing, bowling, and water polo find that short rituals can lead to more consistent and accurate performance under pressure.",
+        "cn": "第二,许多运动员 推崇进行赛前例行动作, 例如进行几次深呼吸, 复某个提示词, 或是进行有节奏的一系列动作。 在高尔夫、保龄球 水球方面的研究发现, 进行简短的仪式性动作 可以使选手在压力下的 表现更为正常和准确。"
+      },
+      {
+        "jp": "And thirdly, researchers have shown that having an external focus on the ultimate goal works better than an internal focus, where someone is tuned into the mechanics of what they’re doing. A study of experienced golfers revealed that those who chip shots while focused on the flight of the ball performed significantly better than those who focused on the motion of arms.",
+        "cn": "第三,研究者表示, 将注意力集中在实现最终目标上, 比关注在内部 调整自己 符合规范动作原理要更加有效。 一项高尔夫研究表明, 削击球的经验丰富的选手中, 那些关注球的飞行线路的选手, 比关注 自己手臂运动的 选手表现好得多。"
+      },
+      {
+        "jp": "So, perhaps we can modify that age-old saying: practice, under pressure, with focus, and with that glorious end goal in sight, makes perfect.",
+        "cn": "因此我们也许可以 修改那句古老谚语, 练习, 在压力下, 保持专 注, 锁定目标的练习, 才会熟能生巧。"
+      }
+    ],
+    "vocab": [
+      {
+        "word": "athlete shot.",
+        "meaning": "n.运动员"
+      },
+      {
+        "word": "victorious",
+        "meaning": "adj.胜利的"
+      },
+      {
+        "word": "as a phenomenon in",
+        "meaning": "n.现象"
+      },
+      {
+        "word": "Choke",
+        "meaning": "窒息"
+      },
+      {
+        "word": "it contestant",
+        "meaning": "n.参赛者人因为"
+      },
+      {
+        "word": "intuitively",
+        "meaning": "adv.直觉的会"
+      },
+      {
+        "word": "distraction",
+        "meaning": "n.娱乐,消遣"
+      },
+      {
+        "word": "only preoccupy",
+        "meaning": "v.占据(某人)思想,使专注于"
+      },
+      {
+        "word": "temporarily",
+        "meaning": "pad”adv.暂时"
+      },
+      {
+        "word": "are",
+        "meaning": "地,临时地"
+      },
+      {
+        "word": "of some vulnerable",
+        "meaning": "adj.易受攻击的"
+      },
+      {
+        "word": "were",
+        "meaning": "一"
+      },
+      {
+        "word": "explicit",
+        "meaning": "adj.明确的"
+      },
+      {
+        "word": "at overanalyze",
+        "meaning": "v.过度分析"
+      },
+      {
+        "word": "this unconsciously",
+        "meaning": "theiradv.未意识到地"
+      },
+      {
+        "word": "accurately",
+        "meaning": "adv.准确的"
+      },
+      {
+        "word": "also subconsciously",
+        "meaning": "adv.潜意识的"
+      },
+      {
+        "word": "inevitable",
+        "meaning": "adj.不可避免的"
+      },
+      {
+        "word": "susceptible",
+        "meaning": "adj.易受影响的"
+      },
+      {
+        "word": "on accustomed",
+        "meaning": "v.使习惯,使适应"
+      },
+      {
+        "word": "rhythmic",
+        "meaning": "adj.有韵律的,有节奏的"
+      },
+      {
+        "word": "ritual",
+        "meaning": "重n.例行公和事,典礼"
+      },
+      {
+        "word": "ultimate",
+        "meaning": "adj.最后的,首要的"
+      },
+      {
+        "word": "hit their",
+        "meaning": "在切"
+      },
+      {
+        "word": "glorious",
+        "meaning": "adj.辉煌的,荣誉的"
+      }
+    ]
   }
 ];
 
@@ -2215,25 +4446,57 @@ function renderVocab() {
   `).join('');
 }
 // ============ LISTENING MODULE ============
+// Shared engine for both the Japanese (跟读练习) and English (英语跟读) tabs.
+// kind: 'jp' | 'en' selects which state array / preset list / DOM ids to use.
+const LISTENING_KINDS = {
+  jp: {
+    idPrefix: 'l_',
+    stateKey: 'listening',
+    displayKey: 'listeningDisplayCount',
+    listElId: 'listening-list',
+    progressElId: 'listening-progress',
+    emptyHint: '还没有听力内容，点击上方「📅 加载下一周」开始 🎧',
+    preset: () => PRESET_LISTENING
+  },
+  en: {
+    idPrefix: 'e_',
+    stateKey: 'listeningEn',
+    displayKey: 'listeningEnDisplayCount',
+    listElId: 'listening-en-list',
+    progressElId: 'listening-en-progress',
+    emptyHint: '还没有英语跟读内容，点击上方「📅 加载下一周」开始 🎤',
+    preset: () => PRESET_LISTENING_EN
+  }
+};
+function cfg(kind) { return LISTENING_KINDS[kind]; }
+function getListeningState(kind) { return state[cfg(kind).stateKey]; }
+// Item-level functions only receive an id; the id prefix tells us which array it lives in.
+function findListeningEntry(id) {
+  const kind = id.startsWith('e_') ? 'en' : 'jp';
+  return { kind, entry: getListeningState(kind).find(x => x.id === id) };
+}
+
 // Split paragraph into sentence-level items for shorter click-to-jump units
-function autoSplitParagraphs(paragraphs) {
+function autoSplitParagraphs(paragraphs, kind) {
+  const srcRe = kind === 'en' ? /[^.?!]+[.?!]?/g : /[^。？！?!]+[。？！?!]?/g;
+  const cnRe = /[^。？！?!]+[。？！?!]?/g;
   const result = [];
   paragraphs.forEach(para => {
-    const jpSents = (para.jp.match(/[^。？！?!]+[。？！?!]?/g) || [para.jp]).map(s => s.trim()).filter(Boolean);
-    const cnSents = (para.cn.match(/[^。？！?!]+[。？！?!]?/g) || [para.cn]).map(s => s.trim()).filter(Boolean);
+    const jpSents = (para.jp.match(srcRe) || [para.jp]).map(s => s.trim()).filter(Boolean);
+    const cnSents = (para.cn.match(cnRe) || [para.cn]).map(s => s.trim()).filter(Boolean);
     if (jpSents.length === cnSents.length) {
       // Perfect 1:1 alignment
       jpSents.forEach((jp, i) => result.push({ jp, cn: cnSents[i] }));
     } else {
-      // Mismatch - keep JP split, put whole CN block in first item
+      // Mismatch - keep original-language split, put whole CN block in first item
       jpSents.forEach((jp, i) => result.push({ jp, cn: i === 0 ? para.cn : '' }));
     }
   });
   return result;
 }
 
-function buildListeningEntry(p, dateStr, idx) {
-  const splitParas = autoSplitParagraphs(p.paragraphs);
+function buildListeningEntry(kind, p, dateStr, idx) {
+  const splitParas = autoSplitParagraphs(p.paragraphs, kind);
   const totalChars = splitParas.reduce((s, para) => s + para.jp.length, 0);
   let running = 0;
   const timestamps = splitParas.map(para => {
@@ -2242,7 +4505,7 @@ function buildListeningEntry(p, dateStr, idx) {
     return t;
   });
   return {
-    id: 'l_' + Date.now() + '_' + idx,
+    id: cfg(kind).idPrefix + Date.now() + '_' + idx,
     presetId: p.presetId,
     date: dateStr,
     folder: p.folder,
@@ -2254,25 +4517,27 @@ function buildListeningEntry(p, dateStr, idx) {
     vocab: p.vocab,
     timestamps,
     showTranslation: true,   // default: show CN
-    hideJapanese: false,     // default: show JP
+    hideJapanese: false,     // default: show original text
     completed: false,
     expanded: false
   };
 }
 
 // Load next 7 unloaded presets
-function loadNextWeek() {
-  const loaded = new Set(state.listening.map(x => x.presetId));
-  const remaining = PRESET_LISTENING.filter(p => !loaded.has(p.presetId));
+function loadNextWeek(kind) {
+  const arr = getListeningState(kind);
+  const preset = cfg(kind).preset();
+  const loaded = new Set(arr.map(x => x.presetId));
+  const remaining = preset.filter(p => !loaded.has(p.presetId));
   if (remaining.length === 0) {
-    alert('所有 50 篇都已经加载啦！');
+    alert(preset.length === 0 ? '还没有讲稿数据，请先补充内容' : `所有 ${preset.length} 篇都已经加载啦！`);
     return;
   }
   const batch = remaining.slice(0, 7);
   // Assign dates starting from the day after the latest existing entry (or today)
   let startDate;
-  if (state.listening.length > 0) {
-    const maxDate = state.listening.reduce((m, x) => x.date > m ? x.date : m, '0000-00-00');
+  if (arr.length > 0) {
+    const maxDate = arr.reduce((m, x) => x.date > m ? x.date : m, '0000-00-00');
     const d = new Date(maxDate); d.setDate(d.getDate() + 1);
     startDate = d;
   } else {
@@ -2280,21 +4545,22 @@ function loadNextWeek() {
   }
   batch.forEach((p, i) => {
     const d = new Date(startDate); d.setDate(d.getDate() + i);
-    state.listening.push(buildListeningEntry(p, d.toISOString().slice(0, 10), state.listening.length + i));
+    arr.push(buildListeningEntry(kind, p, d.toISOString().slice(0, 10), arr.length + i));
   });
-  sortListening();
-  renderListening();
+  sortListening(kind);
+  renderListening(kind);
   save();
-  alert(`已加载 ${batch.length} 篇（${state.listening.length}/50）`);
+  alert(`已加载 ${batch.length} 篇（${arr.length}/${preset.length}）`);
 }
 
 // Refresh transcript/vocab of existing entries from latest PRESET (for content updates)
-function refreshPresetContent() {
+function refreshPresetContent(kind) {
+  const preset = cfg(kind).preset();
   let updated = 0;
-  state.listening.forEach(l => {
-    const p = PRESET_LISTENING.find(x => x.presetId === l.presetId);
+  getListeningState(kind).forEach(l => {
+    const p = preset.find(x => x.presetId === l.presetId);
     if (!p) return;
-    const splitParas = autoSplitParagraphs(p.paragraphs);
+    const splitParas = autoSplitParagraphs(p.paragraphs, kind);
     l.paragraphs = splitParas;
     l.vocab = p.vocab;
     l.title_cn = p.title_cn;
@@ -2313,34 +4579,37 @@ function refreshPresetContent() {
     }
     updated++;
   });
-  renderListening();
+  renderListening(kind);
   save();
   alert(`已刷新 ${updated} 篇的讲稿和生词`);
 }
 
-function sortListening() {
-  state.listening.sort((a, b) => a.date.localeCompare(b.date));
+function sortListening(kind) {
+  getListeningState(kind).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function renderListening() {
-  const list = document.getElementById('listening-list');
-  const progress = document.getElementById('listening-progress');
-  const total = state.listening.length;
-  const display = state.listeningDisplayCount || 7;
-  const visible = state.listening.slice(0, display);
-  if (progress) progress.textContent = `已加载 ${total}/50 · 显示前 ${visible.length} 篇`;
+function renderListening(kind) {
+  const c = cfg(kind);
+  const arr = getListeningState(kind);
+  const preset = c.preset();
+  const list = document.getElementById(c.listElId);
+  const progress = document.getElementById(c.progressElId);
+  const total = arr.length;
+  const display = state[c.displayKey] || 7;
+  const visible = arr.slice(0, display);
+  if (progress) progress.textContent = `已加载 ${total}/${preset.length} · 显示前 ${visible.length} 篇`;
   if (total === 0) {
-    list.innerHTML = '<div class="empty-hint">还没有听力内容，点击上方「📅 加载下一周」开始 🎧</div>';
+    list.innerHTML = `<div class="empty-hint">${c.emptyHint}</div>`;
     return;
   }
   const more = total > display ? `
     <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
-      <button class="btn btn-ghost btn-small" onclick="showMoreListening()">👇 显示下 7 篇 (${total - display} 篇未显示)</button>
-      <button class="btn btn-ghost btn-small" onclick="showAllListening()">📋 全部显示</button>
+      <button class="btn btn-ghost btn-small" onclick="showMoreListening('${kind}')">👇 显示下 7 篇 (${total - display} 篇未显示)</button>
+      <button class="btn btn-ghost btn-small" onclick="showAllListening('${kind}')">📋 全部显示</button>
     </div>
   ` : (display > 7 ? `
     <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
-      <button class="btn btn-ghost btn-small" onclick="collapseListening()">👆 折叠回 7 篇</button>
+      <button class="btn btn-ghost btn-small" onclick="collapseListening('${kind}')">👆 折叠回 7 篇</button>
     </div>
   ` : '');
   list.innerHTML = visible.map(l => `
@@ -2365,7 +4634,7 @@ function renderListening() {
           <button class="btn btn-small ${l.showTranslation ? 'btn-ghost' : ''}" onclick="toggleTranslation('${l.id}')" title="切换中文翻译">
             ${l.showTranslation ? '🙈 关闭翻译' : '👁 显示翻译'}
           </button>
-          <button class="btn btn-small ${l.hideJapanese ? '' : 'btn-ghost'}" onclick="toggleHideJapanese('${l.id}')" title="切换日语原文">
+          <button class="btn btn-small ${l.hideJapanese ? '' : 'btn-ghost'}" onclick="toggleHideJapanese('${l.id}')" title="切换原文">
             ${l.hideJapanese ? '👁 显示原文' : '🙈 关闭原文'}
           </button>
           <button class="btn btn-ghost btn-small" onclick="toggleListeningComplete('${l.id}')">
@@ -2377,7 +4646,7 @@ function renderListening() {
           ${l.paragraphs.length === 0 ? `
             <div style="padding:24px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;line-height:1.7;">
               📝 讲稿待补充<br>
-              <span style="font-size:12px;">音频可以直接听、跟读。文字讲稿会陆续补充（每次会话补 5-10 篇）。<br>你也可以自己在 PDF 里对照阅读：<code>${escapeHtml(l.folder)}/</code></span>
+              <span style="font-size:12px;">音频可以直接听、跟读。文字讲稿会陆续补充。<br>你也可以自己在 PDF 里对照阅读：<code>${escapeHtml(l.folder)}/</code></span>
             </div>
           ` : ''}
           ${l.paragraphs.map((p, idx) => `
@@ -2408,44 +4677,47 @@ function renderListening() {
   `).join('') + more;
 }
 
-function showMoreListening() {
-  state.listeningDisplayCount = (state.listeningDisplayCount || 7) + 7;
-  renderListening();
+function showMoreListening(kind) {
+  const c = cfg(kind);
+  state[c.displayKey] = (state[c.displayKey] || 7) + 7;
+  renderListening(kind);
   save();
 }
-function showAllListening() {
-  state.listeningDisplayCount = state.listening.length;
-  renderListening();
+function showAllListening(kind) {
+  const c = cfg(kind);
+  state[c.displayKey] = getListeningState(kind).length;
+  renderListening(kind);
   save();
 }
-function collapseListening() {
-  state.listeningDisplayCount = 7;
-  renderListening();
+function collapseListening(kind) {
+  const c = cfg(kind);
+  state[c.displayKey] = 7;
+  renderListening(kind);
   save();
   // scroll to top of list
-  document.getElementById('listening-list')?.scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById(c.listElId)?.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function toggleListeningExpand(id) {
-  const l = state.listening.find(x => x.id === id);
-  if (l) { l.expanded = !l.expanded; renderListening(); save(); }
+  const { kind, entry: l } = findListeningEntry(id);
+  if (l) { l.expanded = !l.expanded; renderListening(kind); save(); }
 }
 function toggleListeningComplete(id) {
-  const l = state.listening.find(x => x.id === id);
-  if (l) { l.completed = !l.completed; renderListening(); save(); }
+  const { kind, entry: l } = findListeningEntry(id);
+  if (l) { l.completed = !l.completed; renderListening(kind); save(); }
 }
 function toggleHideJapanese(id) {
-  const l = state.listening.find(x => x.id === id);
+  const { kind, entry: l } = findListeningEntry(id);
   if (!l) return;
   l.hideJapanese = !l.hideJapanese;
-  // When hiding Japanese, force show Chinese
+  // When hiding original text, force show Chinese
   if (l.hideJapanese) l.showTranslation = true;
-  renderListening();
+  renderListening(kind);
   save();
 }
 
 function toggleTranslation(id) {
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!l) return;
   l.showTranslation = !l.showTranslation;
   // Update paragraphs without full re-render (keep audio playing)
@@ -2464,7 +4736,7 @@ function toggleTranslation(id) {
 function onAudioReady(id) {
   // Called when audio metadata is loaded - update timestamps to absolute seconds
   const audio = document.getElementById('audio-' + id);
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!audio || !l || !audio.duration) return;
   // timestamps stored as fractions [0-1], display purposes only
   const hint = document.getElementById('audio-hint-' + id);
@@ -2478,7 +4750,7 @@ function onAudioError(id) {
 async function diagnoseAudio(id) {
   const audio = document.getElementById('audio-' + id);
   const hint = document.getElementById('audio-hint-' + id);
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!hint || !l) return;
 
   const errCodes = {
@@ -2521,7 +4793,7 @@ async function diagnoseAudio(id) {
 
 function onAudioTime(id) {
   const audio = document.getElementById('audio-' + id);
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!audio || !l || !audio.duration) return;
   const currentFrac = audio.currentTime / audio.duration;
   // Find the paragraph whose timestamp is closest to but not exceeding current
@@ -2536,21 +4808,23 @@ function onAudioTime(id) {
   });
 }
 
-// Global keyboard shortcuts for listening tab
+// Global keyboard shortcuts for listening tabs (JP + EN)
 document.addEventListener('keydown', (e) => {
-  if (state.activeTab !== 'listening') return;
+  if (state.activeTab !== 'listening' && state.activeTab !== 'listening-en') return;
   // Don't intercept if user is typing in input/textarea/contenteditable
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  const scope = document.getElementById('tab-' + state.activeTab);
+  if (!scope) return;
   // Find the "active" audio: currently playing one, or first expanded one
-  const allAudios = document.querySelectorAll('#tab-listening audio');
+  const allAudios = scope.querySelectorAll('audio');
   let audio = null;
   for (const a of allAudios) {
     if (!a.paused) { audio = a; break; }
   }
   if (!audio) {
     // fall back to first expanded item's audio
-    const expanded = document.querySelector('#tab-listening .listening-item.expanded audio');
+    const expanded = scope.querySelector('.listening-item.expanded audio');
     if (expanded) audio = expanded;
   }
   if (!audio) return;
@@ -2570,7 +4844,7 @@ document.addEventListener('keydown', (e) => {
 
 function jumpToParagraph(id, idx) {
   const audio = document.getElementById('audio-' + id);
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!audio || !l || !audio.duration) return;
   const targetTime = l.timestamps[idx] * audio.duration;
   audio.currentTime = targetTime;
@@ -2579,7 +4853,7 @@ function jumpToParagraph(id, idx) {
 
 function setTimestamp(id, idx) {
   const audio = document.getElementById('audio-' + id);
-  const l = state.listening.find(x => x.id === id);
+  const l = findListeningEntry(id).entry;
   if (!audio || !l) return;
   if (!audio.duration) { alert('音频尚未加载完成'); return; }
   l.timestamps[idx] = audio.currentTime / audio.duration;
@@ -2598,9 +4872,10 @@ function formatTime(sec) {
 
 function showListeningCtx(e, id) {
   e.preventDefault();
-  if (confirm('删除这篇听力？（不会影响生词本）')) {
-    state.listening = state.listening.filter(x => x.id !== id);
-    renderListening();
+  if (confirm('删除这篇跟读内容？（不会影响生词本）')) {
+    const kind = findListeningEntry(id).kind;
+    state[cfg(kind).stateKey] = getListeningState(kind).filter(x => x.id !== id);
+    renderListening(kind);
     save();
   }
 }
@@ -2735,17 +5010,19 @@ if (state.topics.length === 0) {
   save();
 }
 // Migrate old audio filenames and default states
-state.listening.forEach(l => {
+[...state.listening, ...state.listeningEn].forEach(l => {
   if (l.audioFile === '音频.mp4') l.audioFile = 'audio.m4a';
-  // Default: both translation and Japanese visible
+  // Default: both translation and original text visible
   if (l.showTranslation === undefined) l.showTranslation = true;
   if (l.hideJapanese === undefined) l.hideJapanese = false;
 });
 
 sortAndRender();
 renderVocab();
-sortListening();
-renderListening();
+sortListening('jp');
+renderListening('jp');
+sortListening('en');
+renderListening('en');
 if (state.activeTab && state.activeTab !== 'speaking') switchTab(state.activeTab);
 
 // Close modals on background click

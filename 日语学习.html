@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日语口语练习题库</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #fef6f0 0%, #f5e8dd 100%);
+    color: #2a2a2a;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+  header {
+    background: linear-gradient(135deg, #d64545 0%, #b83232 100%);
+    color: white;
+    padding: 24px 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 {
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+  header h1::before { content: "🌸 "; }
+  .header-btns { display: flex; gap: 10px; }
+  .header-btns button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .header-btns button:hover { background: rgba(255,255,255,0.3); }
+
+  .container {
+    max-width: 1400px;
+    margin: 24px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  .main-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card h3 {
+    color: #b83232;
+    font-size: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f5e8dd;
+  }
+
+  /* Controls for adding topic */
+  .topic-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #fef6f0;
+    border-radius: 8px;
+  }
+  .topic-controls input {
+    padding: 8px 12px;
+    border: 1px solid #e0d0c0;
+    border-radius: 6px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .topic-controls input[type="date"] { max-width: 150px; }
+  .btn {
+    background: #d64545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #b83232; }
+  .btn-secondary { background: #6b8e7f; }
+  .btn-secondary:hover { background: #547363; }
+  .btn-ghost { background: transparent; color: #d64545; border: 1px solid #d64545; }
+  .btn-ghost:hover { background: #d64545; color: white; }
+  .btn-small { padding: 4px 10px; font-size: 12px; }
+
+  /* Topic list */
+  .topic-item {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .topic-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .topic-item.completed .topic-header { background: #f0f7f4; }
+  .topic-header {
+    padding: 14px 18px;
+    background: #fafafa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .topic-header:hover { background: #f5f0eb; }
+  .topic-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .topic-date {
+    font-weight: bold;
+    color: #d64545;
+    min-width: 60px;
+  }
+  .topic-name { flex: 1; }
+  .topic-name-jp { color: #666; font-size: 13px; margin-left: 8px; }
+  .check-mark {
+    font-size: 20px;
+    color: #6b8e7f;
+    display: none;
+  }
+  .completed .check-mark { display: inline; }
+  .expand-icon {
+    transition: transform 0.2s;
+    color: #999;
+  }
+  .topic-item.expanded .expand-icon { transform: rotate(90deg); }
+
+  .topic-body {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid #eee;
+    background: white;
+  }
+  .topic-item.expanded .topic-body { display: block; }
+
+  .intro-box {
+    background: #fef6f0;
+    border-left: 4px solid #d64545;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .intro-box strong { color: #b83232; }
+
+  .section-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+  }
+  textarea:focus { outline: none; border-color: #d64545; }
+
+  .record-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .record-btn {
+    background: #d64545;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .record-btn.recording {
+    background: #6b8e7f;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .transcript-box {
+    background: #f9f5f0;
+    border: 1px dashed #d0c0b0;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    min-height: 60px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .transcript-box:empty::before {
+    content: "语音识别结果会显示在这里…";
+    color: #aaa;
+  }
+
+  .questions-box {
+    margin-top: 16px;
+    padding: 14px;
+    background: #f0f7f4;
+    border-radius: 8px;
+    border-left: 4px solid #6b8e7f;
+  }
+  .questions-box h4 {
+    color: #4a6b5e;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .question-item {
+    margin: 10px 0;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .question-item .jp { font-weight: bold; color: #2a2a2a; }
+  .question-item .cn { color: #888; font-size: 12px; margin-top: 4px; }
+
+  .topic-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* Translator */
+  #translate-input {
+    min-height: 60px;
+    margin-bottom: 8px;
+  }
+  .translate-result {
+    background: #f9f5f0;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: none;
+  }
+  .translate-result.show { display: block; }
+  .translate-result .jp-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #b83232;
+    margin-bottom: 6px;
+  }
+  .translate-result .romaji {
+    color: #6b8e7f;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .translate-result .grammar {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #444;
+    margin-top: 8px;
+    border-left: 3px solid #6b8e7f;
+  }
+  .speak-btn {
+    background: none;
+    border: 1px solid #6b8e7f;
+    color: #6b8e7f;
+    padding: 4px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  .speak-btn:hover { background: #6b8e7f; color: white; }
+
+  /* Vocab */
+  .vocab-item {
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .vocab-content { flex: 1; font-size: 13px; line-height: 1.5; }
+  .vocab-content .jp { font-weight: bold; color: #b83232; }
+  .vocab-content .cn { color: #666; font-size: 12px; }
+  .vocab-actions { display: flex; flex-direction: column; gap: 4px; }
+  .vocab-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+  }
+  .vocab-actions button:hover { background: #f0f0f0; border-radius: 4px; }
+  .empty-hint { color: #aaa; text-align: center; padding: 20px; font-size: 13px; }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-content h3 { margin-bottom: 16px; color: #b83232; }
+  .modal-content label { display: block; margin: 12px 0 4px; font-size: 13px; color: #444; }
+  .modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  .hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .status {
+    font-size: 12px;
+    color: #6b8e7f;
+    margin-left: 8px;
+  }
+  .loading {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #d64545;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Tab Navigation */
+  .tab-nav {
+    max-width: 1400px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid #e0d0c0;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: #d64545; }
+  .tab-btn.active {
+    color: #d64545;
+    border-bottom-color: #d64545;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Listening Module */
+  .listening-item {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .listening-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .listening-item.completed .listening-header { background: #f0f7f4; }
+  .listening-header {
+    padding: 14px 18px;
+    background: #fafafa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .listening-header:hover { background: #f5f0eb; }
+  .listening-item.expanded .expand-icon { transform: rotate(90deg); }
+  .listening-body {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid #eee;
+    background: white;
+  }
+  .listening-item.expanded .listening-body { display: block; }
+
+  .audio-player {
+    background: #fef6f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .audio-player audio {
+    width: 100%;
+    height: 40px;
+  }
+  .audio-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .transcript-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .paragraph {
+    padding: 10px 14px;
+    margin: 4px 0;
+    background: #fafafa;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .paragraph:hover {
+    background: #fef6f0;
+    border-left-color: #d64545;
+  }
+  .paragraph.playing {
+    background: #fff4e6;
+    border-left-color: #d64545;
+    box-shadow: 0 2px 4px rgba(214,69,69,0.15);
+  }
+  .paragraph .idx {
+    color: #d64545;
+    font-weight: bold;
+    font-size: 12px;
+    min-width: 24px;
+    padding-top: 2px;
+  }
+  .paragraph .content { flex: 1; }
+  .paragraph .jp {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #2a2a2a;
+  }
+  .paragraph .cn {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #6b6b6b;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #ddd;
+    display: none;
+  }
+  .paragraph.show-cn .cn { display: block; }
+  .paragraph.hide-jp .jp { display: none; }
+  .paragraph.hide-jp .cn { display: block; margin-top: 0; padding-top: 0; border-top: none; }
+  .paragraph .ts-btn {
+    background: none;
+    border: 1px solid #ccc;
+    color: #888;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .paragraph .ts-btn:hover { background: #f0f0f0; }
+  .paragraph.has-ts .ts-btn { border-color: #6b8e7f; color: #6b8e7f; }
+
+  .listening-vocab {
+    margin-top: 16px;
+    background: #f9f5f0;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .listening-vocab h4 {
+    color: #b83232;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .listening-vocab .vocab-row {
+    padding: 6px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    border-bottom: 1px dotted #e0d0c0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .listening-vocab .vocab-row:last-child { border-bottom: none; }
+  .listening-vocab .word {
+    font-weight: bold;
+    color: #2a2a2a;
+  }
+  .listening-vocab .meaning {
+    color: #666;
+    flex: 1;
+    margin-left: 10px;
+  }
+  .listening-vocab .add-vocab-btn {
+    background: none;
+    border: 1px solid #6b8e7f;
+    color: #6b8e7f;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .listening-vocab .add-vocab-btn:hover { background: #6b8e7f; color: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>日语学习工具</h1>
+  <div class="header-btns">
+    <button onclick="openSettings()">⚙️ 设置</button>
+    <button onclick="exportAll()">📤 导出数据</button>
+    <button onclick="document.getElementById('import-file').click()">📥 导入</button>
+    <input type="file" id="import-file" style="display:none" accept=".json" onchange="importAll(event)">
+  </div>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="speaking" onclick="switchTab('speaking')">🗣️ 口语练习</button>
+  <button class="tab-btn" data-tab="listening" onclick="switchTab('listening')">🎧 跟读练习</button>
+</div>
+
+<div class="container">
+  <div class="main-panel">
+    <div id="tab-speaking" class="tab-content active">
+      <div class="topic-controls">
+        <input type="date" id="new-date">
+        <input type="text" id="new-topic-cn" placeholder="话题（例：我的梦想）">
+        <button class="btn" onclick="addTopic()">➕ 添加</button>
+        <button class="btn btn-secondary" onclick="randomTopic()">🎲 随机生成</button>
+      </div>
+      <div id="topics-list"></div>
+    </div>
+
+    <div id="tab-listening" class="tab-content">
+      <div class="topic-controls">
+        <button class="btn btn-secondary" onclick="loadNextWeek()">📅 加载下一周 (7 篇)</button>
+        <button class="btn btn-ghost btn-small" onclick="refreshPresetContent()">🔄 更新讲稿</button>
+        <span id="listening-progress" style="font-size:12px;color:#888;"></span>
+      </div>
+      <div id="listening-list"></div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="card">
+      <h3>🔍 中→日翻译工具</h3>
+      <textarea id="translate-input" placeholder="输入你想表达的中文..."></textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+        <button class="btn btn-secondary" onclick="quickTranslate()">🚀 快速翻译 (Google)</button>
+        <button class="btn" onclick="openGeminiSidebar()">💬 Gemini 侧边窗</button>
+        <button class="btn btn-ghost btn-small" onclick="translateText()">🤖 API 翻译</button>
+      </div>
+      <span id="translate-status" class="status"></span>
+      <div id="translate-result" class="translate-result"></div>
+    </div>
+
+    <div class="card">
+      <h3>📓 生词本 <span id="vocab-count" style="font-size:12px;color:#888;font-weight:normal;"></span></h3>
+      <div id="vocab-list"></div>
+      <button class="btn btn-ghost btn-small" onclick="exportVocab()" style="margin-top:10px;">导出生词本 (CSV)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Context Menu -->
+<div id="ctx-menu" style="display:none;position:fixed;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:200;min-width:160px;overflow:hidden;">
+  <div class="ctx-item" onclick="ctxAction('rename')" style="padding:10px 16px;cursor:pointer;font-size:14px;">✏️ 修改标题</div>
+  <div class="ctx-item" onclick="ctxAction('edit')" style="padding:10px 16px;cursor:pointer;font-size:14px;">📝 完整编辑</div>
+  <div class="ctx-item" onclick="ctxAction('date')" style="padding:10px 16px;cursor:pointer;font-size:14px;">📅 改日期</div>
+  <div class="ctx-item" onclick="ctxAction('delete')" style="padding:10px 16px;cursor:pointer;font-size:14px;color:#d64545;border-top:1px solid #eee;">🗑 删除</div>
+</div>
+<style>
+  #ctx-menu .ctx-item:hover { background: #fef6f0; }
+</style>
+
+<!-- Settings Modal -->
+<div class="modal" id="settings-modal">
+  <div class="modal-content">
+    <h3>⚙️ 设置</h3>
+    <label>🚀 Groq API Key（最推荐，完全免费、无信用卡）</label>
+    <input type="text" id="groq-key" placeholder="gsk_..." style="font-family:monospace;">
+    <div class="hint">
+      去 <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> 用 Google 账号登录 → Create API Key → 粘贴过来。<br>
+      免费额度：30 请求/分钟，14400/天，用 Llama 4 模型，速度极快（1 秒内）。<br>
+      <strong>不用信用卡，不会 quota=0，Google API 有问题时的最佳替代</strong>。
+    </div>
+
+    <label style="margin-top:16px;">Gemini API Key（可选） <span id="gemini-key-status" style="font-size:12px;color:#6b8e7f;font-weight:normal;"></span></label>
+    <input type="text" id="gemini-key" placeholder="AIza..." style="font-family:monospace;">
+    <div class="hint">
+      去 <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> 免费领取。<br>
+      <strong style="color:#d64545;">粘贴完必须点下方「保存」，直接关窗口不会存！</strong>
+    </div>
+    <button class="btn btn-ghost btn-small" onclick="listGeminiModels()" style="margin-top:6px;">🔎 测试 Key + 列出可用模型</button>
+    <div id="gemini-models-result" style="font-size:12px;line-height:1.6;margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+    <label style="margin-top:12px;">Claude API Key（可选）</label>
+    <input type="password" id="api-key" placeholder="sk-ant-...">
+    <div class="hint">
+      填了就优先用 Claude（翻译质量最好），没填就用 Gemini 或网页版兜底。<br>
+      Key 只存本地浏览器，不会外传。
+    </div>
+    <label style="margin-top:16px;">语音识别语言</label>
+    <select id="voice-lang" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+      <option value="ja-JP">日语 (ja-JP)</option>
+      <option value="en-US">English (en-US)</option>
+      <option value="zh-CN">中文 (zh-CN)</option>
+    </select>
+    <div class="hint">建议使用 Chrome 浏览器打开本页面，Web Speech API 支持日语识别。</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSettings()">取消</button>
+      <button class="btn" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Topic Modal -->
+<div class="modal" id="edit-modal">
+  <div class="modal-content">
+    <h3>✏️ 编辑题目</h3>
+    <input type="hidden" id="edit-id">
+    <label>日期</label>
+    <input type="date" id="edit-date">
+    <label>话题（中文）</label>
+    <input type="text" id="edit-topic-cn">
+    <label>话题（日文，可选）</label>
+    <input type="text" id="edit-topic-jp">
+    <label>介绍/说明</label>
+    <textarea id="edit-intro" style="min-height:100px;"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEdit()">取消</button>
+      <button class="btn btn-secondary" onclick="deleteTopic()">删除</button>
+      <button class="btn" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+let state = {
+  topics: [],
+  vocab: [],
+  listening: [],
+  listeningDisplayCount: 7,
+  activeTab: 'speaking',
+  settings: { apiKey: '', geminiKey: '', groqKey: '', voiceLang: 'ja-JP' }
+};
+
+// ============ TAB SWITCHING ============
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === 'tab-' + tab);
+  });
+  save();
+}
+
+// Preset IELTS-style Japanese topics
+const PRESET_TOPICS = [
+  { cn: '我的梦想', jp: '私の夢', intro: '参考雅思口语 Part 2：1-2分钟谈谈你的梦想。可以说：你的梦想是什么？为什么有这个梦想？打算怎么实现？' },
+  { cn: '难忘的旅行', jp: '忘れられない旅行', intro: '1-2分钟描述一次难忘的旅行。可以说：什么时候？去哪里？和谁一起？为什么难忘？' },
+  { cn: '喜欢的食物', jp: '好きな食べ物', intro: '1-2分钟介绍你喜欢的食物。可以说：是什么？口味如何？为什么喜欢？在哪里能吃到？' },
+  { cn: '重要的人', jp: '大切な人', intro: '1-2分钟介绍对你重要的人。可以说：是谁？关系如何？为什么重要？他/她对你的影响？' },
+  { cn: '一本好书', jp: '良い本', intro: '1-2分钟介绍一本好书。可以说：书名？作者？内容简介？为什么推荐？' },
+  { cn: '难忘的一天', jp: '忘れられない一日', intro: '1-2分钟描述难忘的一天。可以说：什么时候？发生了什么？为什么难忘？' },
+  { cn: '喜欢的季节', jp: '好きな季節', intro: '1-2分钟谈谈你喜欢的季节。可以说：哪个季节？特点？喜欢做什么？为什么？' },
+  { cn: '一个好朋友', jp: '親友', intro: '1-2分钟介绍一位好朋友。可以说：怎么认识的？性格如何？印象深的事？' },
+  { cn: '学过的一门技能', jp: '習ったスキル', intro: '1-2分钟介绍你学过的一门技能。可以说：什么技能？为什么学？学习过程？现在的水平？' },
+  { cn: '喜欢的电影', jp: '好きな映画', intro: '1-2分钟介绍你喜欢的电影。可以说：片名？剧情？为什么喜欢？印象深的场景？' },
+  { cn: '家乡介绍', jp: '故郷の紹介', intro: '1-2分钟介绍你的家乡。可以说：在哪里？气候？特产？值得去的地方？' },
+  { cn: '一次失败的经历', jp: '失敗した経験', intro: '1-2分钟谈谈一次失败经历。可以说：什么事？为什么失败？学到了什么？' },
+  { cn: '理想的工作', jp: '理想の仕事', intro: '1-2分钟介绍你理想中的工作。可以说：什么工作？为什么理想？需要什么能力？' },
+  { cn: '喜欢的运动', jp: '好きなスポーツ', intro: '1-2分钟谈谈你喜欢的运动。可以说：什么运动？怎么开始的？多久做一次？好处？' },
+  { cn: '收到过的礼物', jp: 'もらったプレゼント', intro: '1-2分钟描述一份特别的礼物。可以说：谁送的？什么场合？为什么特别？' }
+];
+
+// Preset follow-up questions bank (Japanese)
+const PRESET_QUESTIONS = [
+  { jp: 'それについて、もう少し詳しく教えていただけますか？', cn: '关于这个，能再详细讲讲吗？' },
+  { jp: 'なぜそう思うようになりましたか？', cn: '为什么会这么想？' },
+  { jp: '将来はどうしたいですか？', cn: '将来打算怎么办？' },
+  { jp: '一番印象に残っていることは何ですか？', cn: '印象最深的是什么？' },
+  { jp: 'それは今のあなたにどんな影響を与えましたか？', cn: '这对现在的你有什么影响？' },
+  { jp: '他の人にもおすすめしたいですか？', cn: '会推荐给别人吗？' },
+  { jp: 'もし時間を戻せるなら、何か変えたいことはありますか？', cn: '如果能回到过去，你会想改变什么吗？' },
+  { jp: 'そのとき、どんな気持ちでしたか？', cn: '当时是什么心情？' }
+];
+
+// ============ PRESET LISTENING (5 TED 演讲) ============
+const PRESET_LISTENING = [
+  {
+    presetId: 'ted_01',
+    folder: '01.停止长时间的工作',
+    audioFile: 'audio.m4a',
+    title_cn: '停止长时间的工作',
+    title_jp: '長時間労働をやめる',
+    speaker: '小室淑恵',
+    paragraphs: [
+      { jp: 'あなたの人生の評価をするのは、家族であって会社じゃないですよ。あなたが定年退職した翌年に『去年まではご苦労様』とか、『一昨年まですごかったねえ』とか、会社は言ってくれないんですね。', cn: '对你的人生做出评价的是你的家人，而不是公司。在你退休后的第二年，公司可不会说"去年辛苦了"、"前年表现太棒了"等等这些话。' },
+      { jp: 'その代わり、定年退職した後30年間家族から、あなたは家のことなんにもやらなかったわよねって、ずうっと言われるんですね。そんな人生って幸せでしょうか?', cn: '但是，在退休后的30年里，你的家人会一直抱怨你没有为家里做过任何事。这样的人生幸福吗?' },
+      { jp: '人間の脳は、朝起きてから13時間しか集中力が持たないんですね。それを過ぎると、酒酔い運転と同じ集中力しかないんです。', cn: '人类的大脑，在起床后只有13个小时能集中注意力。过了这段时间，注意力就会像醉酒驾驶一样。' },
+      { jp: 'そんな時間帯にミスが多く発生し、アイディアも出ない時間帯に割増の残業代を払うなんて、『お人好しの経営者ですよ』という風に言ってあげてください。', cn: '在超出的时间段里人就很容易犯错，在想不出好点子的时间段里支付额外加班费，大家不妨对他说"您还真是个好老板"。' },
+      { jp: '最後に、この山積している日本の社会問題を財政を全く使わずに解決できる。', cn: '最后，我们可以在不使用财政的情况下解决这些堆积如山的日本社会问题。' },
+      { jp: 'この長時間労働をやめるということ。ぜひ皆さんももちろん実践し、そして周りの方にも広めていただきたいのです。', cn: '那就是"停止长时间的工作"。相信大家一定会亲自实践，也希望能推广给身边的人。' },
+      { jp: 'そうすると、私生活が増えることで様々なアイディアがインプットされる。そして、そのアイディアがワークに影響を及ぼして、ワークでどんどんと成果が出る。', cn: '这样的话，随着私人时间的增加，也会产生各种各样的想法。然后，这些想法会对工作产生影响，工作中也会不断取得成果。' }
+    ],
+    vocab: [
+      { word: '定年退職', meaning: '退休' },
+      { word: 'とか', meaning: '并列助词，意为"...或..."' },
+      { word: 'その代わり', meaning: '但是，不过' },
+      { word: 'から', meaning: '格助词，"从..."、"自..."' },
+      { word: '～しか～ない', meaning: '表限定，意为"只..."、"仅仅..."' },
+      { word: 'ミス', meaning: '错误' },
+      { word: 'アイディア', meaning: '想法，主意' },
+      { word: '山積', meaning: '自他动词，意为"堆积如山"' },
+      { word: 'インプット', meaning: '输入' },
+      { word: 'ワーク', meaning: '工作' }
+    ]
+  },
+  {
+    presetId: 'ted_02',
+    folder: '02.只管过好你自己的人生',
+    audioFile: 'audio.m4a',
+    title_cn: '请只管过好自己的人生',
+    title_jp: '自分の人生をひたすら生きてください',
+    speaker: '澤円',
+    paragraphs: [
+      { jp: '皆さんは思い切り自分中心に来てほしいですね。自己中という言葉は子供の頃何かどちらかというとネガティブな言葉として扱われてたんじゃないかと思うんですね。他の人とうまく付き合うには自己中はよくない、ある面においては確かに正解です。', cn: '希望大家能够尽情地以自我为中心。"自我中心"这个词在小时候应该是被当作消极的词语来使用的吧。在与他人和睦相处中，以自我为中心是不好的，在某些方面确实是正确的。' },
+      { jp: '触れ合ったときにお互いを尊重しやそういった自己中であれば僕はどんどんやっていけばいいと思うですね。その時に絶対に忘れてはならないことは何なのか。あなたはどう在りたいのかってことなんです、何をするんですか、どんなことができるんですか。', cn: '如果我们在互相接触中互相尊重，并以自我为中心的话，我认为继续这样做比较好。那时你绝对不能忘记的是什么？你想要怎样的生活？你要做什么？你能做什么？' },
+      { jp: '自分自身に聞いてみてください私はどう在りたいんだ。私はこうありたいそれに対して本当に馬鹿正直に生きていく、これがこれからの時代に求められる生き方なんじゃないかと僕は思ってるんですね。ぜひありたい姿でい続けてください。そして、自分の人生をひたすら生きてください。', cn: '问问自己，我想要怎样的生活。我面对这样的现实，诚实地活下去，我认为这才是今后时代所追求的生活方式。请一定要保持想要的姿态。然后，请只管过好自己的人生。' },
+      { jp: 'もちろん他人を尊重するということが大事です。でも一番大事なのはみなさんは自分の人生を生きるという事です。とにかく自分の人生楽しく生きましょう。僕もそうします。ぜひ皆さんもそうしてください。', cn: '当然尊重他人是很重要的。但是最重要的是大家要活出自己的人生。总之，快乐地度过自己的人生吧。我会这么做。请大家一定也要这么做。' }
+    ],
+    vocab: [
+      { word: '自己中（じこちゅう）', meaning: '以自我为中心的，自私' },
+      { word: 'ネガティブ', meaning: '否定(的)，消极(的)' },
+      { word: '付き合う（つきあう）', meaning: '陪伴，应酬；交际，交往' },
+      { word: '触れ合う（ふれあう）', meaning: '互相接触，互相挨着' },
+      { word: 'ならない', meaning: '不准，不要；必须；不得了，不由得' },
+      { word: '馬鹿正直（ばかしょうじき）', meaning: '过于正直，过分老实' },
+      { word: 'ひたすら', meaning: '一味；一个劲儿；一心一意' },
+      { word: '尊重（そんちょう）', meaning: '尊重，重视' },
+      { word: 'とにかく', meaning: '无论如何，不管怎样；总之' }
+    ]
+  },
+  {
+    presetId: 'ted_03',
+    folder: '03.把想做的事说出来',
+    audioFile: 'audio.m4a',
+    title_cn: '把想做的事情说出来',
+    title_jp: 'やりたいことを口に出す',
+    speaker: '中込孝規',
+    paragraphs: [
+      { jp: '僕が今日、みなさんにお伝えしたいメッセージは一つだけです。それは「やりたいことを口に出そう」ということです。「そんなの恥ずかしい」とか、「口に出したところで何が変わるんだ」と言う人もいるかもしれません。でも、やりたいことを口に出したら、僕の人生は大きく変わりました。', cn: '我今天想向大家传达的信息只有一个。那就是"说出你想做的事吧"。或许有人会说"这太难为情了"、"说出来又能改变什么？"但是，把想做的事情说出来之后，我的人生发生了巨大的改变。' },
+      { jp: '怖くてもいいんです。怖いけどやりたいことこそ、本当にやりたいことなんだと思います。やりたいことからは逃げられません。やり方なんて動き出さなきゃ分かりません。僕の場合はやりたいことを口に出したら、いろんな人が協力してくれて、一緒にハッピーな場を作ることができました。', cn: '害怕也没关系。虽然害怕但还想做，我觉得这才是真正想做的事。因为想做，所以无法逃避。不行动起来你就不知道怎么做。我把想做的事情说出来，就会得到很多人的帮助，大家一起创造出一个快乐的场所。' },
+      { jp: 'もしかしたら反対する人もいるかもしれません。でも、自分の人生の責任を取れるのは自分だけです。誰かが自分の責任を取ってくれるわけではありません。だから、自分で決断して行動することが大事なんだと思っています。もしみなさんが何か新しい一歩を踏み出したい。やりたいことをぜひ口に出してみてください。そうすることが人生が大きく広がる最初の一歩になるんだと思います。', cn: '或许会有人反对。但是，能对自己的人生负责的只有自己。并不是谁来承担我的责任。所以，我认为自己做出决断并采取行动是很重要的。如果大家想迈出新的一步，请一定要把想做的事说出来。我认为这样做是拓宽人生的第一步。' }
+    ],
+    vocab: [
+      { word: 'メッセージ', meaning: '消息，致词' },
+      { word: '口に出す（くちにだす）', meaning: '说出来' },
+      { word: '恥ずかしい（はずかしい）', meaning: '难为情' },
+      { word: 'かもしれません', meaning: '也许' },
+      { word: '～たら', meaning: '要是，...的话' },
+      { word: '怖い（こわい）', meaning: '害怕' },
+      { word: 'こそ', meaning: '强调"正是这个"' },
+      { word: '逃げる（にげる）', meaning: '逃走，逃避' },
+      { word: '協力（きょうりょく）', meaning: '协作' },
+      { word: 'もしかしたら', meaning: '或许；可能' },
+      { word: '責任を取る（せきにんをとる）', meaning: '负责任，承担责任' },
+      { word: '決断（けつだん）', meaning: '决断' },
+      { word: '踏み出す（ふみだす）', meaning: '迈出，迈步' },
+      { word: '広がる（ひろがる）', meaning: '拓宽；扩宽' }
+    ]
+  },
+  {
+    presetId: 'ted_04',
+    folder: '04.撕掉你身上的标签',
+    audioFile: 'audio.m4a',
+    title_cn: '撕掉你身上的标签',
+    title_jp: 'レッテルがはがれる',
+    speaker: '鮎永麻琴',
+    paragraphs: [
+      { jp: '今日は皆さんに自由への切符をお渡ししたくてここに立っています。この言葉が今日のキーワードです。「レッテル付け」。一体、皆さんはこの「レッテル付け」という言葉に対して、どんなイメージ、どんな印象をお持ちでしょうか?', cn: '我今天站在这里是为了给大家一张通往自由的车票。那就是今天的关键词。"贴上标签"。大家究竟对"贴标签"这个词有什么印象，什么感觉呢?' },
+      { jp: '私が自分に貼っている最大のレッテルに気づいたのは、仕事を辞めて、結果何の肩書もない、ただの人になった時です。それは、誰かが、誰かの役に立ててないと、もしくは何かに貢献できている自分でないと、自分には価値がないというレッテルだったんです。', cn: '我发现我给自己贴上最大的标签，是当我辞职，身上没有任何头衔，只是一个人的时候。那个标签是，对别人没有任何帮助，或者我没有做出什么贡献，那我自己就没有价值。' },
+      { jp: 'レッテルは気づくだけで、バリバリと剥がれ始めました。一番硬い大きなレッテルがはがれると、ダメとか、馬鹿とか、そんな小さなレッテルは、魚のうろこのようにポロポロと剥がれてきました。はがれてみて初めてわかったことがあります。', cn: '只有你注意到这些标签，它们才会开始啪啦啪啦地掉下来。当最坚硬的大标签脱落，你不行啦，你很笨啦，这样的小标签，会像鱼鳞一样嗒嗒地脱落下来。这是标签脱落后我才明白的事。' },
+      { jp: '私の人生の一番な足かせは、自分が自分に貼ってしまっているレッテルだったんです。レッテルという制限が取れて、そこには自由が生まれました。幸福度が上がりました。', cn: '我人生中最大的枷锁，就是自己给自己贴的标签。去掉标签的限制，才有了自由。幸福感才上升了。' },
+      { jp: 'そして、皆さんが知らないうちに、自分自身に貼ってしまっているレッテルに、気付くきっかけになれたら、とても、とても嬉しいです。皆さんが進む自由へのちょっと先で、お待ちしています。ありがとうございました。', cn: '然后，如果借此机会，大家注意到了在不知不觉中给自己贴上的标签的话，我会非常、非常高兴。我再通往自由的前方等着大家。谢谢。' }
+    ],
+    vocab: [
+      { word: '切符（きっぷ）', meaning: '票，票证' },
+      { word: 'キーワード', meaning: '关键词句，关键字' },
+      { word: 'レッテル', meaning: '标签，标记' },
+      { word: 'イメージ', meaning: '形象，印象' },
+      { word: '貼る（はる）', meaning: '粘，贴；钉上去' },
+      { word: '肩書（かたがき）', meaning: '头衔，官衔，称呼，地位' },
+      { word: '役に立てる（やくにたてる）', meaning: '供使用，效劳' },
+      { word: '貢献（こうけん）', meaning: '贡献' },
+      { word: '価値（かち）', meaning: '价值' },
+      { word: '気づく（きづく）', meaning: '注意到，察觉，意识到' },
+      { word: '馬鹿（ばか）', meaning: '愚蠢，糊涂' },
+      { word: '剥がれる（はがれる）', meaning: '剥落，揭下' },
+      { word: '足かせ（あしかせ）', meaning: '脚镣；累赘' },
+      { word: '制限（せいげん）', meaning: '限制，限度，界限' },
+      { word: '生まれる（うまれる）', meaning: '诞生，产生' },
+      { word: 'きっかけ', meaning: '时机，以...为契机' },
+      { word: '進む（すすむ）', meaning: '前进；进展顺利' }
+    ]
+  },
+  {
+    presetId: 'ted_05',
+    folder: '05.享受自己的人生',
+    audioFile: 'audio.m4a',
+    title_cn: '享受自己的人生',
+    title_jp: '自分の人生を楽しむ',
+    speaker: '天野百惠',
+    paragraphs: [
+      { jp: '逆に言うと、自分が窮屈だなぁと感じる方は選ばないということです。私の選択は人から見れば、窮屈そうだなとか、なんでそんなことしてんだろうっていう風に見えるかもしれません。でも、私が自分らしくあるために選んだ道なら、それは自由で喜びに溢れています。', cn: '反过来说，我不会选择让我觉得不舒服的事。我的选择或许在别人看来是不舒服的，他们可能会好奇我为什么会做出这样的选择。但是，只要我为了有自己的风格而选择的道路，那就是自由的，充满喜悦的。' },
+      { jp: '人はもしかしたら、『失敗だ』とか、『そんなことをやらないほうがいい』とか、『不幸な出来事だ』とか言うかもしれません。でも自分が今の状態に対してオーケーだと思えるかどうかが、自分の人生では一番大切なことです。', cn: '人们可能会说"你太失败了"、"你最好还是别这么做"、"发生这种事太惨了"。但我对于自己现在的状态是否满意，才是我人生中最重要的事情。' },
+      { jp: '高校生の時、私は人生に悩んでいました。今となっては何に悩んでいたかについては、もう忘れてしまっているんですけれども、とにかくあの時私は思い悩んでいました。', cn: '高中的时候，我对人生充满了困惑。现在想想，虽然已经想不起来在烦恼些什么，但那时的我确实有很多烦恼。' },
+      { jp: '私が自分が楽しいと思う人生を生きるために、指標にしていることが二つあります。', cn: '我为了能快乐地度过一生，有两条准则。' },
+      { jp: '一つ目は安全策を取らない、リスクを恐れないということです。二つ目は、迷ったときは必ず自分が面白いと感じる方にかけるということです。', cn: '第一，不要过于保守，不要惧怕风险。第二，迷茫的时候一定要选择自己觉得有趣的。' },
+      { jp: '私が私らしくあるということ、あなたがあなたらしくあるということ。そのことを大切にすれば、自分も周囲もそれぞれが豊かに生きていけると私は考えています。', cn: '我按照自己的意愿生活，你也按照自己的意愿生活。把这件事放在首位的话，我认为自己和身边的每一个人都会生活得多姿多彩。' }
+    ],
+    vocab: [
+      { word: '逆に言うと', meaning: '反过来说' },
+      { word: 'そうだ', meaning: '或许，好像(是)' },
+      { word: 'もしかしたら', meaning: '或许；可能' },
+      { word: 'ほうがいい', meaning: '表示建议和劝告，意为"最好..."、"...为好"' },
+      { word: 'かどうか', meaning: '接续词，意为"是否"' },
+      { word: 'けれども', meaning: '接续助词，意为"然而，但是"' },
+      { word: 'とにかく', meaning: '副词，意为"反正；不管怎样"' },
+      { word: 'リスク', meaning: '风险；危险' },
+      { word: '～にすれば', meaning: '接续词，表示"从...立场来看..."' },
+      { word: 'それぞれ', meaning: '分别；各个；每个' }
+    ]
+  },
+  {
+    presetId: 'ted_06',
+    folder: "06.尊重孩子眼中的世界",
+    audioFile: 'audio.m4a',
+    title_cn: "尊重孩子眼中的世界",
+    title_jp: '子どもから見える世界を尊重する',
+    speaker: '小澤いぶき',
+    paragraphs: [
+      { jp: '世の中には、そしてこの地球にはたくさんの問題が複雑に絡み合って存在しています。私たちが作ってきた問題です。子どもの幸せを願いながらも、私は、私たちはこの問題を子どもたちに残していくかもしれません。', cn: '在这个社会中，甚至在这个地球上，有很多问题错综复杂地交织在一起。是我们制造了这些问题。虽然希望孩子们幸福，但我、我们或许把这些问题留给了孩子们。' },
+      { jp: 'それを考えた時、私たちがするべきことは大人中心のこの社会に当てはまるように子どもたちを育てるのではなく、子どもを一人の対等なパートナーとして尊重し、子どもの世界から見えるその世界を尊重し、そして子どもたちと一緒に社会システムをデザインし作っていくことなんです。', cn: '每当想到这些，我觉得我们应该做的不是在以成年人为中心的社会中教育孩子们，要把孩子们看做是平等的伙伴，给予他们尊重。也要尊重孩子们眼中的世界。和孩子们一起，设计、建造这个世界。' },
+      { jp: '私たち大人が勇気を持って一歩踏み出したら、それが社会に子どもたちに連鎖します。', cn: '我们这些成年人如果鼓起勇气踏出第一步的话，就会给社会、给孩子们带来连锁反应。' },
+      { jp: '「あなたは未来のある、大切な一人の人なんだよ！」そんな風に子どもたちに伝えられる社会をみなさん一緒に作っていきませんか。', cn: '"你是有未来的人，而且很重要！"大家一起创造一个向孩子们传达这种观念的社会吧！' }
+    ],
+    vocab: [
+      { word: '絡み合う', meaning: '错综复杂；互相缠绕' },
+      { word: '～かもしれません', meaning: '接续词，"也许，也未可知"' },
+      { word: 'べき', meaning: '必须，应该；理应如此' },
+      { word: '育てる', meaning: '培育；教育；发展' },
+      { word: 'パートナー', meaning: '伙伴；同伴' },
+      { word: 'システム', meaning: '组织；制度' },
+      { word: 'デザイン', meaning: '设计' },
+      { word: '連鎖', meaning: '连锁；联系' },
+      { word: '大切', meaning: '重要；贵重；心爱' }
+    ]
+  },
+  {
+    presetId: 'ted_07',
+    folder: "07.摆脱“我做不到”的方法",
+    audioFile: 'audio.m4a',
+    title_cn: "摆脱“我做不到”的方法",
+    title_jp: '私にはできないの抜け出し方',
+    speaker: '大桥望美',
+    paragraphs: [
+      { jp: '今日皆さんにお伝えしたいことは二つです。一つはやらないうちは何の結果も生まないということです。それがあなたに向いているのか向いていないのか。そんなこともやらないうちはわかりません。結果を生んでいないのに判断するのは早すぎます。少しでいいんです。試してみてください。', cn: '今天我想告诉大家两句话。第一句不行动就不会有任何结果。那件事到底适不适合你。如果不放手去做就永远不知道答案。没有实践的结果就不能妄下结论。哪怕是一点点的尝试，反正你先行动起来。' },
+      { jp: 'そして二つ目は自分には無理と思うことでも、必ずあなたらしく実現する方法はあるということ。誰でも個性があります。得意不得意があります。そしてどんなことでもやり方は一つじゃなくて、いろんなやり方があるのです。', cn: '第二句那些你以为自己做不到的事情，一定存在一种专属于你的实现方法。每个人都有独特的个性。有擅长也有不擅长的地方。无论做什么事，方法都不是只有一种，而是有各种各样的方法。' },
+      { jp: 'やりたいことがあるのであれば、あなたらしい方法でどうやって実現させるのか、そういう風に考えてみてください。あなたの純粋な挑戦したいっていう思いには、応援してくれる人が必ずいます。最初は一人ぼっちの挑戦に思えても、あなたのやりたいという思いを言葉にして、広めていくうちに必ずそれに共感してくれる仲間が出てきます。', cn: '如果你有什么想做的事情，如何按照你的想法去实现，这才是你应该思考的问题。当你实实在在想做出一些挑战，一定会有支持你的人出现。即使一开始你会感觉孤身一人，但你可以把你想做的事情说出来，让更多人知道，肯定会出现志同道合的小伙伴。' },
+      { jp: 'そして一歩踏み出す決意をしたら、心はすごく軽くなると思います。今この瞬間に一歩あなたらしい一歩を踏み出す決意をしたのであれば、私が一番最初の応援者になります。', cn: '当你决定向前迈出一步，你的心情一定会变得无比轻松此时此刻，如果你迈出了属于你的第一步，那我第一个支持你。' }
+    ],
+    vocab: [
+      { word: '伝える', meaning: '传达；传授；告知' },
+      { word: '向く', meaning: '向；朝；对；适合' },
+      { word: '生む', meaning: '新生；产生' },
+      { word: 'らしい', meaning: '好像；适合' },
+      { word: '得意', meaning: '擅长；得意' },
+      { word: '風（ふう）', meaning: '样子；态度；风格' },
+      { word: '純粋', meaning: '纯粹；纯净；完全' },
+      { word: '広める', meaning: '扩大；传播；宣扬' },
+      { word: '決意', meaning: '决心；决意' },
+      { word: '軽い', meaning: '轻松的；重量小的' },
+      { word: '踏み出す', meaning: '迈出；出发；着手' }
+    ]
+  },
+  {
+    presetId: 'ted_08',
+    folder: "08.互相理解，不断成长",
+    audioFile: 'audio.m4a',
+    title_cn: "互相理解，不断成长",
+    title_jp: '成長を求めてお互いを理解しよう',
+    speaker: 'Anne Crescini',
+    paragraphs: [
+      { jp: '皆さんに言いたいことがある。もしかしたら外国語を勉強しているかもしれない。もしかしたら海外に行く機会があるかもしれない。言葉と文化を理解する事だけで満足しないで下さい。そういう深い所ところ世界観を理解しようとしたら、人生は豊かになります。', cn: '我有话想对大家说。也许有人正在学习外语。也许有机会去国外。请不要只满足于理解语言和文化。如果你尝试理解更深层次的世界观，那么你的人生会更加精彩。' },
+      { jp: 'けどね日本から出なくてもいいんですよ。自分の周りに世界観と考え方が違う人に囲まれている。上司、友達、同僚、お母さん、奥さん、子供。働いている人は自分の上司の考え方を理解しようとしていますか？旦那さんは奥さんが大事にしている事が分かりますか？それか考え方が違いすぎるから理解せずに諦めてしまうんですか？', cn: '不过呢，不离开日本也没关系。你身边就围绕着与你世界观和思考方式不同的人们，上司、朋友、同事、母亲、妻子、孩子。你们上班的时候有试着去理解上司的想法吗？丈夫了解妻子在乎什么吗？你们会不会因为想法差距过大，无法理解而选择放弃了呢？' },
+      { jp: '私はこのプレゼンテーションの準備をしている間にすごくショッキングな事に気付いた。', cn: '我在准备这场演讲的时候，有一个重大发现。' },
+      { jp: '私は日本の世界観を一生懸命理解しようとしたけど、自分の反抗中の娘を理解しようと全然しなかったです。彼女が大事にしている事に全然興味がなかった。', cn: '我那么努力地理解日本的世界观，却从没想过要去理解处在叛逆期的女儿。她在乎什么我一点也不感兴趣。' },
+      { jp: '改めて反省して決心した、これから彼女が大事にしている事を理解しようとする。', cn: '重新反省后我下定了决心，从今以后我要试着去理解她现在所重视的事情。' },
+      { jp: 'そしてもっと時間を過ごしてあげたり、話を聞いてあげたりする。', cn: '然后花更多的时间和她在一起，听她说话。' },
+      { jp: 'あなたの周りに同じような人がいるかどうか考えてみてください。人間は成長するためにこういう反省するような心がすごく大事です。私の好きな言葉はエリック・バーンさんの名言「他人と過去を変えられないけど、自分と将来を変えられる」この言葉を考えながら成長を求めてお互いを理解しようとする人間になりましょう。', cn: '想想看你周围是否有同样的人。人想要成长，很重要的一点是学会反思。我最喜欢的一句话是埃里克·伯恩的名言："虽然不能改变别人和过去，但可以改变自己和将来。"一边思考这句话一边成为一个不断成长互相理解的人吧。' }
+    ],
+    vocab: [
+      { word: 'もしかしたら', meaning: '或许，可能；一般于～かもしれません呼应使用' },
+      { word: '豊か', meaning: '丰富；充实；足够' },
+      { word: '囲む', meaning: '包围；围绕' },
+      { word: '諦める', meaning: '断念；死心；放弃' },
+      { word: 'プレゼンテーション', meaning: '演讲；企划书' },
+      { word: 'ショッキング', meaning: '令人震惊的' },
+      { word: '一生懸命', meaning: '拼命地，努力地' },
+      { word: 'もっと', meaning: '副词，"更，更加，进一步"' },
+      { word: '周り', meaning: '附近；周围' },
+      { word: '反省', meaning: '反省；检查自己' },
+      { word: 'ながら', meaning: '接续助词，"一边...一边..."' }
+    ]
+  },
+  {
+    presetId: 'ted_09',
+    folder: "09.不要只关注自己的不足",
+    audioFile: 'audio.m4a',
+    title_cn: "不要只关注自己的不足",
+    title_jp: '自分に足りないところばかり見らない',
+    speaker: '大桥望美',
+    paragraphs: [
+      { jp: 'そして、私が気づいたのは起業家には正解はないということです。どんな人たちでも起業するような力はある。だけど、どんな起業家になるかが違うだけ。それに気づいたときに私は私らしい姿で起業家になろうとそう思うようになりました。', cn: '而且我还发现创业者的定义是没有标准答案的。无论是谁都有创业的潜力。唯一的不同是想成为什么样的创业者。当我意识到这一点的时候，我决定以我自己的方式成为创业者。' },
+      { jp: 'そしてこの話は他の職業にも言えることなんです。デザイナーは絵が上手くなきゃいけない。お医者さんは頭が良くなきゃいけない。本当にそうでしょうか？絵が上手く描けなくても色使いが上手いデザイナーさんもいます。成績が良くなくても患者さんに寄り添える優しいお医者さんがいます。', cn: '这个理念也适用于其他职业。设计师必须擅长绘画。医生必须很聪明。真的是这样吗？有些设计师虽然不擅长绘画，但很擅长色彩搭配。有的医生虽然学习成绩不够好，但对患者体贴入微。' },
+      { jp: 'だからやりたいことがあったら自分に足りないところばかり見るのではなくて、自分らしく実現する方法っていうのを考えてみてください。', cn: '所以如果你有什么想做的事情，不要只关注自己的不足之处，可以去思考一下如何按照你的想法去实现。' },
+      { jp: 'それが世間一般で言われているような言葉に惑わされないようにしてください。どんなことでも自分らしく実現する方法はあるんです。それが一般的な形じゃなくていいんです。自分らしい形を作っていけばいいのだから。そして行動してみることで、やっと気づくことだってあるんです。', cn: '请不要被社会上的一般言论所迷惑。任何目标都有属于你的实现方式。不一定要按常规的方式。独创专属于你的方法就好了。然后试着行动就会有很多新的发现。' }
+    ],
+    vocab: [
+      { word: '起業家', meaning: '创业者' },
+      { word: 'らしい', meaning: '表示给人以某种感觉；表示非常适合' },
+      { word: '～ようになる', meaning: '变得...逐渐能...' },
+      { word: 'デザイナー', meaning: '设计师' },
+      { word: '寄り添う', meaning: '挨近；贴近' },
+      { word: 'だから', meaning: '因此，所以' },
+      { word: 'ばかり', meaning: '表限定，"只；仅仅"' },
+      { word: '世間', meaning: '世上；社会上' },
+      { word: '惑う', meaning: '困惑；迷恋' },
+      { word: 'やっと', meaning: '副词，"终于；勉勉强强；刚刚"' }
+    ]
+  },
+  {
+    presetId: 'ted_10',
+    folder: "10.不惧怕风险的人生",
+    audioFile: 'audio.m4a',
+    title_cn: "不惧怕风险的人生",
+    title_jp: 'リスクを恐れない人生',
+    speaker: '天野百惠',
+    paragraphs: [
+      { jp: '私はその試行錯誤も大好きです。そして自分が素晴らしいと思える方法が見つかった時が、また最高の気分です。私は大変なことをまあ比較的ちょっと歓迎しているので、もしかしたら壁にぶつかったり、転んだりすることが多いのかもしれません。', cn: '我也很喜欢试错。当找到我觉得很棒的方法时，就是我最高兴的时候。我比较喜欢接受糟糕的事，或许会遇到阻碍，会经常失败。' },
+      { jp: 'でもこの通り、私にとってはぶつかったり転んだりすることはむしろ、これは人生をより面白く楽しくするチャンスなんだというふうに思っているところもあります。', cn: '但有时候我会这么想，对于我而言，与其说遇到了阻碍、失败，倒不如说有机会让我的人生变得有趣。' },
+      { jp: 'そういったわけで、一般的には良くないと言われるような出来事であっても、私は前向きに捉えることができていると考えています。私が自分の選択と起こる出来事を楽しんでいくために、大切にしていることが三つあります。', cn: '所以，即便发生了一些普遍认为不太好的事，我想我也能朝前看。为了享受我自己的选择和身边发生的事情，我有三个重要的准则。' },
+      { jp: '一つ目は自分の決断を信じるということ。二つ目は必ず明るい未来があるんだという確信を持つこと。三つ目は自分が望む方向に行くんだという意志を持つことです。', cn: '第一个是相信自己的判断。第二，一定要坚信未来是美好的。第三，要有朝着的心中的方向前行的意志。' },
+      { jp: 'もちろん、でも落ち込んだり悲しい気持ちになったり、ボロボロの気分になることはあります。でも、まあ自分が自分らしく生きていると思えるのであれば、それって落ち込んでも『まぁいいか』と思っています。', cn: '当然，我们会有不开心的时候，也会有烦躁的时候。但如果想到我在按照自己的意愿生活，即便不开心，我也会觉得"算了吧"。' }
+    ],
+    vocab: [
+      { word: 'もしかしたら', meaning: '副词，意为"或许，可能"' },
+      { word: '～たり', meaning: '接续助词，"又...又...；时而...时而..."' },
+      { word: 'かもしれません', meaning: '表示可能性，意为"也许，可能"' },
+      { word: '～にとって', meaning: '对于...来说' },
+      { word: 'むしろ', meaning: '副词，"与其...不如..."' },
+      { word: 'チャンス', meaning: '机会' },
+      { word: 'わけ', meaning: '原因，理由，缘故' },
+      { word: '～ために', meaning: '表原因/目的，"因为...；为了..."' },
+      { word: '～ということ', meaning: '陈述事物意图、背景、理由的表达方式' },
+      { word: 'もちろん', meaning: '副词，"当然；不用说"' },
+      { word: '落ち込む', meaning: '自动词，"落入；塌陷；低落"' }
+    ]
+  },
+  {
+    presetId: 'ted_11',
+    folder: "11.大家是为了什么而工作的呢",
+    audioFile: 'audio.m4a',
+    title_cn: "大家是为了什么而工作的呢",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_12',
+    folder: "12.幸福其实离我们很近",
+    audioFile: 'audio.m4a',
+    title_cn: "幸福其实离我们很近",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_13',
+    folder: "13.人生的主人公就是自己",
+    audioFile: 'audio.m4a',
+    title_cn: "人生的主人公就是自己",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_14',
+    folder: "14.远离讨厌的事",
+    audioFile: 'audio.m4a',
+    title_cn: "远离讨厌的事",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_15',
+    folder: "15.人生的价值在于留下",
+    audioFile: 'audio.m4a',
+    title_cn: "人生的价值在于留下",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_16',
+    folder: "16.翻越心底的高墙",
+    audioFile: 'audio.m4a',
+    title_cn: "翻越心底的高墙",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_17',
+    folder: "17.玩乐之心创造价值",
+    audioFile: 'audio.m4a',
+    title_cn: "玩乐之心创造价值",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_18',
+    folder: "18.如果不喜欢就自行停止",
+    audioFile: 'audio.m4a',
+    title_cn: "如果不喜欢就自行停止",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_19',
+    folder: "19.接受挑战吧",
+    audioFile: 'audio.m4a',
+    title_cn: "接受挑战吧",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_20',
+    folder: "20.演讲改变了我的人生",
+    audioFile: 'audio.m4a',
+    title_cn: "演讲改变了我的人生",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_21',
+    folder: "21.专注当下的自己",
+    audioFile: 'audio.m4a',
+    title_cn: "专注当下的自己",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_22',
+    folder: "22.改变未来，过去也会随之改变",
+    audioFile: 'audio.m4a',
+    title_cn: "改变未来，过去也会随之改变",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_23',
+    folder: "23.现在，认真地生活于这个瞬间",
+    audioFile: 'audio.m4a',
+    title_cn: "现在，认真地生活于这个瞬间",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_24',
+    folder: "24.把梦想变成现实",
+    audioFile: 'audio.m4a',
+    title_cn: "把梦想变成现实",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_25',
+    folder: "25.每个人都会是他人的一束光",
+    audioFile: 'audio.m4a',
+    title_cn: "每个人都会是他人的一束光",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_26',
+    folder: "26.人心不会轻易改变",
+    audioFile: 'audio.m4a',
+    title_cn: "人心不会轻易改变",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_27',
+    folder: "27.一个问题成就了明天的你",
+    audioFile: 'audio.m4a',
+    title_cn: "一个问题成就了明天的你",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_28',
+    folder: "28.现在的思考是为了创造未来，实现梦想",
+    audioFile: 'audio.m4a',
+    title_cn: "现在的思考是为了创造未来，实现梦想",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_29',
+    folder: "29.勇敢地去做吧",
+    audioFile: 'audio.m4a',
+    title_cn: "勇敢地去做吧",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_30',
+    folder: "30.教育是为了培养未来的生存能力",
+    audioFile: 'audio.m4a',
+    title_cn: "教育是为了培养未来的生存能力",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_31',
+    folder: "31.为了梦想拼尽全力",
+    audioFile: 'audio.m4a',
+    title_cn: "为了梦想拼尽全力",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_32',
+    folder: "32.通过了解他人了解自己",
+    audioFile: 'audio.m4a',
+    title_cn: "通过了解他人了解自己",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_33',
+    folder: "33.不要吝啬于爱自己",
+    audioFile: 'audio.m4a',
+    title_cn: "不要吝啬于爱自己",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_34',
+    folder: "34.创造有益于所有人的社会",
+    audioFile: 'audio.m4a',
+    title_cn: "创造有益于所有人的社会",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_35',
+    folder: "35.即使失败也要迈出脚步",
+    audioFile: 'audio.m4a',
+    title_cn: "即使失败也要迈出脚步",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_36',
+    folder: "36.了解内心深处的渴望",
+    audioFile: 'audio.m4a',
+    title_cn: "了解内心深处的渴望",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_37',
+    folder: "37.温故而知新",
+    audioFile: 'audio.m4a',
+    title_cn: "温故而知新",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_38',
+    folder: "38.独立思考,不要被常识束缚",
+    audioFile: 'audio.m4a',
+    title_cn: "独立思考,不要被常识束缚",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_39',
+    folder: "39.带着好奇心迈出新的一步",
+    audioFile: 'audio.m4a',
+    title_cn: "带着好奇心迈出新的一步",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_40',
+    folder: "40.不要害怕挫折",
+    audioFile: 'audio.m4a',
+    title_cn: "不要害怕挫折",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_41',
+    folder: "41.创新诞生于多样性之中",
+    audioFile: 'audio.m4a',
+    title_cn: "创新诞生于多样性之中",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_42',
+    folder: "42.我身上发生了很多塞翁失马的故事",
+    audioFile: 'audio.m4a',
+    title_cn: "我身上发生了很多塞翁失马的故事",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_43',
+    folder: "43.不要害怕走弯路",
+    audioFile: 'audio.m4a',
+    title_cn: "不要害怕走弯路",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_44',
+    folder: "44.不要继续追问没有答案的问题",
+    audioFile: 'audio.m4a',
+    title_cn: "不要继续追问没有答案的问题",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_45',
+    folder: "45.不要冷眼相待,要行动起来",
+    audioFile: 'audio.m4a',
+    title_cn: "不要冷眼相待,要行动起来",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_46',
+    folder: "46.下一个转角会是怎样的风景",
+    audioFile: 'audio.m4a',
+    title_cn: "下一个转角会是怎样的风景",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_47',
+    folder: "47.选择你感兴趣的领域",
+    audioFile: 'audio.m4a',
+    title_cn: "选择你感兴趣的领域",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_48',
+    folder: "48.不要让多管闲事的人妨碍你的人生",
+    audioFile: 'audio.m4a',
+    title_cn: "不要让多管闲事的人妨碍你的人生",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_49',
+    folder: "49.理解塞翁失马…人生才是快乐的",
+    audioFile: 'audio.m4a',
+    title_cn: "理解塞翁失马…人生才是快乐的",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  },
+  {
+    presetId: 'ted_50',
+    folder: "50.欢迎来到不公平的世界",
+    audioFile: 'audio.m4a',
+    title_cn: "50.欢迎来到不公平的世界",
+    title_jp: '', speaker: '', paragraphs: [], vocab: []
+  }
+];
+
+// ============ STORAGE ============
+function save() {
+  localStorage.setItem('jp-speak-state', JSON.stringify(state));
+}
+function load() {
+  const raw = localStorage.getItem('jp-speak-state');
+  if (raw) {
+    try {
+      state = { ...state, ...JSON.parse(raw) };
+    } catch(e) { console.error(e); }
+  }
+}
+
+// ============ TOPIC MANAGEMENT ============
+function addTopic() {
+  const date = document.getElementById('new-date').value;
+  const cn = document.getElementById('new-topic-cn').value.trim();
+  if (!date || !cn) { alert('请填写日期和话题'); return; }
+  const preset = PRESET_TOPICS.find(p => p.cn === cn);
+  state.topics.push({
+    id: Date.now(),
+    date, cn,
+    jp: preset ? preset.jp : '',
+    intro: preset ? preset.intro : `1-2分钟谈谈「${cn}」。`,
+    notes: '',
+    transcript: '',
+    questions: [],
+    completed: false,
+    expanded: false
+  });
+  document.getElementById('new-topic-cn').value = '';
+  sortAndRender();
+  save();
+}
+
+function randomTopic() {
+  const today = new Date();
+  const used = new Set(state.topics.map(t => t.cn));
+  // Find the first future date without a topic (up to 30 days ahead)
+  let targetDate = null;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const ds = d.toISOString().slice(0, 10);
+    if (!state.topics.find(t => t.date === ds)) { targetDate = ds; break; }
+  }
+  if (!targetDate) {
+    alert('未来 30 天都已经有题目啦～可以手动添加或修改现有题目');
+    return;
+  }
+  const available = PRESET_TOPICS.filter(p => !used.has(p.cn));
+  const pool = available.length ? available : PRESET_TOPICS;
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  state.topics.push({
+    id: Date.now() + Math.random(),
+    date: targetDate, cn: p.cn, jp: p.jp, intro: p.intro,
+    notes: '', transcript: '', questions: [],
+    completed: false, expanded: false
+  });
+  sortAndRender();
+  save();
+}
+
+function sortAndRender() {
+  state.topics.sort((a, b) => a.date.localeCompare(b.date));
+  renderTopics();
+}
+
+function formatDate(iso) {
+  const parts = iso.split('-');
+  return `${parseInt(parts[1])}.${parseInt(parts[2])}`;
+}
+
+function renderTopics() {
+  const list = document.getElementById('topics-list');
+  if (state.topics.length === 0) {
+    list.innerHTML = '<div class="empty-hint">还没有题目，点击"随机生成"开始吧 🎌</div>';
+    return;
+  }
+  list.innerHTML = state.topics.map(t => `
+    <div class="topic-item ${t.expanded ? 'expanded' : ''} ${t.completed ? 'completed' : ''}" data-id="${t.id}">
+      <div class="topic-header" onclick="toggleExpand(${t.id})" oncontextmenu="showCtxMenu(event, ${t.id})" title="右键：修改/删除">
+        <div class="topic-title">
+          <span class="topic-date">${formatDate(t.date)}</span>
+          <span class="topic-name">${escapeHtml(t.cn)}<span class="topic-name-jp">${escapeHtml(t.jp || '')}</span></span>
+          <span class="check-mark">✓</span>
+        </div>
+        <span class="expand-icon">▶</span>
+      </div>
+      <div class="topic-body">
+        <div class="intro-box"><strong>📝 题目介绍：</strong><br>${escapeHtml(t.intro)}</div>
+
+        <div class="section-label">笔记（回答框架、生词等）</div>
+        <textarea placeholder="在这里写笔记..." onchange="updateNotes(${t.id}, this.value)">${escapeHtml(t.notes)}</textarea>
+
+        <div class="section-label" style="margin-top:14px;">🎤 语音录制</div>
+        <div class="record-row">
+          <button class="record-btn" onclick="toggleRecord(${t.id}, this)" data-topic="${t.id}">
+            <span>🎤</span> 开始录音
+          </button>
+          <button class="btn btn-ghost btn-small" onclick="clearTranscript(${t.id})">清空</button>
+          <span style="font-size:12px;color:#888;">支持日语识别，Chrome 浏览器最佳</span>
+        </div>
+        <div class="transcript-box" id="transcript-${t.id}">${escapeHtml(t.transcript)}</div>
+
+        <div class="topic-actions">
+          <button class="btn btn-secondary" onclick="finishAnswer(${t.id})">✅ 回答完毕，出追问</button>
+          <button class="btn btn-ghost" onclick="editTopic(${t.id})">✏️ 编辑题目</button>
+          <button class="btn ${t.completed ? 'btn-ghost' : ''}" onclick="toggleComplete(${t.id})">
+            ${t.completed ? '↩️ 取消完成' : '✓ 标记完成'}
+          </button>
+        </div>
+
+        ${t.questions.length ? `
+          <div class="questions-box">
+            <h4>💬 AI 追问（根据你的回答）</h4>
+            ${t.questions.map(q => `
+              <div class="question-item">
+                <div class="jp">${escapeHtml(q.jp)} <button class="speak-btn" onclick="speak('${escapeAttr(q.jp)}')">🔊</button></div>
+                <div class="cn">${escapeHtml(q.cn)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function toggleExpand(id) {
+  const t = state.topics.find(x => x.id === id);
+  if (t) { t.expanded = !t.expanded; renderTopics(); save(); }
+}
+function updateNotes(id, val) {
+  const t = state.topics.find(x => x.id === id);
+  if (t) { t.notes = val; save(); }
+}
+function toggleComplete(id) {
+  const t = state.topics.find(x => x.id === id);
+  if (t) { t.completed = !t.completed; renderTopics(); save(); }
+}
+function clearTranscript(id) {
+  const t = state.topics.find(x => x.id === id);
+  if (t) { t.transcript = ''; document.getElementById(`transcript-${id}`).textContent = ''; save(); }
+}
+
+// ============ CONTEXT MENU ============
+let ctxTopicId = null;
+function showCtxMenu(e, id) {
+  e.preventDefault();
+  ctxTopicId = id;
+  const menu = document.getElementById('ctx-menu');
+  menu.style.display = 'block';
+  // constrain to viewport
+  const maxX = window.innerWidth - 180;
+  const maxY = window.innerHeight - 200;
+  menu.style.left = Math.min(e.clientX, maxX) + 'px';
+  menu.style.top = Math.min(e.clientY, maxY) + 'px';
+}
+function hideCtxMenu() {
+  document.getElementById('ctx-menu').style.display = 'none';
+  ctxTopicId = null;
+}
+function ctxAction(action) {
+  const id = ctxTopicId;
+  hideCtxMenu();
+  if (id === null) return;
+  const t = state.topics.find(x => x.id === id);
+  if (!t) return;
+  if (action === 'rename') {
+    const newName = prompt('修改话题标题（中文）：', t.cn);
+    if (newName !== null && newName.trim()) {
+      t.cn = newName.trim();
+      const newJp = prompt('日文标题（可留空）：', t.jp || '');
+      if (newJp !== null) t.jp = newJp.trim();
+      sortAndRender();
+      save();
+    }
+  } else if (action === 'edit') {
+    editTopic(id);
+  } else if (action === 'date') {
+    const newDate = prompt('新日期（格式 YYYY-MM-DD）：', t.date);
+    if (newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+      t.date = newDate;
+      sortAndRender();
+      save();
+    } else if (newDate) {
+      alert('日期格式错误，应为 YYYY-MM-DD');
+    }
+  } else if (action === 'delete') {
+    if (confirm(`确定删除「${t.cn}」吗？`)) {
+      state.topics = state.topics.filter(x => x.id !== id);
+      renderTopics();
+      save();
+    }
+  }
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#ctx-menu')) hideCtxMenu();
+});
+document.addEventListener('contextmenu', (e) => {
+  // hide menu when right-clicking outside a topic header
+  if (!e.target.closest('.topic-header')) hideCtxMenu();
+});
+
+// ============ EDIT MODAL ============
+function editTopic(id) {
+  const t = state.topics.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-date').value = t.date;
+  document.getElementById('edit-topic-cn').value = t.cn;
+  document.getElementById('edit-topic-jp').value = t.jp || '';
+  document.getElementById('edit-intro').value = t.intro;
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEdit() { document.getElementById('edit-modal').classList.remove('show'); }
+function saveEdit() {
+  const id = parseFloat(document.getElementById('edit-id').value);
+  const t = state.topics.find(x => x.id === id);
+  if (!t) return;
+  t.date = document.getElementById('edit-date').value;
+  t.cn = document.getElementById('edit-topic-cn').value.trim();
+  t.jp = document.getElementById('edit-topic-jp').value.trim();
+  t.intro = document.getElementById('edit-intro').value.trim();
+  closeEdit();
+  sortAndRender();
+  save();
+}
+function deleteTopic() {
+  if (!confirm('确定删除这个题目吗？')) return;
+  const id = parseFloat(document.getElementById('edit-id').value);
+  state.topics = state.topics.filter(x => x.id !== id);
+  closeEdit();
+  renderTopics();
+  save();
+}
+
+// ============ SPEECH RECOGNITION ============
+let recognition = null;
+let currentRecordingTopic = null;
+
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.continuous = true;
+  r.interimResults = true;
+  r.lang = state.settings.voiceLang || 'ja-JP';
+  return r;
+}
+
+function toggleRecord(id, btn) {
+  if (!recognition) recognition = initRecognition();
+  if (!recognition) {
+    alert('当前浏览器不支持语音识别，请使用 Chrome / Edge。');
+    return;
+  }
+  if (currentRecordingTopic === id) {
+    // stop
+    recognition.stop();
+    return;
+  }
+  if (currentRecordingTopic !== null) {
+    recognition.stop();
+  }
+  currentRecordingTopic = id;
+  btn.classList.add('recording');
+  btn.innerHTML = '<span>⏹</span> 停止录音';
+  const t = state.topics.find(x => x.id === id);
+  const box = document.getElementById(`transcript-${id}`);
+  let base = t.transcript || '';
+  if (base && !base.endsWith(' ')) base += ' ';
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const txt = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += txt;
+      else interim += txt;
+    }
+    if (final) base += final;
+    box.textContent = base + interim;
+    t.transcript = base;
+    save();
+  };
+  recognition.onerror = (e) => {
+    console.error('Speech error:', e.error);
+    if (e.error === 'not-allowed') alert('请允许麦克风权限');
+  };
+  recognition.onend = () => {
+    currentRecordingTopic = null;
+    btn.classList.remove('recording');
+    btn.innerHTML = '<span>🎤</span> 开始录音';
+  };
+  try {
+    recognition.lang = state.settings.voiceLang || 'ja-JP';
+    recognition.start();
+  } catch(e) { console.error(e); }
+}
+
+// ============ TEXT-TO-SPEECH ============
+function speak(text) {
+  if (!('speechSynthesis' in window)) { alert('浏览器不支持语音合成'); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ja-JP';
+  u.rate = 0.9;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+// ============ CLAUDE API ============
+async function callClaude(systemPrompt, userMessage) {
+  const key = state.settings.apiKey;
+  if (!key) return null;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    });
+    const data = await res.json();
+    if (data.content && data.content[0]) return data.content[0].text;
+    console.error('API error:', data);
+    return null;
+  } catch(e) {
+    console.error(e);
+    return null;
+  }
+}
+
+// ============ FETCH WITH TIMEOUT ============
+async function fetchTO(url, opts = {}, ms = 15000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ============ QUICK TRANSLATE (Google, no key) ============
+// Romaji → hiragana lookup for common syllables
+const ROMAJI_TO_KANA = {
+  'kya':'きゃ','kyu':'きゅ','kyo':'きょ','gya':'ぎゃ','gyu':'ぎゅ','gyo':'ぎょ',
+  'sha':'しゃ','shu':'しゅ','sho':'しょ','ja':'じゃ','ju':'じゅ','jo':'じょ',
+  'cha':'ちゃ','chu':'ちゅ','cho':'ちょ','nya':'にゃ','nyu':'にゅ','nyo':'にょ',
+  'hya':'ひゃ','hyu':'ひゅ','hyo':'ひょ','bya':'びゃ','byu':'びゅ','byo':'びょ',
+  'pya':'ぴゃ','pyu':'ぴゅ','pyo':'ぴょ','mya':'みゃ','myu':'みゅ','myo':'みょ',
+  'rya':'りゃ','ryu':'りゅ','ryo':'りょ',
+  'shi':'し','chi':'ち','tsu':'つ','fu':'ふ',
+  'ka':'か','ki':'き','ku':'く','ke':'け','ko':'こ',
+  'ga':'が','gi':'ぎ','gu':'ぐ','ge':'げ','go':'ご',
+  'sa':'さ','su':'す','se':'せ','so':'そ',
+  'za':'ざ','ji':'じ','zu':'ず','ze':'ぜ','zo':'ぞ',
+  'ta':'た','te':'て','to':'と',
+  'da':'だ','de':'で','do':'ど',
+  'na':'な','ni':'に','nu':'ぬ','ne':'ね','no':'の',
+  'ha':'は','hi':'ひ','he':'へ','ho':'ほ',
+  'ba':'ば','bi':'び','bu':'ぶ','be':'べ','bo':'ぼ',
+  'pa':'ぱ','pi':'ぴ','pu':'ぷ','pe':'ぺ','po':'ぽ',
+  'ma':'ま','mi':'み','mu':'む','me':'め','mo':'も',
+  'ya':'や','yu':'ゆ','yo':'よ',
+  'ra':'ら','ri':'り','ru':'る','re':'れ','ro':'ろ',
+  'wa':'わ','wo':'を','n':'ん',
+  'a':'あ','i':'い','u':'う','e':'え','o':'お'
+};
+
+function romajiToHiragana(str) {
+  if (!str) return '';
+  let result = '';
+  let s = str.toLowerCase().replace(/\s+/g, ' ');
+  let i = 0;
+  while (i < s.length) {
+    let matched = false;
+    // Try 3-char, 2-char, 1-char
+    for (const len of [3, 2, 1]) {
+      const chunk = s.slice(i, i + len);
+      if (ROMAJI_TO_KANA[chunk]) {
+        result += ROMAJI_TO_KANA[chunk];
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+    // Handle double consonants (small tsu): kk, tt, ss, pp
+    if (!matched && i + 1 < s.length && s[i] === s[i+1] && 'kstpgdzbj'.includes(s[i])) {
+      result += 'っ';
+      i++;
+      matched = true;
+    }
+    if (!matched) {
+      result += s[i]; // pass through spaces, punctuation
+      i++;
+    }
+  }
+  return result;
+}
+
+async function quickTranslate() {
+  const input = document.getElementById('translate-input').value.trim();
+  if (!input) return;
+  const status = document.getElementById('translate-status');
+  const resultBox = document.getElementById('translate-result');
+  status.innerHTML = '<span class="loading"></span> 快速翻译中...';
+  resultBox.classList.remove('show');
+
+  const attempts = [
+    async () => {
+      // Step 1: zh → ja translation
+      const url1 = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=ja&dt=t&q=${encodeURIComponent(input)}`;
+      const res1 = await fetchTO(url1, {}, 8000);
+      if (!res1.ok) throw new Error('Google HTTP ' + res1.status);
+      const data1 = await res1.json();
+      const jp = data1[0].map(seg => seg[0]).filter(x => x).join('');
+      if (!jp) return { jp: '', romaji: '', hiragana: '', source: 'google' };
+      // Step 2: get romaji of the Japanese (sl=ja, dt=rm returns Japanese romaji)
+      let romaji = '';
+      let hiragana = '';
+      try {
+        const url2 = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&dt=rm&q=${encodeURIComponent(jp)}`;
+        const res2 = await fetchTO(url2, {}, 5000);
+        if (res2.ok) {
+          const data2 = await res2.json();
+          // The romaji row has [null, null, source_romaji, ...] structure
+          data2[0].forEach(seg => {
+            if (!seg[0] && !seg[1] && seg[2]) romaji += seg[2];
+          });
+          romaji = romaji.trim();
+          if (romaji) hiragana = romajiToHiragana(romaji);
+        }
+      } catch(e) { console.error('romaji fetch failed:', e); }
+      return { jp, romaji, hiragana, source: 'google' };
+    },
+    async () => {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=zh-CN|ja`;
+      const res = await fetchTO(url, {}, 8000);
+      if (!res.ok) throw new Error('MyMemory HTTP ' + res.status);
+      const data = await res.json();
+      return { jp: data.responseData.translatedText, romaji: '', hiragana: '', source: 'mymemory' };
+    }
+  ];
+
+  const errors = [];
+  for (const attempt of attempts) {
+    try {
+      const { jp, romaji, hiragana, source } = await attempt();
+      if (jp) {
+        status.innerHTML = '';
+        renderTranslation(input, jp, romaji, '', source, hiragana);
+        return;
+      }
+    } catch(e) {
+      errors.push(e.message);
+    }
+  }
+  status.innerHTML = '';
+  const googleUrl = `https://translate.google.com/?sl=zh-CN&tl=ja&text=${encodeURIComponent(input)}&op=translate`;
+  resultBox.innerHTML = `
+    <div style="color:#d64545;font-size:13px;line-height:1.7;">
+      <strong>⚠️ 免费翻译接口被拦</strong><br>
+      错误：${escapeHtml(errors.join(' / '))}<br>
+      通常是浏览器 CORS 拦截。备选：<br>
+      • <a href="${googleUrl}" target="_blank">Google Translate 网页版（会跳转）</a><br>
+      • 用 Gemini 侧边窗按钮
+    </div>
+  `;
+  resultBox.classList.add('show');
+}
+
+// ============ GEMINI SIDEBAR POPUP ============
+let geminiWin = null;
+async function openGeminiSidebar() {
+  const input = document.getElementById('translate-input').value.trim();
+  const promptText = input ? `请把这句中文翻译成自然、口语化的日语，附上：
+1. ふりがな（假名读音）
+2. ローマ字（罗马音）
+3. 关键语法/用法讲解（用中文）
+
+中文：${input}` : '';
+
+  // Copy prompt to clipboard
+  let copied = false;
+  if (input) {
+    try {
+      await navigator.clipboard.writeText(promptText);
+      copied = true;
+    } catch(e) { console.error(e); }
+  }
+
+  // Open or focus the Gemini window (small, positioned to the right)
+  const w = 500;
+  const h = Math.min(900, screen.height - 100);
+  const left = Math.min(screen.width - w, window.screenX + window.outerWidth);
+  const top = window.screenY;
+
+  if (!geminiWin || geminiWin.closed) {
+    geminiWin = window.open('https://gemini.google.com/app', 'gemini_sidebar',
+      `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    if (!geminiWin) {
+      alert('弹窗被浏览器拦截了，请在地址栏允许本页弹窗');
+      return;
+    }
+  } else {
+    geminiWin.focus();
+  }
+
+  const resultBox = document.getElementById('translate-result');
+  resultBox.innerHTML = `
+    <div style="font-size:13px;line-height:1.7;">
+      <strong style="color:#6b8e7f;">✅ Gemini 侧边窗已打开</strong><br>
+      ${copied ? '提示词已复制到剪贴板，直接按 <kbd style="background:#eee;padding:2px 6px;border-radius:3px;">Cmd/Ctrl+V</kbd> 粘贴即可发送' : '输入中文再点这个按钮，会自动复制提示词'}
+      <br><br>
+      <em style="color:#888;font-size:12px;">💡 侧边窗关不会自动重开。想同一个对话继续问，别关它，回到主页再点按钮会自动 focus 回小窗。</em>
+    </div>
+  `;
+  resultBox.classList.add('show');
+}
+
+// ============ GROQ API (free, no CORS issues) ============
+let lastGroqError = null;
+async function callGroq(systemPrompt, userMessage) {
+  const key = state.settings.groqKey;
+  if (!key) { lastGroqError = '未配置 Groq Key'; return null; }
+  // Try current and legacy Llama models
+  const models = ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
+  for (const model of models) {
+    try {
+      const res = await fetchTO('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage }
+          ],
+          temperature: 0.5,
+          max_tokens: 1024
+        })
+      }, 15000);
+      const data = await res.json();
+      if (res.ok && data.choices && data.choices[0]) {
+        console.log(`Groq OK (model: ${model})`);
+        return data.choices[0].message.content;
+      }
+      const errMsg = data.error ? data.error.message : `HTTP ${res.status}`;
+      lastGroqError = `[${model}] ${errMsg}`;
+      console.error(`Groq ${model} failed:`, data);
+      if (res.status === 401 || res.status === 403) return null;
+    } catch(e) {
+      lastGroqError = `[${model}] ${e.message}`;
+      console.error(`Groq ${model} exception:`, e);
+    }
+  }
+  return null;
+}
+
+// ============ GEMINI: LIST MODELS ============
+async function listGeminiModels() {
+  const key = document.getElementById('gemini-key').value.trim() || state.settings.geminiKey;
+  const out = document.getElementById('gemini-models-result');
+  if (!key) { out.innerHTML = '<span style="color:#d64545;">先输入 Key</span>'; return; }
+  out.innerHTML = '<span class="loading"></span> 查询中...';
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      out.innerHTML = `<span style="color:#d64545;">❌ Key 无效或被拒: ${escapeHtml(data.error ? data.error.message : 'HTTP ' + res.status)}</span>`;
+      return;
+    }
+    const usable = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'));
+    if (usable.length === 0) {
+      out.innerHTML = '<span style="color:#d64545;">Key 有效，但没有支持 generateContent 的模型（可能是 OAuth token 而非 API Key，请从 aistudio 重新领 API Key）</span>';
+      return;
+    }
+    // Auto-pick first flash model
+    const preferred = usable.find(m => m.name.includes('flash')) || usable[0];
+    const modelName = preferred.name.replace('models/', '');
+    out.innerHTML = `
+      <div style="color:#6b8e7f;"><strong>✓ Key 有效，找到 ${usable.length} 个可用模型：</strong></div>
+      ${usable.slice(0, 10).map(m => `<div style="padding:2px 0;">• ${escapeHtml(m.name.replace('models/', ''))}</div>`).join('')}
+      <button class="btn btn-small" style="margin-top:8px;" onclick="useGeminiModel('${escapeAttr(modelName)}')">👉 用 ${escapeHtml(modelName)}</button>
+    `;
+  } catch(e) {
+    out.innerHTML = `<span style="color:#d64545;">❌ 网络错误: ${escapeHtml(e.message)}</span>`;
+  }
+}
+function useGeminiModel(model) {
+  state.settings.geminiModel = model;
+  state.settings.geminiKey = document.getElementById('gemini-key').value.trim();
+  save();
+  document.getElementById('gemini-models-result').innerHTML = `<span style="color:#6b8e7f;">✓ 已保存，将使用 ${escapeHtml(model)}</span>`;
+}
+
+// ============ GEMINI API ============
+let lastGeminiError = null;
+
+// Auto-discover a usable free-tier flash model
+async function discoverGeminiModel() {
+  const key = state.settings.geminiKey;
+  if (!key) return null;
+  try {
+    const res = await fetchTO(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, {}, 10000);
+    const data = await res.json();
+    if (!data.models) return null;
+    const usable = data.models.filter(m => (m.supportedGenerationMethods || []).includes('generateContent'));
+    // Prefer flash models (usually free), avoid pro (paid) and experimental
+    const flash = usable.find(m => /flash/.test(m.name) && !/pro|thinking/.test(m.name));
+    const chosen = flash || usable.find(m => !/pro/.test(m.name)) || usable[0];
+    if (chosen) {
+      const modelName = chosen.name.replace('models/', '');
+      state.settings.geminiModel = modelName;
+      save();
+      console.log('Auto-discovered Gemini model:', modelName);
+      return modelName;
+    }
+  } catch(e) { console.error('discoverGeminiModel error:', e); }
+  return null;
+}
+
+async function callGemini(systemPrompt, userMessage) {
+  const key = state.settings.geminiKey;
+  if (!key) { lastGeminiError = '未配置 Gemini Key'; return null; }
+
+  // Discover model if not set
+  if (!state.settings.geminiModel) {
+    await discoverGeminiModel();
+  }
+
+  const models = [];
+  if (state.settings.geminiModel) models.push(state.settings.geminiModel);
+  // fallbacks - flash only, avoid pro (paid)
+  models.push('gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash-8b');
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const res = await fetchTO(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+        })
+      }, 20000);
+      const data = await res.json();
+      if (res.ok && data.candidates && data.candidates[0]) {
+        console.log(`Gemini OK (model: ${model})`);
+        return data.candidates[0].content.parts[0].text;
+      }
+      // Save error and try next model
+      const errMsg = data.error ? `${data.error.status || res.status}: ${data.error.message}` : `HTTP ${res.status}`;
+      lastGeminiError = `[${model}] ${errMsg}`;
+      console.error(`Gemini ${model} failed:`, data);
+      // If cached model was bad, clear it so we don't try it again next time
+      if (model === state.settings.geminiModel && data.error && (data.error.status === 'NOT_FOUND' || data.error.status === 'RESOURCE_EXHAUSTED')) {
+        state.settings.geminiModel = '';
+        save();
+      }
+      // Only stop on auth errors (RESOURCE_EXHAUSTED on ONE model doesn't mean others are exhausted)
+      if (data.error && (data.error.status === 'PERMISSION_DENIED' || data.error.status === 'UNAUTHENTICATED' || res.status === 401 || res.status === 403)) {
+        return null;
+      }
+    } catch(e) {
+      lastGeminiError = `[${model}] ${e.message}`;
+      console.error(`Gemini ${model} exception:`, e);
+    }
+  }
+  return null;
+}
+
+// ============ OPEN IN GEMINI WEB ============
+function openInGemini() {
+  const input = document.getElementById('translate-input').value.trim();
+  if (!input) { alert('请先输入中文'); return; }
+  const promptText = `请把这句中文翻译成自然、口语化的日语，并附上：
+1. 罗马音（ローマ字）
+2. 关键语法点和用法讲解（用中文）
+
+中文：${input}`;
+  navigator.clipboard.writeText(promptText).then(() => {
+    window.open('https://gemini.google.com/app', '_blank');
+    const resultBox = document.getElementById('translate-result');
+    resultBox.innerHTML = `
+      <div style="font-size:13px;line-height:1.7;">
+        ✅ 提示词已复制到剪贴板<br>
+        Gemini 页面已在新标签打开，直接粘贴（Cmd/Ctrl+V）发送即可。
+      </div>
+    `;
+    resultBox.classList.add('show');
+  }).catch(() => {
+    window.open('https://gemini.google.com/app', '_blank');
+    window.prompt('复制以下文本粘贴到 Gemini:', promptText);
+  });
+}
+
+// ============ TRANSLATE ============
+async function translateText() {
+  const input = document.getElementById('translate-input').value.trim();
+  if (!input) return;
+  const status = document.getElementById('translate-status');
+  const resultBox = document.getElementById('translate-result');
+
+  const sysPrompt = `你是日语学习助手。用户会给你一句中文，请你：
+1. 翻译成自然、口语化的日语
+2. 给出所有汉字对应的完整假名读音（ふりがな，全句用平假名标注读音）
+3. 给出罗马音（罗马字）
+4. 讲解句中出现的重要语法点或用法（简洁明了，1-3条）
+
+请严格用以下 JSON 格式返回，不要有其他内容：
+{"jp": "日语翻译", "hiragana": "假名读音", "romaji": "罗马音", "grammar": "语法讲解（用中文）"}`;
+
+  // If no keys configured, show setup instructions
+  if (!state.settings.groqKey && !state.settings.geminiKey && !state.settings.apiKey) {
+    resultBox.innerHTML = `
+      <div style="font-size:13px;line-height:1.8;">
+        <strong style="color:#d64545;">🔑 需要先配置 API Key（30 秒设置）</strong><br><br>
+        <strong style="color:#6b8e7f;">🚀 强烈推荐 Groq（最简单、最稳定、完全免费）：</strong><br>
+        1. 打开 <a href="https://console.groq.com/keys" target="_blank" style="color:#d64545;font-weight:bold;">console.groq.com/keys</a><br>
+        2. 用 Google 账号登录 → 点「Create API Key」<br>
+        3. 复制 Key（gsk_ 开头）<br>
+        4. 点右上角 <strong>⚙️ 设置</strong>，粘贴到 Groq Key 字段，保存<br>
+        5. 回来点翻译，1 秒内出结果<br><br>
+        <em style="color:#888;">Key 只存本地。免费用 Llama 4 70B 模型，30 请求/分钟。<br>
+        不用信用卡、无区域限制、无 quota=0 问题。</em>
+      </div>
+    `;
+    resultBox.classList.add('show');
+    return;
+  }
+
+  status.innerHTML = '<span class="loading"></span> 翻译中...';
+  resultBox.classList.remove('show');
+
+  const parseResult = (result) => {
+    if (!result) return null;
+    try {
+      const m = result.match(/\{[\s\S]*\}/);
+      if (m) return JSON.parse(m[0]);
+    } catch(e) { console.error('Parse error:', e); }
+    return null;
+  };
+
+  // Try Groq first (fastest, most reliable)
+  if (state.settings.groqKey) {
+    const result = await callGroq(sysPrompt, input);
+    const parsed = parseResult(result);
+    if (parsed) {
+      status.innerHTML = '';
+      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'groq', parsed.hiragana);
+      return;
+    }
+  }
+
+  // Then Claude
+  if (state.settings.apiKey) {
+    const result = await callClaude(sysPrompt, input);
+    const parsed = parseResult(result);
+    if (parsed) {
+      status.innerHTML = '';
+      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'claude', parsed.hiragana);
+      return;
+    }
+  }
+
+  // Then Gemini
+  if (state.settings.geminiKey) {
+    const result = await callGemini(sysPrompt, input);
+    const parsed = parseResult(result);
+    if (parsed) {
+      status.innerHTML = '';
+      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'gemini', parsed.hiragana);
+      return;
+    }
+  }
+
+  // API failed - show actual error
+  status.innerHTML = '';
+  const keyPreview = state.settings.geminiKey ? state.settings.geminiKey.slice(0,6) + '...' + state.settings.geminiKey.slice(-4) : '（未设置）';
+  resultBox.innerHTML = `
+    <div style="color:#d64545;font-size:13px;line-height:1.7;">
+      <strong>⚠️ API 调用失败</strong><br>
+      <strong>当前 Key：</strong> ${escapeHtml(keyPreview)}<br>
+      <strong>错误详情：</strong> ${escapeHtml(lastGeminiError || '未知错误')}<br><br>
+      <strong>常见原因：</strong><br>
+      • Key 输入不完整 / 保存后又被清空 → 打开设置重新粘贴，一定点「保存」<br>
+      • Key 所属项目未启用 Generative Language API → 去 <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#d64545;">AI Studio</a> 重新生成一个<br>
+      • 区域限制（Gemini 在部分地区不可用）→ 需要用代理<br>
+      • 按 F12 打开控制台可看到完整错误
+    </div>
+  `;
+  resultBox.classList.add('show');
+}
+
+function renderTranslation(cn, jp, romaji, grammar, source, hiragana) {
+  const resultBox = document.getElementById('translate-result');
+  const askPrompt = `请用中文详细讲解这句日语的语法和用法：\n\n中文：${cn}\n日语：${jp}\n\n请分析句子结构，指出关键语法点、助词用法、动词变形等。`;
+  resultBox.innerHTML = `
+    <div class="jp-text">${escapeHtml(jp)}
+      <button class="speak-btn" onclick="speak('${escapeAttr(jp)}')">🔊 发音</button>
+    </div>
+    ${hiragana ? `<div style="color:#b83232;font-size:14px;margin-top:2px;">ふりがな：${escapeHtml(hiragana)}</div>` : ''}
+    ${romaji ? `<div class="romaji">${escapeHtml(romaji)}</div>` : ''}
+    ${grammar ? `<div class="grammar"><strong>📚 语法/用法：</strong><br>${escapeHtml(grammar)}</div>` : `
+      <div class="grammar" style="background:#fef6f0;border-left-color:#d64545;">
+        <strong>💡 语法讲解：</strong><br>
+        免费翻译不含语法解析。点下方按钮复制提示词，粘贴到 Claude/ChatGPT 里问：
+        <button class="btn btn-small" style="margin-top:6px;" onclick='copyPrompt(${JSON.stringify(askPrompt).replace(/'/g,"&#39;")})'>📋 复制语法提问</button>
+      </div>
+    `}
+    <div style="font-size:11px;color:#aaa;margin-top:6px;">来源：${source === 'claude' ? 'Claude API' : source === 'gemini' ? 'Gemini API' : source === 'mymemory' ? 'MyMemory (免费)' : 'Google Translate (免费)'}</div>
+    <button class="btn btn-small" style="margin-top:10px;" onclick='addVocab(${JSON.stringify({cn:cn, jp:jp, romaji:romaji||'', grammar:grammar||''}).replace(/'/g,"&#39;")})'>➕ 添加到生词本</button>
+  `;
+  resultBox.classList.add('show');
+}
+
+function copyPrompt(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('已复制！粘贴到 claude.ai 或 chat.openai.com 就能得到详细讲解');
+  }).catch(() => {
+    prompt('复制以下文本：', text);
+  });
+}
+
+// ============ VOCAB ============
+function addVocab(item) {
+  if (typeof item === 'string') item = JSON.parse(item);
+  state.vocab.push({ id: Date.now(), ...item, added: new Date().toISOString().slice(0,10) });
+  save();
+  renderVocab();
+}
+function deleteVocab(id) {
+  state.vocab = state.vocab.filter(v => v.id !== id);
+  save();
+  renderVocab();
+}
+function renderVocab() {
+  const list = document.getElementById('vocab-list');
+  document.getElementById('vocab-count').textContent = state.vocab.length ? `(${state.vocab.length})` : '';
+  if (state.vocab.length === 0) {
+    list.innerHTML = '<div class="empty-hint">生词本还是空的~<br>翻译后点击"添加到生词本"</div>';
+    return;
+  }
+  list.innerHTML = state.vocab.slice().reverse().map(v => `
+    <div class="vocab-item">
+      <div class="vocab-content">
+        <div class="jp">${escapeHtml(v.jp)}</div>
+        ${v.romaji ? `<div style="color:#6b8e7f;font-size:12px;">${escapeHtml(v.romaji)}</div>` : ''}
+        <div class="cn">${escapeHtml(v.cn)}</div>
+      </div>
+      <div class="vocab-actions">
+        <button title="发音" onclick="speak('${escapeAttr(v.jp)}')">🔊</button>
+        <button title="删除" onclick="deleteVocab(${v.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+// ============ LISTENING MODULE ============
+// Split paragraph into sentence-level items for shorter click-to-jump units
+function autoSplitParagraphs(paragraphs) {
+  const result = [];
+  paragraphs.forEach(para => {
+    const jpSents = (para.jp.match(/[^。？！?!]+[。？！?!]?/g) || [para.jp]).map(s => s.trim()).filter(Boolean);
+    const cnSents = (para.cn.match(/[^。？！?!]+[。？！?!]?/g) || [para.cn]).map(s => s.trim()).filter(Boolean);
+    if (jpSents.length === cnSents.length) {
+      // Perfect 1:1 alignment
+      jpSents.forEach((jp, i) => result.push({ jp, cn: cnSents[i] }));
+    } else {
+      // Mismatch - keep JP split, put whole CN block in first item
+      jpSents.forEach((jp, i) => result.push({ jp, cn: i === 0 ? para.cn : '' }));
+    }
+  });
+  return result;
+}
+
+function buildListeningEntry(p, dateStr, idx) {
+  const splitParas = autoSplitParagraphs(p.paragraphs);
+  const totalChars = splitParas.reduce((s, para) => s + para.jp.length, 0);
+  let running = 0;
+  const timestamps = splitParas.map(para => {
+    const t = totalChars > 0 ? running / totalChars : 0;
+    running += para.jp.length;
+    return t;
+  });
+  return {
+    id: 'l_' + Date.now() + '_' + idx,
+    presetId: p.presetId,
+    date: dateStr,
+    folder: p.folder,
+    audioFile: p.audioFile,
+    title_cn: p.title_cn,
+    title_jp: p.title_jp,
+    speaker: p.speaker,
+    paragraphs: splitParas,
+    vocab: p.vocab,
+    timestamps,
+    showTranslation: true,   // default: show CN
+    hideJapanese: false,     // default: show JP
+    completed: false,
+    expanded: false
+  };
+}
+
+// Load next 7 unloaded presets
+function loadNextWeek() {
+  const loaded = new Set(state.listening.map(x => x.presetId));
+  const remaining = PRESET_LISTENING.filter(p => !loaded.has(p.presetId));
+  if (remaining.length === 0) {
+    alert('所有 50 篇都已经加载啦！');
+    return;
+  }
+  const batch = remaining.slice(0, 7);
+  // Assign dates starting from the day after the latest existing entry (or today)
+  let startDate;
+  if (state.listening.length > 0) {
+    const maxDate = state.listening.reduce((m, x) => x.date > m ? x.date : m, '0000-00-00');
+    const d = new Date(maxDate); d.setDate(d.getDate() + 1);
+    startDate = d;
+  } else {
+    startDate = new Date();
+  }
+  batch.forEach((p, i) => {
+    const d = new Date(startDate); d.setDate(d.getDate() + i);
+    state.listening.push(buildListeningEntry(p, d.toISOString().slice(0, 10), state.listening.length + i));
+  });
+  sortListening();
+  renderListening();
+  save();
+  alert(`已加载 ${batch.length} 篇（${state.listening.length}/50）`);
+}
+
+// Refresh transcript/vocab of existing entries from latest PRESET (for content updates)
+function refreshPresetContent() {
+  let updated = 0;
+  state.listening.forEach(l => {
+    const p = PRESET_LISTENING.find(x => x.presetId === l.presetId);
+    if (!p) return;
+    const splitParas = autoSplitParagraphs(p.paragraphs);
+    l.paragraphs = splitParas;
+    l.vocab = p.vocab;
+    l.title_cn = p.title_cn;
+    l.title_jp = p.title_jp;
+    l.speaker = p.speaker;
+    l.folder = p.folder;
+    l.audioFile = p.audioFile;
+    if (!l.timestamps || l.timestamps.length !== splitParas.length) {
+      const totalChars = splitParas.reduce((s, para) => s + para.jp.length, 0);
+      let running = 0;
+      l.timestamps = splitParas.map(para => {
+        const t = totalChars > 0 ? running / totalChars : 0;
+        running += para.jp.length;
+        return t;
+      });
+    }
+    updated++;
+  });
+  renderListening();
+  save();
+  alert(`已刷新 ${updated} 篇的讲稿和生词`);
+}
+
+function sortListening() {
+  state.listening.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function renderListening() {
+  const list = document.getElementById('listening-list');
+  const progress = document.getElementById('listening-progress');
+  const total = state.listening.length;
+  const display = state.listeningDisplayCount || 7;
+  const visible = state.listening.slice(0, display);
+  if (progress) progress.textContent = `已加载 ${total}/50 · 显示前 ${visible.length} 篇`;
+  if (total === 0) {
+    list.innerHTML = '<div class="empty-hint">还没有听力内容，点击上方「📅 加载下一周」开始 🎧</div>';
+    return;
+  }
+  const more = total > display ? `
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+      <button class="btn btn-ghost btn-small" onclick="showMoreListening()">👇 显示下 7 篇 (${total - display} 篇未显示)</button>
+      <button class="btn btn-ghost btn-small" onclick="showAllListening()">📋 全部显示</button>
+    </div>
+  ` : (display > 7 ? `
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+      <button class="btn btn-ghost btn-small" onclick="collapseListening()">👆 折叠回 7 篇</button>
+    </div>
+  ` : '');
+  list.innerHTML = visible.map(l => `
+    <div class="listening-item ${l.expanded ? 'expanded' : ''} ${l.completed ? 'completed' : ''}" data-id="${l.id}">
+      <div class="listening-header" onclick="toggleListeningExpand('${l.id}')" oncontextmenu="showListeningCtx(event, '${l.id}')" title="右键：删除">
+        <div class="topic-title">
+          <span class="topic-date">${formatDate(l.date)}</span>
+          <span class="topic-name">${escapeHtml(l.title_cn)}<span class="topic-name-jp">${escapeHtml(l.title_jp)}${l.speaker ? ' - ' + escapeHtml(l.speaker) : ''}</span></span>
+          <span class="check-mark">✓</span>
+        </div>
+        <span class="expand-icon">▶</span>
+      </div>
+      <div class="listening-body">
+        <div class="audio-player">
+          <audio id="audio-${l.id}" controls preload="none" onloadedmetadata="onAudioReady('${l.id}')" ontimeupdate="onAudioTime('${l.id}')" onerror="onAudioError('${l.id}')">
+            <source src="${escapeAttr(encodeURI(l.folder + '/' + l.audioFile))}" type="audio/mp4">
+          </audio>
+          <div class="audio-hint" id="audio-hint-${l.id}">💡 点击段落跳转 · ⏱ 手动校准时间戳 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">空格</kbd> 播放/暂停 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">←</kbd>/<kbd style="background:#eee;padding:1px 5px;border-radius:3px;">→</kbd> 快退/快进 2 秒</div>
+        </div>
+
+        <div class="transcript-controls">
+          <button class="btn btn-small ${l.showTranslation ? 'btn-ghost' : ''}" onclick="toggleTranslation('${l.id}')" title="切换中文翻译">
+            ${l.showTranslation ? '🙈 关闭翻译' : '👁 显示翻译'}
+          </button>
+          <button class="btn btn-small ${l.hideJapanese ? '' : 'btn-ghost'}" onclick="toggleHideJapanese('${l.id}')" title="切换日语原文">
+            ${l.hideJapanese ? '👁 显示原文' : '🙈 关闭原文'}
+          </button>
+          <button class="btn btn-ghost btn-small" onclick="toggleListeningComplete('${l.id}')">
+            ${l.completed ? '↩️ 取消完成' : '✅ 标记已学完'}
+          </button>
+        </div>
+
+        <div id="paragraphs-${l.id}">
+          ${l.paragraphs.length === 0 ? `
+            <div style="padding:24px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;line-height:1.7;">
+              📝 讲稿待补充<br>
+              <span style="font-size:12px;">音频可以直接听、跟读。文字讲稿会陆续补充（每次会话补 5-10 篇）。<br>你也可以自己在 PDF 里对照阅读：<code>${escapeHtml(l.folder)}/</code></span>
+            </div>
+          ` : ''}
+          ${l.paragraphs.map((p, idx) => `
+            <div class="paragraph ${l.showTranslation ? 'show-cn' : ''} ${l.hideJapanese ? 'hide-jp' : ''}" data-idx="${idx}" onclick="jumpToParagraph('${l.id}', ${idx})">
+              <span class="idx">${idx + 1}</span>
+              <div class="content">
+                <div class="jp">${escapeHtml(p.jp)}</div>
+                <div class="cn">${escapeHtml(p.cn)}</div>
+              </div>
+              <button class="ts-btn ${l.timestamps[idx] > 0 ? 'has-ts' : ''}" onclick="event.stopPropagation(); setTimestamp('${l.id}', ${idx})" title="记录当前音频时间为本段起点">⏱</button>
+            </div>
+          `).join('')}
+        </div>
+
+        ${l.vocab && l.vocab.length ? `
+          <div class="listening-vocab">
+            <h4>📚 生词（${l.vocab.length}）</h4>
+            ${l.vocab.map(v => `
+              <div class="vocab-row">
+                <div><span class="word">${escapeHtml(v.word)}</span> <span class="meaning">${escapeHtml(v.meaning)}</span></div>
+                <button class="add-vocab-btn" onclick='addVocab(${JSON.stringify({cn:v.meaning, jp:v.word.split('（')[0], romaji:'', grammar:''}).replace(/'/g,"&#39;")})'>➕ 加入生词本</button>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('') + more;
+}
+
+function showMoreListening() {
+  state.listeningDisplayCount = (state.listeningDisplayCount || 7) + 7;
+  renderListening();
+  save();
+}
+function showAllListening() {
+  state.listeningDisplayCount = state.listening.length;
+  renderListening();
+  save();
+}
+function collapseListening() {
+  state.listeningDisplayCount = 7;
+  renderListening();
+  save();
+  // scroll to top of list
+  document.getElementById('listening-list')?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function toggleListeningExpand(id) {
+  const l = state.listening.find(x => x.id === id);
+  if (l) { l.expanded = !l.expanded; renderListening(); save(); }
+}
+function toggleListeningComplete(id) {
+  const l = state.listening.find(x => x.id === id);
+  if (l) { l.completed = !l.completed; renderListening(); save(); }
+}
+function toggleHideJapanese(id) {
+  const l = state.listening.find(x => x.id === id);
+  if (!l) return;
+  l.hideJapanese = !l.hideJapanese;
+  // When hiding Japanese, force show Chinese
+  if (l.hideJapanese) l.showTranslation = true;
+  renderListening();
+  save();
+}
+
+function toggleTranslation(id) {
+  const l = state.listening.find(x => x.id === id);
+  if (!l) return;
+  l.showTranslation = !l.showTranslation;
+  // Update paragraphs without full re-render (keep audio playing)
+  document.querySelectorAll(`[data-id="${id}"] .paragraph`).forEach(el => {
+    el.classList.toggle('show-cn', l.showTranslation);
+  });
+  // Update button text
+  const btn = document.querySelector(`[data-id="${id}"] .transcript-controls button:first-child`);
+  if (btn) {
+    btn.textContent = l.showTranslation ? '🙈 折叠翻译' : '👁 展开翻译';
+    btn.classList.toggle('btn-ghost', !l.showTranslation);
+  }
+  save();
+}
+
+function onAudioReady(id) {
+  // Called when audio metadata is loaded - update timestamps to absolute seconds
+  const audio = document.getElementById('audio-' + id);
+  const l = state.listening.find(x => x.id === id);
+  if (!audio || !l || !audio.duration) return;
+  // timestamps stored as fractions [0-1], display purposes only
+  const hint = document.getElementById('audio-hint-' + id);
+  if (hint) hint.textContent = `💡 音频时长 ${formatTime(audio.duration)}。点击段落跳转（估算时间戳），用 ⏱ 按钮可校准`;
+}
+
+function onAudioError(id) {
+  diagnoseAudio(id);
+}
+
+async function diagnoseAudio(id) {
+  const audio = document.getElementById('audio-' + id);
+  const hint = document.getElementById('audio-hint-' + id);
+  const l = state.listening.find(x => x.id === id);
+  if (!hint || !l) return;
+
+  const errCodes = {
+    1: 'MEDIA_ERR_ABORTED (用户取消)',
+    2: 'MEDIA_ERR_NETWORK (网络错误 - file:// 常见)',
+    3: 'MEDIA_ERR_DECODE (解码失败 - 格式问题)',
+    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED (源不支持 - 通常是文件不存在或路径错)'
+  };
+  const errCode = audio && audio.error ? audio.error.code : 0;
+  const errMsg = errCodes[errCode] || '未知';
+  const srcAttempted = audio ? audio.currentSrc || audio.src : '（none）';
+  const pageUrl = window.location.href;
+  const relPath = l.folder + '/' + l.audioFile;
+
+  // Try to fetch the file to see if it exists
+  let fetchStatus = '未测试';
+  try {
+    const res = await fetch(encodeURI(relPath), { method: 'HEAD' });
+    fetchStatus = res.ok ? `✓ HTTP ${res.status} (${res.headers.get('content-type') || '?'})` : `HTTP ${res.status}`;
+  } catch(e) {
+    fetchStatus = `❌ ${e.message}`;
+  }
+
+  hint.innerHTML = `
+    <div style="color:#d64545;font-size:12px;line-height:1.6;">
+      <strong>⚠️ 音频诊断信息：</strong><br>
+      • 页面地址: <code style="font-size:11px;">${escapeHtml(pageUrl)}</code><br>
+      • 尝试路径: <code style="font-size:11px;">${escapeHtml(relPath)}</code><br>
+      • 完整 URL: <code style="font-size:11px;">${escapeHtml(srcAttempted)}</code><br>
+      • 错误代码: ${errCode} - ${errMsg}<br>
+      • 文件访问测试: ${escapeHtml(fetchStatus)}<br><br>
+      <strong>常见解决办法：</strong><br>
+      1. 确认 HTML 文件在 <code>50篇演讲</code> 文件夹内（页面地址应包含该路径）<br>
+      2. Chrome 用户：在终端运行 <code>python3 -m http.server</code> 然后浏览器访问 <code>http://localhost:8000/日语学习.html</code>（file:// 有很多限制，用 http 服务器最稳）<br>
+      3. Safari 用户：偏好设置 → 高级 → 「在菜单栏显示"开发"菜单」→ 开发 → 「停用本地文件限制」<br>
+      4. 也可以直接双击 <code>${escapeHtml(l.folder)}/audio.m4a</code> 用系统播放器听
+    </div>
+  `;
+}
+
+function onAudioTime(id) {
+  const audio = document.getElementById('audio-' + id);
+  const l = state.listening.find(x => x.id === id);
+  if (!audio || !l || !audio.duration) return;
+  const currentFrac = audio.currentTime / audio.duration;
+  // Find the paragraph whose timestamp is closest to but not exceeding current
+  let activeIdx = -1;
+  for (let i = 0; i < l.timestamps.length; i++) {
+    if (l.timestamps[i] <= currentFrac) activeIdx = i;
+    else break;
+  }
+  document.querySelectorAll(`[data-id="${id}"] .paragraph`).forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    el.classList.toggle('playing', idx === activeIdx);
+  });
+}
+
+// Global keyboard shortcuts for listening tab
+document.addEventListener('keydown', (e) => {
+  if (state.activeTab !== 'listening') return;
+  // Don't intercept if user is typing in input/textarea/contenteditable
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  // Find the "active" audio: currently playing one, or first expanded one
+  const allAudios = document.querySelectorAll('#tab-listening audio');
+  let audio = null;
+  for (const a of allAudios) {
+    if (!a.paused) { audio = a; break; }
+  }
+  if (!audio) {
+    // fall back to first expanded item's audio
+    const expanded = document.querySelector('#tab-listening .listening-item.expanded audio');
+    if (expanded) audio = expanded;
+  }
+  if (!audio) return;
+
+  if (e.code === 'Space' || e.key === ' ') {
+    e.preventDefault();
+    if (audio.paused) audio.play().catch(()=>{});
+    else audio.pause();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    audio.currentTime = Math.max(0, audio.currentTime - 2);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 2);
+  }
+});
+
+function jumpToParagraph(id, idx) {
+  const audio = document.getElementById('audio-' + id);
+  const l = state.listening.find(x => x.id === id);
+  if (!audio || !l || !audio.duration) return;
+  const targetTime = l.timestamps[idx] * audio.duration;
+  audio.currentTime = targetTime;
+  audio.play().catch(() => {});
+}
+
+function setTimestamp(id, idx) {
+  const audio = document.getElementById('audio-' + id);
+  const l = state.listening.find(x => x.id === id);
+  if (!audio || !l) return;
+  if (!audio.duration) { alert('音频尚未加载完成'); return; }
+  l.timestamps[idx] = audio.currentTime / audio.duration;
+  save();
+  // Update button styling
+  const btn = document.querySelector(`[data-id="${id}"] .paragraph[data-idx="${idx}"] .ts-btn`);
+  if (btn) btn.classList.add('has-ts');
+}
+
+function formatTime(sec) {
+  if (!sec || isNaN(sec)) return '--:--';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function showListeningCtx(e, id) {
+  e.preventDefault();
+  if (confirm('删除这篇听力？（不会影响生词本）')) {
+    state.listening = state.listening.filter(x => x.id !== id);
+    renderListening();
+    save();
+  }
+}
+
+function exportVocab() {
+  if (state.vocab.length === 0) { alert('生词本为空'); return; }
+  const csv = 'Japanese,Romaji,Chinese,Grammar,Added\n' + state.vocab.map(v =>
+    `"${(v.jp||'').replace(/"/g,'""')}","${(v.romaji||'').replace(/"/g,'""')}","${(v.cn||'').replace(/"/g,'""')}","${(v.grammar||'').replace(/"/g,'""')}","${v.added||''}"`
+  ).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vocab.csv';
+  a.click();
+}
+
+// ============ FINISH ANSWER (generate follow-ups) ============
+async function finishAnswer(id) {
+  const t = state.topics.find(x => x.id === id);
+  if (!t) return;
+  const transcript = t.transcript || '';
+  if (!transcript.trim()) {
+    if (!confirm('录音内容为空，仍然生成通用追问吗？')) return;
+  }
+
+  const sysPrompt = `你是日语口语老师。学生刚就一个话题做了1-2分钟陈述。请根据学生的陈述内容，生成3个日语追问问题（模仿雅思口语 Part 3 风格，围绕学生说过的内容深入）。
+返回 JSON 数组，每个元素包含 jp（日语问题）和 cn（中文翻译）：
+[{"jp": "...", "cn": "..."}, ...]
+不要有其他内容。`;
+
+  const userMsg = `话题：${t.cn} / ${t.jp}\n学生的陈述：\n${transcript || '（未录制）'}`;
+
+  let questions = null;
+  // Try Claude, then Gemini
+  const tryApi = async (fn) => {
+    const result = await fn(sysPrompt, userMsg);
+    if (!result) return null;
+    try {
+      const m = result.match(/\[[\s\S]*\]/);
+      if (m) return JSON.parse(m[0]);
+    } catch(e) { console.error(e); }
+    return null;
+  };
+  if (state.settings.apiKey) questions = await tryApi(callClaude);
+  if (!questions && state.settings.geminiKey) questions = await tryApi(callGemini);
+
+  if (!questions || !Array.isArray(questions)) {
+    // fallback: pick 3 random preset questions
+    const shuffled = [...PRESET_QUESTIONS].sort(() => Math.random() - 0.5);
+    questions = shuffled.slice(0, 3);
+  }
+
+  t.questions = questions;
+  renderTopics();
+  save();
+  // scroll to questions
+  setTimeout(() => {
+    const el = document.querySelector(`[data-id="${id}"] .questions-box`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+// ============ SETTINGS ============
+function openSettings() {
+  document.getElementById('api-key').value = state.settings.apiKey || '';
+  document.getElementById('gemini-key').value = state.settings.geminiKey || '';
+  document.getElementById('groq-key').value = state.settings.groqKey || '';
+  document.getElementById('voice-lang').value = state.settings.voiceLang || 'ja-JP';
+  const gkStatus = document.getElementById('gemini-key-status');
+  if (state.settings.geminiKey) {
+    gkStatus.textContent = `✓ 已保存 (${state.settings.geminiKey.length} 字符)`;
+    gkStatus.style.color = '#6b8e7f';
+  } else {
+    gkStatus.textContent = '✗ 未保存';
+    gkStatus.style.color = '#d64545';
+  }
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('show'); }
+function saveSettings() {
+  state.settings.apiKey = document.getElementById('api-key').value.trim();
+  state.settings.geminiKey = document.getElementById('gemini-key').value.trim();
+  state.settings.groqKey = document.getElementById('groq-key').value.trim();
+  state.settings.voiceLang = document.getElementById('voice-lang').value;
+  // Clear cached bad Gemini model
+  state.settings.geminiModel = '';
+  save();
+  closeSettings();
+  recognition = null; // rebuild on next use
+}
+
+// ============ IMPORT/EXPORT ============
+function exportAll() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `jp-speak-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function importAll(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (confirm('导入将覆盖当前数据，确定吗？')) {
+        state = { ...state, ...data };
+        save();
+        renderTopics();
+        renderVocab();
+      }
+    } catch(err) { alert('文件格式错误'); }
+  };
+  reader.readAsText(file);
+}
+
+// ============ INIT ============
+load();
+// set default date to today
+document.getElementById('new-date').value = new Date().toISOString().slice(0,10);
+// seed with today's topic if empty
+if (state.topics.length === 0) {
+  const today = new Date().toISOString().slice(0,10);
+  const p = PRESET_TOPICS[0];
+  state.topics.push({
+    id: Date.now(),
+    date: today, cn: p.cn, jp: p.jp, intro: p.intro,
+    notes: '', transcript: '', questions: [],
+    completed: false, expanded: true
+  });
+  save();
+}
+// Migrate old audio filenames and default states
+state.listening.forEach(l => {
+  if (l.audioFile === '音频.mp4') l.audioFile = 'audio.m4a';
+  // Default: both translation and Japanese visible
+  if (l.showTranslation === undefined) l.showTranslation = true;
+  if (l.hideJapanese === undefined) l.hideJapanese = false;
+});
+
+sortAndRender();
+renderVocab();
+sortListening();
+renderListening();
+if (state.activeTab && state.activeTab !== 'speaking') switchTab(state.activeTab);
+
+// Close modals on background click
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+</script>
+
+</body>
+</html>

@@ -4478,7 +4478,13 @@ function findListeningEntry(id) {
 
 // Split paragraph into sentence-level items for shorter click-to-jump units
 function autoSplitParagraphs(paragraphs, kind) {
-  const srcRe = kind === 'en' ? /[^.?!]+[.?!]?/g : /[^。？！?!]+[。？！?!]?/g;
+  if (kind === 'en') {
+    // English sentence boundaries (abbreviations, decimals, ellipses, quoted
+    // dialogue) are too irregular to split 1:1 against Chinese sentences
+    // without breaking alignment, so keep each translated paragraph intact.
+    return paragraphs.map(para => ({ jp: para.jp.trim(), cn: para.cn.trim() }));
+  }
+  const srcRe = /[^。？！?!]+[。？！?!]?/g;
   const cnRe = /[^。？！?!]+[。？！?!]?/g;
   const result = [];
   paragraphs.forEach(para => {

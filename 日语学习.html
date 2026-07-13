@@ -63,6 +63,19 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  @media (max-width: 900px) {
+    .side-panel {
+      position: static;
+      max-height: none;
+      overflow-y: visible;
+    }
   }
   .card {
     background: white;
@@ -648,6 +661,13 @@
       <div id="vocab-list"></div>
       <button class="btn btn-ghost btn-small" onclick="exportVocab()" style="margin-top:10px;">导出生词本 (CSV)</button>
     </div>
+
+    <div class="card">
+      <h3>🧩 语法</h3>
+      <div id="grammar-hint" style="font-size:12px;color:#888;line-height:1.6;">选中页面上任意一句日语文本，右键即可自动识别语法点</div>
+      <span id="grammar-status" class="status"></span>
+      <div id="grammar-result" class="translate-result"></div>
+    </div>
   </div>
 </div>
 
@@ -666,7 +686,21 @@
 <div class="modal" id="settings-modal">
   <div class="modal-content">
     <h3>⚙️ 设置</h3>
-    <label>🚀 Groq API Key（最推荐，完全免费、无信用卡）</label>
+    <label>🇨🇳 DeepSeek API Key（国内直连，翻译质量最好）</label>
+    <input type="text" id="deepseek-key" placeholder="sk-..." style="font-family:monospace;">
+    <div class="hint">
+      去 <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a> 注册领取，充 10 元送额度。<br>
+      国内可直接访问，无需 VPN。
+    </div>
+
+    <label style="margin-top:16px;">🇨🇳 智谱 GLM-4-Flash API Key（国内直连，完全免费）</label>
+    <input type="text" id="zhipu-key" placeholder="xxxxxxxx.xxxxxxxx" style="font-family:monospace;">
+    <div class="hint">
+      去 <a href="https://bigmodel.cn/usercenter/apikeys" target="_blank">bigmodel.cn/usercenter/apikeys</a> 注册领取，完全免费。<br>
+      国内可直接访问，无需 VPN。
+    </div>
+
+    <label style="margin-top:16px;">🚀 Groq API Key（最推荐，完全免费、无信用卡）</label>
     <input type="text" id="groq-key" placeholder="gsk_..." style="font-family:monospace;">
     <div class="hint">
       去 <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> 用 Google 账号登录 → Create API Key → 粘贴过来。<br>
@@ -733,7 +767,7 @@ let state = {
   listeningEn: [],
   listeningEnDisplayCount: 7,
   activeTab: 'speaking',
-  settings: { apiKey: '', geminiKey: '', groqKey: '', voiceLang: 'ja-JP' }
+  settings: { apiKey: '', geminiKey: '', groqKey: '', deepseekKey: '', zhipuKey: '', voiceLang: 'ja-JP' }
 };
 
 // ============ TAB SWITCHING ============
@@ -3776,6 +3810,95 @@ document.addEventListener('contextmenu', (e) => {
   if (!e.target.closest('.topic-header')) hideCtxMenu();
 });
 
+// ============ GRAMMAR LOOKUP (右键选中文本 → AI 语法解析) ============
+document.addEventListener('contextmenu', (e) => {
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : '';
+  if (!text) return;
+  // Don't hijack right-click on our own custom context menus
+  if (e.target.closest('#ctx-menu, #grammar-result')) return;
+  e.preventDefault();
+  analyzeGrammar(text, e.target);
+});
+
+async function analyzeGrammar(text, sourceEl) {
+  const status = document.getElementById('grammar-status');
+  const resultBox = document.getElementById('grammar-result');
+
+  if (!hasAnyAIKey()) {
+    resultBox.innerHTML = `
+      <div style="font-size:13px;line-height:1.8;">
+        <strong style="color:#d64545;">🔑 需要先配置 API Key</strong><br>
+        点右上角 <strong>⚙️ 设置</strong>，填一个 Key（推荐智谱 GLM-4-Flash，国内直连、完全免费）就能用。
+      </div>
+    `;
+    resultBox.classList.add('show');
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  // Try to grab the sentence's Chinese translation from surrounding context, if any
+  let context = '';
+  const paraEl = sourceEl && sourceEl.closest ? sourceEl.closest('.paragraph') : null;
+  if (paraEl) {
+    const cnEl = paraEl.querySelector('.cn');
+    if (cnEl && cnEl.textContent.trim()) context = `\n（该句所在段落的中文参考翻译：${cnEl.textContent.trim()}）`;
+  } else {
+    const jpTextEl = sourceEl && sourceEl.closest ? sourceEl.closest('.jp-text') : null;
+    if (jpTextEl) {
+      const cnField = document.getElementById('translate-input');
+      if (cnField && cnField.value.trim()) context = `\n（对应的中文原句：${cnField.value.trim()}）`;
+    }
+  }
+
+  status.innerHTML = '<span class="loading"></span> 语法解析中...';
+  resultBox.classList.remove('show');
+
+  const sysPrompt = `你是日语语法老师。用户会选中一段日语文本（可能是一个词、一个短语，也可能是一整句），请你分析：
+1. 这段文本里出现的关键语法点/句型（如助词、动词变形、句型结构等）
+2. 这段文本的中文翻译
+3. 这个语法点具体怎么使用（讲解 + 至少一个例句）
+
+请严格用以下 JSON 格式返回，不要有其他内容：
+{"grammar_points": "语法点名称，简短", "translation": "中文翻译", "usage": "怎么使用，讲解+例句，用中文"}`;
+  const userMsg = `选中的日语文本：${text}${context}`;
+
+  const { result, source } = await callAIChain(sysPrompt, userMsg);
+  status.innerHTML = '';
+
+  let parsed = null;
+  if (result) {
+    try {
+      const m = result.match(/\{[\s\S]*\}/);
+      if (m) parsed = JSON.parse(m[0]);
+    } catch(e) { console.error('Grammar parse error:', e); }
+  }
+
+  if (!parsed) {
+    resultBox.innerHTML = `
+      <div style="color:#d64545;font-size:13px;line-height:1.7;">
+        <strong>⚠️ 语法解析失败</strong><br>
+        已尝试所有已配置的 Key，请检查网络或 Key 是否有效（F12 控制台看详情）。
+      </div>
+    `;
+    resultBox.classList.add('show');
+    return;
+  }
+
+  resultBox.innerHTML = `
+    <div class="jp-text">${escapeHtml(text)}
+      <button class="speak-btn" onclick="speak('${escapeAttr(text)}')">🔊 发音</button>
+    </div>
+    <div style="color:#b83232;font-size:13px;margin-top:6px;"><strong>📖 翻译：</strong>${escapeHtml(parsed.translation || '')}</div>
+    <div class="grammar"><strong>🧩 语法点：</strong>${escapeHtml(parsed.grammar_points || '')}</div>
+    <div class="grammar" style="margin-top:6px;"><strong>✏️ 怎么用：</strong><br>${escapeHtml(parsed.usage || '').replace(/\n/g, '<br>')}</div>
+    <div style="font-size:11px;color:#aaa;margin-top:6px;">来源：${{claude:'Claude API', gemini:'Gemini API', groq:'Groq API', deepseek:'DeepSeek API', zhipu:'智谱 GLM API'}[source] || source}</div>
+    <button class="btn btn-small" style="margin-top:10px;" onclick='addVocab(${JSON.stringify({cn:parsed.translation||"", jp:text, romaji:"", grammar:parsed.grammar_points||""}).replace(/'/g,"&#39;")})'>➕ 添加到生词本</button>
+  `;
+  resultBox.classList.add('show');
+  resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 // ============ EDIT MODAL ============
 function editTopic(id) {
   const t = state.topics.find(x => x.id === id);
@@ -4144,6 +4267,102 @@ async function callGroq(systemPrompt, userMessage) {
   return null;
 }
 
+// ============ DEEPSEEK API (国内直连，OpenAI 兼容) ============
+let lastDeepseekError = null;
+async function callDeepseek(systemPrompt, userMessage) {
+  const key = state.settings.deepseekKey;
+  if (!key) { lastDeepseekError = '未配置 DeepSeek Key'; return null; }
+  try {
+    const res = await fetchTO('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0.5,
+        max_tokens: 1024
+      })
+    }, 20000);
+    const data = await res.json();
+    if (res.ok && data.choices && data.choices[0]) {
+      console.log('DeepSeek OK');
+      return data.choices[0].message.content;
+    }
+    lastDeepseekError = data.error ? data.error.message : `HTTP ${res.status}`;
+    console.error('DeepSeek failed:', data);
+    return null;
+  } catch(e) {
+    lastDeepseekError = e.message;
+    console.error('DeepSeek exception:', e);
+    return null;
+  }
+}
+
+// ============ 智谱 GLM API (国内直连，OpenAI 兼容) ============
+let lastZhipuError = null;
+async function callZhipu(systemPrompt, userMessage) {
+  const key = state.settings.zhipuKey;
+  if (!key) { lastZhipuError = '未配置智谱 Key'; return null; }
+  try {
+    const res = await fetchTO('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'glm-4-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0.5,
+        max_tokens: 1024
+      })
+    }, 20000);
+    const data = await res.json();
+    if (res.ok && data.choices && data.choices[0]) {
+      console.log('智谱 OK');
+      return data.choices[0].message.content;
+    }
+    lastZhipuError = data.error ? data.error.message : `HTTP ${res.status}`;
+    console.error('智谱 failed:', data);
+    return null;
+  } catch(e) {
+    lastZhipuError = e.message;
+    console.error('智谱 exception:', e);
+    return null;
+  }
+}
+
+// ============ MULTI-PROVIDER AI CHAIN ============
+// Priority: 国内直连优先 (DeepSeek → 智谱) → Groq → Claude → Gemini
+async function callAIChain(systemPrompt, userMessage) {
+  const providers = [
+    { key: state.settings.deepseekKey, fn: callDeepseek, name: 'deepseek' },
+    { key: state.settings.zhipuKey, fn: callZhipu, name: 'zhipu' },
+    { key: state.settings.groqKey, fn: callGroq, name: 'groq' },
+    { key: state.settings.apiKey, fn: callClaude, name: 'claude' },
+    { key: state.settings.geminiKey, fn: callGemini, name: 'gemini' }
+  ];
+  for (const p of providers) {
+    if (!p.key) continue;
+    const result = await p.fn(systemPrompt, userMessage);
+    if (result) return { result, source: p.name };
+  }
+  return { result: null, source: null };
+}
+function hasAnyAIKey() {
+  const s = state.settings;
+  return !!(s.deepseekKey || s.zhipuKey || s.groqKey || s.apiKey || s.geminiKey);
+}
+
 // ============ GEMINI: LIST MODELS ============
 async function listGeminiModels() {
   const key = document.getElementById('gemini-key').value.trim() || state.settings.geminiKey;
@@ -4301,18 +4520,15 @@ async function translateText() {
 {"jp": "日语翻译", "hiragana": "假名读音", "romaji": "罗马音", "grammar": "语法讲解（用中文）"}`;
 
   // If no keys configured, show setup instructions
-  if (!state.settings.groqKey && !state.settings.geminiKey && !state.settings.apiKey) {
+  if (!hasAnyAIKey()) {
     resultBox.innerHTML = `
       <div style="font-size:13px;line-height:1.8;">
         <strong style="color:#d64545;">🔑 需要先配置 API Key（30 秒设置）</strong><br><br>
-        <strong style="color:#6b8e7f;">🚀 强烈推荐 Groq（最简单、最稳定、完全免费）：</strong><br>
-        1. 打开 <a href="https://console.groq.com/keys" target="_blank" style="color:#d64545;font-weight:bold;">console.groq.com/keys</a><br>
-        2. 用 Google 账号登录 → 点「Create API Key」<br>
-        3. 复制 Key（gsk_ 开头）<br>
-        4. 点右上角 <strong>⚙️ 设置</strong>，粘贴到 Groq Key 字段，保存<br>
-        5. 回来点翻译，1 秒内出结果<br><br>
-        <em style="color:#888;">Key 只存本地。免费用 Llama 4 70B 模型，30 请求/分钟。<br>
-        不用信用卡、无区域限制、无 quota=0 问题。</em>
+        <strong style="color:#6b8e7f;">🇨🇳 国内推荐智谱 GLM-4-Flash（完全免费，无需 VPN）：</strong><br>
+        1. 打开 <a href="https://bigmodel.cn/usercenter/apikeys" target="_blank" style="color:#d64545;font-weight:bold;">bigmodel.cn/usercenter/apikeys</a> 注册领取 Key<br>
+        2. 点右上角 <strong>⚙️ 设置</strong>，粘贴到「智谱 GLM-4-Flash」字段，保存<br>
+        3. 回来点翻译<br><br>
+        <em style="color:#888;">Key 只存本地。也可以用 Groq / DeepSeek / Gemini / Claude，设置里都能填。</em>
       </div>
     `;
     resultBox.classList.add('show');
@@ -4331,51 +4547,30 @@ async function translateText() {
     return null;
   };
 
-  // Try Groq first (fastest, most reliable)
-  if (state.settings.groqKey) {
-    const result = await callGroq(sysPrompt, input);
-    const parsed = parseResult(result);
-    if (parsed) {
-      status.innerHTML = '';
-      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'groq', parsed.hiragana);
-      return;
-    }
-  }
-
-  // Then Claude
-  if (state.settings.apiKey) {
-    const result = await callClaude(sysPrompt, input);
-    const parsed = parseResult(result);
-    if (parsed) {
-      status.innerHTML = '';
-      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'claude', parsed.hiragana);
-      return;
-    }
-  }
-
-  // Then Gemini
-  if (state.settings.geminiKey) {
-    const result = await callGemini(sysPrompt, input);
-    const parsed = parseResult(result);
-    if (parsed) {
-      status.innerHTML = '';
-      renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, 'gemini', parsed.hiragana);
-      return;
-    }
+  const { result, source } = await callAIChain(sysPrompt, input);
+  const parsed = parseResult(result);
+  if (parsed) {
+    status.innerHTML = '';
+    renderTranslation(input, parsed.jp, parsed.romaji, parsed.grammar, source, parsed.hiragana);
+    return;
   }
 
   // API failed - show actual error
   status.innerHTML = '';
-  const keyPreview = state.settings.geminiKey ? state.settings.geminiKey.slice(0,6) + '...' + state.settings.geminiKey.slice(-4) : '（未设置）';
+  const errDetail = [
+    state.settings.deepseekKey ? `DeepSeek: ${lastDeepseekError || '未知错误'}` : '',
+    state.settings.zhipuKey ? `智谱: ${lastZhipuError || '未知错误'}` : '',
+    state.settings.groqKey ? `Groq: ${lastGroqError || '未知错误'}` : '',
+    state.settings.apiKey ? `Claude: 调用失败` : '',
+    state.settings.geminiKey ? `Gemini: ${lastGeminiError || '未知错误'}` : ''
+  ].filter(Boolean).join('<br>');
   resultBox.innerHTML = `
     <div style="color:#d64545;font-size:13px;line-height:1.7;">
-      <strong>⚠️ API 调用失败</strong><br>
-      <strong>当前 Key：</strong> ${escapeHtml(keyPreview)}<br>
-      <strong>错误详情：</strong> ${escapeHtml(lastGeminiError || '未知错误')}<br><br>
+      <strong>⚠️ API 调用失败（已按顺序尝试所有已配置的 Key）</strong><br>
+      <strong>错误详情：</strong><br>${errDetail}<br><br>
       <strong>常见原因：</strong><br>
       • Key 输入不完整 / 保存后又被清空 → 打开设置重新粘贴，一定点「保存」<br>
-      • Key 所属项目未启用 Generative Language API → 去 <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#d64545;">AI Studio</a> 重新生成一个<br>
-      • 区域限制（Gemini 在部分地区不可用）→ 需要用代理<br>
+      • Gemini 区域限制（部分地区不可用）→ 需要用代理，或改用 DeepSeek/智谱<br>
       • 按 F12 打开控制台可看到完整错误
     </div>
   `;
@@ -4398,7 +4593,7 @@ function renderTranslation(cn, jp, romaji, grammar, source, hiragana) {
         <button class="btn btn-small" style="margin-top:6px;" onclick='copyPrompt(${JSON.stringify(askPrompt).replace(/'/g,"&#39;")})'>📋 复制语法提问</button>
       </div>
     `}
-    <div style="font-size:11px;color:#aaa;margin-top:6px;">来源：${source === 'claude' ? 'Claude API' : source === 'gemini' ? 'Gemini API' : source === 'mymemory' ? 'MyMemory (免费)' : 'Google Translate (免费)'}</div>
+    <div style="font-size:11px;color:#aaa;margin-top:6px;">来源：${{claude:'Claude API', gemini:'Gemini API', groq:'Groq API', deepseek:'DeepSeek API', zhipu:'智谱 GLM API', mymemory:'MyMemory (免费)', google:'Google Translate (免费)'}[source] || 'Google Translate (免费)'}</div>
     <button class="btn btn-small" style="margin-top:10px;" onclick='addVocab(${JSON.stringify({cn:cn, jp:jp, romaji:romaji||'', grammar:grammar||''}).replace(/'/g,"&#39;")})'>➕ 添加到生词本</button>
   `;
   resultBox.classList.add('show');
@@ -4490,12 +4685,14 @@ function autoSplitParagraphs(paragraphs, kind) {
   paragraphs.forEach(para => {
     const jpSents = (para.jp.match(srcRe) || [para.jp]).map(s => s.trim()).filter(Boolean);
     const cnSents = (para.cn.match(cnRe) || [para.cn]).map(s => s.trim()).filter(Boolean);
-    if (jpSents.length === cnSents.length) {
+    if (jpSents.length === cnSents.length && jpSents.length > 0) {
       // Perfect 1:1 alignment
       jpSents.forEach((jp, i) => result.push({ jp, cn: cnSents[i] }));
     } else {
-      // Mismatch - keep original-language split, put whole CN block in first item
-      jpSents.forEach((jp, i) => result.push({ jp, cn: i === 0 ? para.cn : '' }));
+      // Sentence counts don't match (translator merged/split sentences differently) -
+      // splitting further would misalign jp/cn, so keep the whole paragraph as one
+      // item instead of dumping the whole CN block into the first sentence.
+      result.push({ jp: para.jp.trim(), cn: para.cn.trim() });
     }
   });
   return result;
@@ -4949,6 +5146,8 @@ function openSettings() {
   document.getElementById('api-key').value = state.settings.apiKey || '';
   document.getElementById('gemini-key').value = state.settings.geminiKey || '';
   document.getElementById('groq-key').value = state.settings.groqKey || '';
+  document.getElementById('deepseek-key').value = state.settings.deepseekKey || '';
+  document.getElementById('zhipu-key').value = state.settings.zhipuKey || '';
   document.getElementById('voice-lang').value = state.settings.voiceLang || 'ja-JP';
   const gkStatus = document.getElementById('gemini-key-status');
   if (state.settings.geminiKey) {
@@ -4965,6 +5164,8 @@ function saveSettings() {
   state.settings.apiKey = document.getElementById('api-key').value.trim();
   state.settings.geminiKey = document.getElementById('gemini-key').value.trim();
   state.settings.groqKey = document.getElementById('groq-key').value.trim();
+  state.settings.deepseekKey = document.getElementById('deepseek-key').value.trim();
+  state.settings.zhipuKey = document.getElementById('zhipu-key').value.trim();
   state.settings.voiceLang = document.getElementById('voice-lang').value;
   // Clear cached bad Gemini model
   state.settings.geminiModel = '';

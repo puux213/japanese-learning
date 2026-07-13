@@ -3821,15 +3821,32 @@ document.addEventListener('contextmenu', (e) => {
   analyzeGrammar(text, e.target);
 });
 
+async function copyToClipboard(text) {
+  if (!navigator.clipboard || !navigator.clipboard.writeText) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 async function analyzeGrammar(text, sourceEl) {
   const status = document.getElementById('grammar-status');
   const resultBox = document.getElementById('grammar-result');
 
+  // Right-click hijacks the browser's native "复制" menu item, so copy the
+  // selection ourselves as a courtesy - the AI lookup shouldn't cost you copy/paste.
+  const copied = await copyToClipboard(text);
+  const copyBtn = `<button class="btn btn-ghost btn-small" onclick='copyToClipboard(${JSON.stringify(text)})'>📋 复制「${escapeHtml(text.length > 12 ? text.slice(0, 12) + '…' : text)}」</button>`;
+
   if (!hasAnyAIKey()) {
     resultBox.innerHTML = `
       <div style="font-size:13px;line-height:1.8;">
-        <strong style="color:#d64545;">🔑 需要先配置 API Key</strong><br>
-        点右上角 <strong>⚙️ 设置</strong>，填一个 Key（推荐智谱 GLM-4-Flash，国内直连、完全免费）就能用。
+        ${copied ? '<strong style="color:#6b8e7f;">📋 已复制选中文本</strong><br><br>' : ''}
+        <strong style="color:#d64545;">🔑 需要先配置 API Key 才能自动解析语法</strong><br>
+        点右上角 <strong>⚙️ 设置</strong>，填一个 Key（推荐智谱 GLM-4-Flash，国内直连、完全免费）就能用。<br><br>
+        ${copyBtn}
       </div>
     `;
     resultBox.classList.add('show');
@@ -3878,7 +3895,8 @@ async function analyzeGrammar(text, sourceEl) {
     resultBox.innerHTML = `
       <div style="color:#d64545;font-size:13px;line-height:1.7;">
         <strong>⚠️ 语法解析失败</strong><br>
-        已尝试所有已配置的 Key，请检查网络或 Key 是否有效（F12 控制台看详情）。
+        已尝试所有已配置的 Key，请检查网络或 Key 是否有效（F12 控制台看详情）。<br><br>
+        ${copyBtn}
       </div>
     `;
     resultBox.classList.add('show');
@@ -3893,7 +3911,10 @@ async function analyzeGrammar(text, sourceEl) {
     <div class="grammar"><strong>🧩 语法点：</strong>${escapeHtml(parsed.grammar_points || '')}</div>
     <div class="grammar" style="margin-top:6px;"><strong>✏️ 怎么用：</strong><br>${escapeHtml(parsed.usage || '').replace(/\n/g, '<br>')}</div>
     <div style="font-size:11px;color:#aaa;margin-top:6px;">来源：${{claude:'Claude API', gemini:'Gemini API', groq:'Groq API', deepseek:'DeepSeek API', zhipu:'智谱 GLM API'}[source] || source}</div>
-    <button class="btn btn-small" style="margin-top:10px;" onclick='addVocab(${JSON.stringify({cn:parsed.translation||"", jp:text, romaji:"", grammar:parsed.grammar_points||""}).replace(/'/g,"&#39;")})'>➕ 添加到生词本</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+      <button class="btn btn-small" onclick='addVocab(${JSON.stringify({cn:parsed.translation||"", jp:text, romaji:"", grammar:parsed.grammar_points||""}).replace(/'/g,"&#39;")})'>➕ 添加到生词本</button>
+      ${copyBtn}
+    </div>
   `;
   resultBox.classList.add('show');
   resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

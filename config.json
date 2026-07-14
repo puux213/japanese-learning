@@ -1,0 +1,11 @@
+{
+  "targetUrl": "日语学习.html",
+  "validCodes": [
+    "LEARN2024A",
+    "LEARN2024B",
+    "LEARN2024C",
+    "STUDY001",
+    "STUDY002"
+  ],
+  "description": "邀请码列表 - 修改 validCodes 数组来添加或删除邀请码"
+}

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日语学习 - 邀请验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            padding: 50px 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 48px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        label {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input::placeholder {
+            color: #999;
+        }
+
+        .btn-submit {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            background: #ffe6e6;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: none;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            background: #e6ffe6;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: none;
+            border-left: 4px solid #27ae60;
+        }
+
+        .loading {
+            display: none;
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #667eea;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .content-area {
+            width: 100%;
+            height: 100vh;
+            display: none;
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .footer {
+            color: #999;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .logo {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="loginPage" class="login-container">
+        <div class="logo-section">
+            <div class="logo">📚</div>
+            <h1>日语学习</h1>
+            <p class="subtitle">请输入邀请码以访问学习内容</p>
+        </div>
+
+        <div class="form-section">
+            <div class="error-message" id="errorMsg"></div>
+            <div class="success-message" id="successMsg"></div>
+
+            <div class="input-group">
+                <label for="inviteCode">邀请码</label>
+                <input
+                    type="text"
+                    id="inviteCode"
+                    placeholder="请输入您的邀请码"
+                    autocomplete="off"
+                >
+            </div>
+
+            <button class="btn-submit" id="submitBtn" onclick="handleVerify()">
+                进入学习
+            </button>
+
+            <div class="loading" id="loadingIndicator">
+                <span class="spinner"></span>
+                <span>验证中...</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>如未收到邀请码，请联系管理员</p>
+        </div>
+    </div>
+
+    <!-- 学习内容区域 -->
+    <iframe id="contentArea" class="content-area" src=""></iframe>
+
+    <script>
+        // 配置：默认值先兜底，页面加载时会从 config.json 覆盖（邀请码维护只改 config.json 即可）
+        const CONFIG = {
+            targetUrl: '日语学习.html',
+            validCodes: []
+        };
+
+        // 页面加载时先拉取邀请码配置，再检查是否已验证
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const res = await fetch('config.json', { cache: 'no-store' });
+                const remote = await res.json();
+                if (remote.targetUrl) CONFIG.targetUrl = remote.targetUrl;
+                if (Array.isArray(remote.validCodes)) CONFIG.validCodes = remote.validCodes;
+            } catch (e) {
+                console.error('读取 config.json 失败，邀请码验证不可用', e);
+            }
+            if (checkVerified()) {
+                showContent();
+            }
+        });
+
+        // 回车键提交
+        document.getElementById('inviteCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleVerify();
+            }
+        });
+
+        function handleVerify() {
+            const code = document.getElementById('inviteCode').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // 清空之前的消息
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            errorMsg.textContent = '';
+
+            // 验证是否为空
+            if (!code) {
+                errorMsg.textContent = '请输入邀请码';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // config.json 还没读取完（网络慢等情况），提示重试而不是误判失败
+            if (CONFIG.validCodes.length === 0) {
+                errorMsg.textContent = '邀请码配置加载中，请稍后重试';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // 显示加载状态
+            loadingIndicator.style.display = 'block';
+            submitBtn.disabled = true;
+
+            // 模拟验证延迟（可选）
+            setTimeout(() => {
+                if (CONFIG.validCodes.includes(code)) {
+                    // 验证成功
+                    successMsg.textContent = '验证成功，正在跳转...';
+                    successMsg.style.display = 'block';
+
+                    // 保存验证状态
+                    localStorage.setItem('inviteCodeVerified', 'true');
+                    localStorage.setItem('verifiedCode', code);
+                    localStorage.setItem('verifyTime', new Date().getTime());
+
+                    // 1秒后显示内容
+                    setTimeout(() => {
+                        showContent();
+                    }, 1000);
+                } else {
+                    // 验证失败
+                    errorMsg.textContent = '邀请码无效，请检查后重试';
+                    errorMsg.style.display = 'block';
+                    loadingIndicator.style.display = 'none';
+                    submitBtn.disabled = false;
+                    document.getElementById('inviteCode').focus();
+                }
+            }, 500);
+        }
+
+        function showContent() {
+            const loginPage = document.getElementById('loginPage');
+            const contentArea = document.getElementById('contentArea');
+
+            loginPage.style.display = 'none';
+            contentArea.classList.add('active');
+            contentArea.src = CONFIG.targetUrl;
+        }
+
+        function checkVerified() {
+            return localStorage.getItem('inviteCodeVerified') === 'true';
+        }
+
+        // 可选：添加登出功能（如果需要的话）
+        window.logout = function() {
+            localStorage.removeItem('inviteCodeVerified');
+            localStorage.removeItem('verifiedCode');
+            localStorage.removeItem('verifyTime');
+            location.reload();
+        };
+    </script>
+</body>
+</html>

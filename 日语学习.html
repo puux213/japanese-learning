@@ -732,8 +732,7 @@
       <h3>🔍 中→日翻译工具</h3>
       <textarea id="translate-input" placeholder="输入你想表达的中文..."></textarea>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-        <button class="btn btn-secondary" onclick="quickTranslate()">🚀 快速翻译 (Google)</button>
-        <button class="btn" onclick="openGeminiSidebar()">💬 Gemini 侧边窗</button>
+        <button class="btn btn-secondary" onclick="quickTranslate()">🚀 快速翻译</button>
         <button class="btn btn-ghost btn-small" onclick="translateText()">🤖 API 翻译</button>
       </div>
       <span id="translate-status" class="status"></span>
@@ -4276,57 +4275,7 @@ async function quickTranslate() {
       <strong>⚠️ 免费翻译接口被拦</strong><br>
       错误：${escapeHtml(errors.join(' / '))}<br>
       通常是浏览器 CORS 拦截。备选：<br>
-      • <a href="${googleUrl}" target="_blank">Google Translate 网页版（会跳转）</a><br>
-      • 用 Gemini 侧边窗按钮
-    </div>
-  `;
-  resultBox.classList.add('show');
-}
-
-// ============ GEMINI SIDEBAR POPUP ============
-let geminiWin = null;
-async function openGeminiSidebar() {
-  const input = document.getElementById('translate-input').value.trim();
-  const promptText = input ? `请把这句中文翻译成自然、口语化的日语，附上：
-1. ふりがな（假名读音）
-2. ローマ字（罗马音）
-3. 关键语法/用法讲解（用中文）
-
-中文：${input}` : '';
-
-  // Copy prompt to clipboard
-  let copied = false;
-  if (input) {
-    try {
-      await navigator.clipboard.writeText(promptText);
-      copied = true;
-    } catch(e) { console.error(e); }
-  }
-
-  // Open or focus the Gemini window (small, positioned to the right)
-  const w = 500;
-  const h = Math.min(900, screen.height - 100);
-  const left = Math.min(screen.width - w, window.screenX + window.outerWidth);
-  const top = window.screenY;
-
-  if (!geminiWin || geminiWin.closed) {
-    geminiWin = window.open('https://gemini.google.com/app', 'gemini_sidebar',
-      `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
-    if (!geminiWin) {
-      alert('弹窗被浏览器拦截了，请在地址栏允许本页弹窗');
-      return;
-    }
-  } else {
-    geminiWin.focus();
-  }
-
-  const resultBox = document.getElementById('translate-result');
-  resultBox.innerHTML = `
-    <div style="font-size:13px;line-height:1.7;">
-      <strong style="color:#6b8e7f;">✅ Gemini 侧边窗已打开</strong><br>
-      ${copied ? '提示词已复制到剪贴板，直接按 <kbd style="background:#eee;padding:2px 6px;border-radius:3px;">Cmd/Ctrl+V</kbd> 粘贴即可发送' : '输入中文再点这个按钮，会自动复制提示词'}
-      <br><br>
-      <em style="color:#888;font-size:12px;">💡 侧边窗关不会自动重开。想同一个对话继续问，别关它，回到主页再点按钮会自动 focus 回小窗。</em>
+      • <a href="${googleUrl}" target="_blank">Google Translate 网页版（会跳转）</a>
     </div>
   `;
   resultBox.classList.add('show');

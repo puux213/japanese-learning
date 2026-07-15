@@ -592,6 +592,84 @@
     white-space: nowrap;
   }
   .listening-vocab .add-vocab-btn:hover { background: #6b8e7f; color: white; }
+
+  /* Topics module (日常用语科普) */
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 14px;
+  }
+  .icon-card {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 20px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .icon-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-2px); background: #f5f0eb; }
+  .icon-card .icon { font-size: 32px; display: block; margin-bottom: 8px; }
+  .icon-card .name { font-size: 13px; color: #333; font-weight: bold; }
+  .icon-card .name-jp { font-size: 11px; color: #999; display: block; margin-top: 2px; }
+
+  .topic-category-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .topic-back-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+  }
+  .topic-back-btn:hover { background: #f5f0eb; }
+
+  .topic-phrase-list { padding: 4px 0; }
+  .topic-phrase-row {
+    padding: 10px 0;
+    border-bottom: 1px dotted #e0d0c0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .topic-phrase-row:last-child { border-bottom: none; }
+  .topic-phrase-content { flex: 1; }
+  .phrase-speaker {
+    display: inline-block;
+    font-size: 11px;
+    color: #6b8e7f;
+    border: 1px solid #6b8e7f;
+    border-radius: 10px;
+    padding: 0 8px;
+    margin-bottom: 4px;
+  }
+  .topic-phrase-content .jp { font-size: 15px; color: #2a2a2a; }
+  .topic-phrase-content .romaji { font-size: 12px; color: #999; margin-top: 2px; }
+  .topic-phrase-content .cn { font-size: 13px; color: #666; margin-top: 3px; }
+  .topic-phrase-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .topic-phrase-actions button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 3px 9px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .topic-phrase-actions .add-vocab-btn { border-color: #6b8e7f; color: #6b8e7f; }
+  .topic-phrase-actions .add-vocab-btn:hover { background: #6b8e7f; color: white; }
 </style>
 </head>
 <body>
@@ -610,6 +688,7 @@
   <button class="tab-btn active" data-tab="speaking" onclick="switchTab('speaking')">🗣️ 口语练习</button>
   <button class="tab-btn" data-tab="listening" onclick="switchTab('listening')">🎧 跟读练习</button>
   <button class="tab-btn" data-tab="listening-en" onclick="switchTab('listening-en')">🎤 英语跟读</button>
+  <button class="tab-btn" data-tab="topics" onclick="switchTab('topics')">📚 日常用语</button>
 </div>
 
 <div class="container">
@@ -640,6 +719,11 @@
         <span id="listening-en-progress" style="font-size:12px;color:#888;"></span>
       </div>
       <div id="listening-en-list"></div>
+    </div>
+
+    <div id="tab-topics" class="tab-content">
+      <div id="topics-grid" class="icon-grid"></div>
+      <div id="topics-detail" style="display:none;"></div>
     </div>
   </div>
 
@@ -766,6 +850,8 @@ let state = {
   listeningDisplayCount: 7,
   listeningEn: [],
   listeningEnDisplayCount: 7,
+  topicsCategory: null,
+  topicsExpanded: {},
   activeTab: 'speaking',
   settings: { apiKey: '', geminiKey: '', groqKey: '', deepseekKey: '', zhipuKey: '', voiceLang: 'ja-JP' }
 };
@@ -5116,6 +5202,143 @@ function exportVocab() {
   a.click();
 }
 
+// ============ TOPICS MODULE (日常用语科普) ============
+// Icon grid -> click a category -> foldable phrase/vocab cards, reusing the
+// .listening-item card visual. Framework-first: categories with empty `items`
+// render an "内容待补充" placeholder so new categories/entries can be added
+// without touching the render logic (same pattern as PRESET_LISTENING 11-50).
+const TOPIC_CATEGORIES = [
+  { id: 'sports', icon: '🏸', name_cn: '运动系列', name_jp: 'スポーツ' },
+  { id: 'restaurant', icon: '🍽️', name_cn: '餐厅预约', name_jp: 'レストラン予約' }
+];
+
+const PRESET_TOPICS_DATA = {
+  sports: [
+    {
+      id: 'badminton', icon: '🏸', title_cn: '羽毛球', title_jp: 'バドミントン',
+      items: [
+        { jp: 'シャトル', romaji: 'shatoru', cn: '羽毛球（球）' },
+        { jp: 'ラケット', romaji: 'raketto', cn: '球拍' },
+        { jp: 'サーブ', romaji: 'sābu', cn: '发球' },
+        { jp: 'スマッシュ', romaji: 'sumasshu', cn: '扣杀' },
+        { jp: 'ダブルス', romaji: 'daburusu', cn: '双打' },
+        { jp: 'シングルス', romaji: 'shingurusu', cn: '单打' },
+        { jp: '一緒にバドミントンをしませんか？', romaji: 'issho ni badominton o shimasen ka', cn: '要不要一起打羽毛球？' },
+        { jp: 'コートを予約しましたか？', romaji: 'kōto o yoyaku shimashita ka', cn: '订场地了吗？' }
+      ]
+    },
+    { id: 'tennis', icon: '🎾', title_cn: '网球', title_jp: 'テニス', items: [] },
+    { id: 'swimming', icon: '🏊', title_cn: '游泳', title_jp: '水泳', items: [] },
+    { id: 'running', icon: '🏃', title_cn: '跑步', title_jp: 'ランニング', items: [] },
+    { id: 'basketball', icon: '🏀', title_cn: '篮球', title_jp: 'バスケットボール', items: [] }
+  ],
+  restaurant: [
+    {
+      id: 'phone_reservation', icon: '📞', title_cn: '电话预约', title_jp: '電話予約',
+      items: [
+        { speaker: '客人', jp: 'すみません、今晩7時に2名で予約したいのですが。', romaji: 'sumimasen, konban shichiji ni ninmei de yoyaku shitai no desu ga', cn: '不好意思，我想预约今晚7点2位。' },
+        { speaker: '店员', jp: 'かしこまりました。お名前をお伺いしてもよろしいですか？', romaji: 'kashikomarimashita. onamae o oukagai shite mo yoroshii desu ka', cn: '好的。请问您贵姓？' },
+        { speaker: '客人', jp: '田中と申します。', romaji: 'tanaka to mōshimasu', cn: '我姓田中。' },
+        { speaker: '店员', jp: 'お電話番号を教えていただけますか？', romaji: 'odenwa bangō o oshiete itadakemasu ka', cn: '能告诉我您的电话号码吗？' },
+        { speaker: '客人', jp: 'すみません、予約を変更したいのですが。', romaji: 'sumimasen, yoyaku o henkō shitai no desu ga', cn: '不好意思，我想改一下预约。' },
+        { speaker: '客人', jp: 'キャンセルさせていただきたいのですが。', romaji: 'kyanseru sasete itadakitai no desu ga', cn: '我想取消预约。' }
+      ]
+    },
+    { id: 'walkin', icon: '🚪', title_cn: '到店入座', title_jp: '来店時', items: [] },
+    { id: 'ordering', icon: '📋', title_cn: '点餐', title_jp: '注文', items: [] }
+  ]
+};
+
+function renderTopicsGrid() {
+  const wrap = document.getElementById('topics-grid');
+  wrap.innerHTML = TOPIC_CATEGORIES.map(c => `
+    <div class="icon-card" onclick="openTopicCategory('${c.id}')">
+      <span class="icon">${c.icon}</span>
+      <span class="name">${escapeHtml(c.name_cn)}</span>
+      <span class="name-jp">${escapeHtml(c.name_jp)}</span>
+    </div>
+  `).join('');
+}
+
+function openTopicCategory(id) {
+  state.topicsCategory = id;
+  save();
+  renderTopicsView();
+}
+function closeTopicCategory() {
+  state.topicsCategory = null;
+  save();
+  renderTopicsView();
+}
+
+function renderTopicsView() {
+  const grid = document.getElementById('topics-grid');
+  const detail = document.getElementById('topics-detail');
+  if (!state.topicsCategory) {
+    grid.style.display = '';
+    detail.style.display = 'none';
+    return;
+  }
+  grid.style.display = 'none';
+  detail.style.display = 'block';
+  const cat = TOPIC_CATEGORIES.find(c => c.id === state.topicsCategory);
+  detail.innerHTML = `
+    <div class="topic-category-header">
+      <button class="topic-back-btn" onclick="closeTopicCategory()">← 返回</button>
+      <span style="font-size:18px;">${cat.icon} ${escapeHtml(cat.name_cn)}</span>
+    </div>
+    <div id="topic-entries"></div>
+  `;
+  renderTopicEntries();
+}
+
+function renderTopicEntries() {
+  const list = document.getElementById('topic-entries');
+  const entries = PRESET_TOPICS_DATA[state.topicsCategory] || [];
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty-hint">内容还在补充中，敬请期待 ✍️</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e => `
+    <div class="listening-item ${state.topicsExpanded[e.id] ? 'expanded' : ''}" data-id="${e.id}">
+      <div class="listening-header" onclick="toggleTopicEntry('${e.id}')">
+        <div class="topic-title">
+          <span class="topic-name">${e.icon ? e.icon + ' ' : ''}${escapeHtml(e.title_cn)}<span class="topic-name-jp">${escapeHtml(e.title_jp)}</span></span>
+        </div>
+        <span class="expand-icon">▶</span>
+      </div>
+      <div class="listening-body">
+        ${e.items.length === 0 ? `
+          <div style="padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;">📝 内容待补充</div>
+        ` : `
+          <div class="topic-phrase-list">
+            ${e.items.map(it => `
+              <div class="topic-phrase-row">
+                <div class="topic-phrase-content">
+                  ${it.speaker ? `<span class="phrase-speaker">${escapeHtml(it.speaker)}</span>` : ''}
+                  <div class="jp">${escapeHtml(it.jp)}</div>
+                  ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
+                  <div class="cn">${escapeHtml(it.cn)}</div>
+                </div>
+                <div class="topic-phrase-actions">
+                  <button title="发音" onclick="speak('${escapeAttr(it.jp)}')">🔊</button>
+                  <button class="add-vocab-btn" onclick='addVocab(${JSON.stringify({ jp: it.jp, romaji: it.romaji || '', cn: it.cn, grammar: '' }).replace(/'/g, "&#39;")})'>➕ 加入生词本</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleTopicEntry(id) {
+  state.topicsExpanded[id] = !state.topicsExpanded[id];
+  save();
+  renderTopicEntries();
+}
+
 // ============ FINISH ANSWER (generate follow-ups) ============
 async function finishAnswer(id) {
   const t = state.topics.find(x => x.id === id);
@@ -5251,6 +5474,8 @@ sortListening('jp');
 renderListening('jp');
 sortListening('en');
 renderListening('en');
+renderTopicsGrid();
+renderTopicsView();
 if (state.activeTab && state.activeTab !== 'speaking') switchTab(state.activeTab);
 
 // Close modals on background click

@@ -4699,6 +4699,8 @@ function renderVocab() {
 // ============ LISTENING MODULE ============
 // Shared engine for both the Japanese (跟读练习) and English (英语跟读) tabs.
 // kind: 'jp' | 'en' selects which state array / preset list / DOM ids to use.
+// Audio/PDF assets live under this subfolder relative to this HTML file (see CLAUDE.md 目录结构，2026-07-14 重组后).
+const LISTENING_ASSET_BASE = '50篇演讲/';
 const LISTENING_KINDS = {
   jp: {
     idPrefix: 'l_',
@@ -4767,7 +4769,7 @@ function buildListeningEntry(kind, p, dateStr, idx) {
     id: cfg(kind).idPrefix + Date.now() + '_' + idx,
     presetId: p.presetId,
     date: dateStr,
-    folder: p.folder,
+    folder: LISTENING_ASSET_BASE + p.folder,
     audioFile: p.audioFile,
     title_cn: p.title_cn,
     title_jp: p.title_jp,
@@ -4825,7 +4827,7 @@ function refreshPresetContent(kind) {
     l.title_cn = p.title_cn;
     l.title_jp = p.title_jp;
     l.speaker = p.speaker;
-    l.folder = p.folder;
+    l.folder = LISTENING_ASSET_BASE + p.folder;
     l.audioFile = p.audioFile;
     if (!l.timestamps || l.timestamps.length !== splitParas.length) {
       const totalChars = splitParas.reduce((s, para) => s + para.jp.length, 0);

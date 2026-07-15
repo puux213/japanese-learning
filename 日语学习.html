@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>
+// 邀请码软性门禁：没有验证记录就跳回门禁页，防止绕开 index.html 直接访问
+if (localStorage.getItem('inviteCodeVerified') !== 'true') {
+  location.replace('index.html');
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>日语口语练习题库</title>

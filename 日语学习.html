@@ -472,6 +472,16 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
     background: white;
   }
   .listening-item.expanded .listening-body { display: block; }
+  /* overflow:hidden (used for border-radius clipping) breaks position:sticky
+     on descendants, so drop it while expanded to let the header/audio bar pin */
+  .listening-item.expanded { overflow: visible; }
+  /* Keep the opened item's title bar pinned to the top of the viewport while
+     scrolling through its transcript */
+  .listening-item.expanded .listening-header {
+    position: sticky;
+    top: 0;
+    z-index: 21;
+  }
 
   .audio-player {
     background: #fef6f0;
@@ -479,9 +489,57 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
     padding: 14px;
     margin-bottom: 16px;
   }
+  /* Audio bar pins right under the sticky header (top set in JS to header height) */
+  .listening-item.expanded .audio-player {
+    position: sticky;
+    z-index: 20;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  }
   .audio-player audio {
     width: 100%;
     height: 40px;
+  }
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .speed-control .speed-label { font-size: 12px; color: #888; }
+  .speed-btn {
+    background: white;
+    border: 1px solid #e0c8b8;
+    color: #b06a4a;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .speed-btn:hover { background: #fbeadf; }
+  .speed-btn.active {
+    background: #d64545;
+    border-color: #d64545;
+    color: white;
+    font-weight: bold;
+  }
+  .follow-btn {
+    background: white;
+    border: 1px solid #cddccf;
+    color: #4a7a63;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: all 0.15s;
+  }
+  .follow-btn.active {
+    background: #6b8e7f;
+    border-color: #6b8e7f;
+    color: white;
+    font-weight: bold;
   }
   .audio-hint {
     font-size: 12px;
@@ -855,6 +913,8 @@ let state = {
   listeningDisplayCount: 7,
   listeningEn: [],
   listeningEnDisplayCount: 7,
+  listeningSpeed: 1,        // playback speed for 跟读/英语跟读 audio (persisted)
+  listeningAutoFollow: true, // auto-scroll current sentence to center while playing
   topicsCategory: null,
   topicsExpanded: {},
   activeTab: 'speaking',
@@ -4894,6 +4954,13 @@ function renderListening(kind) {
           <audio id="audio-${l.id}" controls preload="none" onloadedmetadata="onAudioReady('${l.id}')" ontimeupdate="onAudioTime('${l.id}')" onerror="onAudioError('${l.id}')">
             <source src="${escapeAttr(encodeURI(l.folder + '/' + l.audioFile))}" type="audio/mp4">
           </audio>
+          <div class="speed-control">
+            <span class="speed-label">🐢 变速</span>
+            ${[0.75, 1, 1.25, 1.5, 2].map(r => `
+              <button class="speed-btn ${state.listeningSpeed === r ? 'active' : ''}" data-rate="${r}" onclick="setListeningSpeed(${r})">${r}×</button>
+            `).join('')}
+            <button class="follow-btn ${state.listeningAutoFollow ? 'active' : ''}" onclick="toggleAutoFollow(this)" title="播放时自动把当前句滚到屏幕中间">🎯 自动定位</button>
+          </div>
           <div class="audio-hint" id="audio-hint-${l.id}">💡 点击段落跳转 · ⏱ 手动校准时间戳 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">空格</kbd> 播放/暂停 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">←</kbd>/<kbd style="background:#eee;padding:1px 5px;border-radius:3px;">→</kbd> 快退/快进 2 秒</div>
         </div>
 
@@ -4942,6 +5009,7 @@ function renderListening(kind) {
       </div>
     </div>
   `).join('') + more;
+  updateStickyOffsets();
 }
 
 function showMoreListening(kind) {
@@ -5005,10 +5073,39 @@ function onAudioReady(id) {
   const audio = document.getElementById('audio-' + id);
   const l = findListeningEntry(id).entry;
   if (!audio || !l || !audio.duration) return;
+  // apply the user's chosen playback speed to this freshly-loaded audio
+  audio.playbackRate = state.listeningSpeed || 1;
   // timestamps stored as fractions [0-1], display purposes only
   const hint = document.getElementById('audio-hint-' + id);
   if (hint) hint.textContent = `💡 音频时长 ${formatTime(audio.duration)}。点击段落跳转（估算时间戳），用 ⏱ 按钮可校准`;
 }
+
+// Set playback speed globally across all listening audios and persist it
+function setListeningSpeed(rate) {
+  state.listeningSpeed = rate;
+  document.querySelectorAll('#tab-listening audio, #tab-listening-en audio').forEach(a => { a.playbackRate = rate; });
+  document.querySelectorAll('.speed-btn').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.dataset.rate) === rate);
+  });
+  save();
+}
+
+// Toggle auto-centering the current sentence while playing
+function toggleAutoFollow(btn) {
+  state.listeningAutoFollow = !state.listeningAutoFollow;
+  document.querySelectorAll('.follow-btn').forEach(b => b.classList.toggle('active', state.listeningAutoFollow));
+  save();
+}
+
+// Pin the audio bar right below the sticky header (header height is variable)
+function updateStickyOffsets() {
+  document.querySelectorAll('#tab-listening .listening-item.expanded, #tab-listening-en .listening-item.expanded').forEach(item => {
+    const header = item.querySelector('.listening-header');
+    const player = item.querySelector('.audio-player');
+    if (header && player) player.style.top = header.offsetHeight + 'px';
+  });
+}
+window.addEventListener('resize', updateStickyOffsets);
 
 function onAudioError(id) {
   diagnoseAudio(id);
@@ -5069,11 +5166,21 @@ function onAudioTime(id) {
     if (l.timestamps[i] <= currentFrac) activeIdx = i;
     else break;
   }
+  let activeEl = null;
   document.querySelectorAll(`[data-id="${id}"] .paragraph`).forEach(el => {
     const idx = parseInt(el.dataset.idx);
-    el.classList.toggle('playing', idx === activeIdx);
+    const on = idx === activeIdx;
+    el.classList.toggle('playing', on);
+    if (on) activeEl = el;
   });
+  // Auto-center the current sentence, but only when it changes (avoid fighting
+  // the user's scroll on every timeupdate) and only while actually playing
+  if (state.listeningAutoFollow && activeEl && activeIdx !== lastActiveIdx[id] && !audio.paused) {
+    activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  lastActiveIdx[id] = activeIdx;
 }
+const lastActiveIdx = {};
 
 // Global keyboard shortcuts for listening tabs (JP + EN)
 document.addEventListener('keydown', (e) => {

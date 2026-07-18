@@ -219,6 +219,8 @@ Key 只存本地浏览器，不会外传。
 Cloudflare 在国内访问不稳定（GFW 拦），但某些用户/网络能通，作为兜底可以试。
 配置方法：dash.cloudflare.com → Workers & Pages → Create application → Pages → Connect to Git → 授权 GitHub 账号 `puux213` → 选仓库 `japanese-learning` → Production branch `main` → Framework preset **None** → Build command **留空** → Build output directory `/` → Save and Deploy。之后每次 `git push` 会同时触发 EdgeOne 和 Cloudflare 两个平台自动部署。给朋友双链接兜底：主用 EdgeOne，打不开试 Cloudflare `.pages.dev`。
 
+**⚠️ 已知故障记录（2026-07-15 发现并修复）**：Cloudflare Pages 项目 `japanese-learning-7hp` 的 GitHub 连接在某次操作中断开了（`Settings → Build → Git repository` 那一行显示空的，只有一个「Connect」按钮），导致这个平台的部署长期停留在旧版本——当时线上缺了邀请码门禁、英语跟读、日常用语这几个后来才加的功能，而 EdgeOne 那边是正常最新的。**如果以后又发现 `.pages.dev` 网址内容明显落后于 EdgeOne（新功能缺失/改动没生效），先怀疑这个连接又断了**，去 Cloudflare Dashboard 该项目的 Settings → Build 页面确认 Git repository 是否显示已连接的仓库名；如果又变空的，点 Connect 重新走一遍上面配置方法里的 GitHub 授权+选仓库流程即可，连上后一般会自动触发一次部署，没自动触发就去 Deployments 标签页手动点 Create deployment。
+
 **注意事项**：
 - 备案是绑定到「主体」（个人身份证）+「域名」的，一次通过之后同一个域名下的子域名（`japanese.xxx.com`、`www.xxx.com`）都能直接用
 - 备案期间腾讯云会电话核实，接听时确认「个人办公学习使用，不含商业行为」即可
@@ -263,6 +265,13 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 ## 更新日志
 
+**2026-07-18**
+- 跟读练习 + 英语跟读三项体验升级（共用同一套渲染引擎，一次改动两个模块都生效，改的是 `日语学习.html` 的渲染层，老数据不用点「🔄 更新讲稿」，刷新即生效）：
+  - **🐢 变速**：音频条下方一排速度按钮（0.75×/1×/1.25×/1.5×/2×），`setListeningSpeed()` 全局生效并存 `state.listeningSpeed`，`onAudioReady` 里对新加载的音频自动套用所选速度
+  - **题目 + 语音条固定顶部**：展开的那篇标题栏 `.listening-header` 和音频条 `.audio-player` 用 `position: sticky` 钉在视口顶部，滚讲稿时常驻上方。语音条的 `top` 由 `updateStickyOffsets()` 按标题实际高度动态设置（标题换行不错位）；展开时把原本挡住 sticky 的 `overflow:hidden` 改成 `visible`
+  - **🎯 自动定位**：播放时当前朗读句自动平滑滚到屏幕中间（`onAudioTime` 里只在句子切换且未暂停时触发 `scrollIntoView({block:'center'})`，不跟手动滚动打架），右上角开关按钮，状态存 `state.listeningAutoFollow`（默认开）
+  - 已在浏览器实测：sticky 定位/语音条 top 对齐标题高度/速度按钮改 `playbackRate`/开关状态都持久化到 localStorage，无 console 报错
+
 **2026-07-15**
 - 新增「📚 日常用语」顶层模块（框架先行）：图标网格入口 → 点开模块 → 折叠卡片列表，复用跟读练习的卡片视觉。目前上线 🏸 运动系列（羽毛球词汇已填，其余空占位）+ 🍽️ 餐厅预约（电话预约对话已填，其余空占位），详见上方「日常用语模块」。已在浏览器里过了一遍完整流程（进模块/展开卡片/加生词本/刷新页面状态保留），无 console 报错
 - Notion「日语学习工具」页面下建了「用户管理」数据库（客户名字/联系方式/邀请码/状态/发放日期/备注），并把 config.json 里当前的 5 个占位测试码登记了进去，详见上方「邀请码门禁页」的「Notion 客户表联动」
@@ -270,6 +279,8 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 - `~/.zshrc` 加了 `nihongo` 终端快捷键，一键 cd 进本项目 + 启动 claude
 - 修了跟读练习（日语 50 篇 + 英语 10 篇）音频播放 404 的 bug：7-14 目录重组后音频移到了 `50篇演讲/` 子文件夹，但 `folder` 字段没跟着改，导致请求路径少了这层前缀。在 `buildListeningEntry`/`refreshPresetContent`（两处组装 `folder` 的地方）统一加了 `LISTENING_ASSET_BASE = '50篇演讲/'` 前缀，用 curl 验证过修复后的路径能拿到正确音频文件。**已加载过跟读内容的用户**需要点一下「🔄 更新讲稿」按钮才会应用到本地已保存的数据（新加载的篇目自动生效）
 - 讨论"把 日语学习.html 挪到需要验证码才能访问的路径"想加固门禁，实测发现改名对防护没有实际作用，已改回原名，详见上方「邀请码门禁页」的「已知局限」
+- 给 `日语学习.html` 加了一层门禁加固：文件开头同步检查 `localStorage.inviteCodeVerified`，没验证过就 `location.replace('index.html')`，堵住了此前"直接开 `日语学习.html` 完全零门槛"的漏洞（老用户已有验证记录不受影响），详见上方「邀请码门禁页」的「已知局限」
+- 排查并修复 Cloudflare Pages（`japanese-learning-7hp.pages.dev`）部署长期落后于 EdgeOne 的问题：GitHub 连接断开导致新 push 没触发自动部署，去 Settings → Build 页面重新点 Connect 授权修好，详见上方「Cloudflare Pages 备份部署」的「已知故障记录」
 
 **2026-07-14**
 - 新增邀请码门禁页 `index.html` + `config.json`（详见上方「邀请码门禁页」），接管了原本直接暴露的 `日语学习.html` 入口

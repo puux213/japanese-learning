@@ -750,6 +750,49 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
     border-radius: 10px; padding: 0 7px; font-size: 12px; cursor: pointer;
   }
   .variant-row .add-vocab-btn:hover { background: #6b8e7f; color: white; }
+  /* ===== 对话气泡（日常用语·对话类）===== */
+  .chat-list { padding: 6px 2px 4px; }
+  .chat-divider { text-align: center; margin: 16px 0 12px; }
+  .chat-divider span {
+    display: inline-block; font-size: 12px; color: #a67c52;
+    background: #f5efe7; padding: 3px 14px; border-radius: 12px;
+  }
+  .chat-row { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0; }
+  .chat-row.right { flex-direction: row-reverse; }
+  .chat-avatar {
+    flex-shrink: 0; width: 40px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .chat-avatar { font-size: 26px; line-height: 1; }
+  .chat-who { font-size: 11px; color: #999; }
+  .chat-bubble {
+    position: relative; max-width: 74%;
+    padding: 9px 13px; border-radius: 14px;
+    background: #ffffff; border: 1px solid #ece0d2;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .chat-row.right .chat-bubble { background: #6b8e7f; border-color: #6b8e7f; }
+  /* 小尾巴 */
+  .chat-bubble::before {
+    content: ''; position: absolute; top: 13px; width: 0; height: 0;
+    border: 7px solid transparent;
+  }
+  .chat-row.left .chat-bubble::before {
+    left: -13px; border-right-color: #ece0d2;
+  }
+  .chat-row.left .chat-bubble::after {
+    content: ''; position: absolute; top: 13px; left: -11px; width: 0; height: 0;
+    border: 7px solid transparent; border-right-color: #ffffff;
+  }
+  .chat-row.right .chat-bubble::before {
+    right: -13px; border-left-color: #6b8e7f;
+  }
+  .chat-bubble .jp { font-size: 15px; color: #2a2a2a; line-height: 1.5; }
+  .chat-bubble .romaji { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .chat-bubble .cn { font-size: 13px; color: #666; margin-top: 3px; }
+  .chat-row.right .chat-bubble .jp { color: #ffffff; }
+  .chat-row.right .chat-bubble .romaji { color: #d6e4dd; }
+  .chat-row.right .chat-bubble .cn { color: #eaf2ee; }
 </style>
 </head>
 <body>
@@ -5329,65 +5372,20 @@ const PRESET_TOPICS_DATA = {
     {
       id: 'customs', icon: '🛂', title_cn: '通关检查', title_jp: '税関検査',
       items: [
-        { group: '护照', jp: '私はパスポートを申請したいです。', romaji: 'watashi wa pasupōto o shinsei shitai desu', cn: '我想申请一份护照。', variants: [
-          { jp: '私はビザを申請したいです。', romaji: 'watashi wa biza o shinsei shitai desu', cn: '我想申请签证。' },
-          { jp: '私は日本に行くビザを申請したいです。', romaji: 'watashi wa nihon ni iku biza o shinsei shitai desu', cn: '我想申请去日本的签证。' },
-          { jp: '私はアメリカに行く入国ビザを申請したいです。', romaji: 'watashi wa amerika ni iku nyūkoku biza o shinsei shitai desu', cn: '我想申请去美国的入境签证。' }
-        ]},
-        { group: '护照', jp: '有効期間はどのぐらいでしょうか。', romaji: 'yūkō kikan wa dono gurai deshō ka', cn: '请问有效期是多长时间？', variants: [
-          { jp: '30日間以内は有効です。', romaji: 'sanjū nichikan inai wa yūkō desu', cn: '30天内有效。' },
-          { jp: 'どのぐらいは有効ですか。', romaji: 'dono gurai wa yūkō desu ka', cn: '多长时间有效？' },
-          { jp: '有効期間はどうしてこんなに短いのですか。延長することができませんか。', romaji: 'yūkō kikan wa dōshite konna ni mijikai no desu ka. enchō suru koto ga dekimasen ka', cn: '有效期怎么这么短呢？不能延长吗？' }
-        ]},
-        { group: '签证', jp: 'ビザを落とした。', romaji: 'biza o otoshita', cn: '我把签证弄丢了。', variants: [
-          { jp: '私はビザをとりました。', romaji: 'watashi wa biza o torimashita', cn: '我获得签证了。' },
-          { jp: '昨日観光ビザを申請しました。', romaji: 'kinō kankō biza o shinsei shimashita', cn: '我昨天申请了旅游签证。' },
-          { jp: '私の入国ビザはもうすぐ期限が切れます。', romaji: 'watashi no nyūkoku biza wa mōsugu kigen ga kiremasu', cn: '我的入境签证快到期了。' }
-        ]},
-        { group: '签证', jp: 'ビザの有効期限を延長したいです。', romaji: 'biza no yūkō kigen o enchō shitai desu', cn: '我想延长签证期限。', variants: [
-          { jp: '延長することができますか。', romaji: 'enchō suru koto ga dekimasu ka', cn: '可以延长期限吗？' },
-          { jp: 'ビザの有効期限を延長することができませんか。', romaji: 'biza no yūkō kigen o enchō suru koto ga dekimasen ka', cn: '不能延长签证期限吗？' },
-          { jp: 'ビザの有効期限を延長したいですが、どこで取り扱いますか。', romaji: 'biza no yūkō kigen o enchō shitai desu ga, doko de toriatsukaimasu ka', cn: '我想延长签证期限，请问在哪里办理？' }
-        ]},
-        { group: '海关', jp: 'すみません、税関申告の手続きを教えてくれませんか。', romaji: 'sumimasen, zeikan shinkoku no tetsuzuki o oshiete kuremasen ka', cn: '你能告诉我怎样办理通关手续吗？', variants: [
-          { jp: '通関手続きを教えて下さい。', romaji: 'tsūkan tetsuzuki o oshiete kudasai', cn: '请告诉我怎样办理通关手续。' },
-          { jp: 'どこで通関手続きをするのをお聞きしたいですが。', romaji: 'doko de tsūkan tetsuzuki o suru no o okiki shitai desu ga', cn: '请问在哪里办理通关手续？' },
-          { jp: 'どうやって通関手続きをするのを教えてくれませんか。', romaji: 'dōyatte tsūkan tetsuzuki o suru no o oshiete kuremasen ka', cn: '你能告诉我怎样办理通关手续吗？' }
-        ]},
-        { group: '海关', jp: '申告しなければならないことがない。', romaji: 'shinkoku shinakereba naranai koto ga nai', cn: '我没什么可申报的。', variants: [
-          { jp: '申告する必要がありません。', romaji: 'shinkoku suru hitsuyō ga arimasen', cn: '不需要申报。' },
-          { jp: '申告してから税を納めなければなりませんか。', romaji: 'shinkoku shite kara zei o osamenakereba narimasen ka', cn: '申报后必须缴税吗？' },
-          { jp: '私の荷物は全てここにあるので、申告する物はありません。', romaji: 'watashi no nimotsu wa subete koko ni aru node, shinkoku suru mono wa arimasen', cn: '我的行李全在这里，没有什么可申报的。' }
-        ]},
-        { group: '海关', jp: 'どんな物が免税できますか。', romaji: 'donna mono ga menzei dekimasu ka', cn: '哪些东西是可以免税的？', variants: [
-          { jp: 'これは免税品ですか。', romaji: 'kore wa menzeihin desu ka', cn: '这个是免税品吗？' },
-          { jp: '店員さん、免税品はどこにありますか。', romaji: 'tenin san, menzeihin wa doko ni arimasu ka', cn: '店员，免税的东西在哪里？' },
-          { jp: 'どんなものが免税することができますか。', romaji: 'donna mono ga menzei suru koto ga dekimasu ka', cn: '请问哪些东西是可以免税的？' }
-        ]},
-        { group: '出入境', jp: 'これを持って入国できますか。', romaji: 'kore o motte nyūkoku dekimasu ka', cn: '我能把这个带入境吗？', variants: [
-          { jp: 'この荷物を持って入国することができますか。', romaji: 'kono nimotsu o motte nyūkoku suru koto ga dekimasu ka', cn: '我能带这个行李入境吗？' },
-          { jp: 'この土産を持って入国することができますか。', romaji: 'kono miyage o motte nyūkoku suru koto ga dekimasu ka', cn: '我能带这个土产品入境吗？' },
-          { jp: 'これらのものをすべて入国することができますか。', romaji: 'korera no mono o subete nyūkoku suru koto ga dekimasu ka', cn: '我能把这些东西全都带入境吗？' }
-        ]},
-        { group: '出入境', jp: 'どのくらいの荷物が持てるのだろう？持参できますか？', romaji: 'dono kurai no nimotsu ga moteru no darō? jisan dekimasu ka', cn: '我能带多少行李？', variants: [
-          { jp: 'どのぐらいの荷物を持つことができますか。', romaji: 'dono gurai no nimotsu o motsu koto ga dekimasu ka', cn: '我能带多少行李呢？' },
-          { jp: 'このものを日本に持ち帰る事はできますか。', romaji: 'kono mono o nihon ni mochikaeru koto wa dekimasu ka', cn: '我能把这个东西带到日本去吗？' },
-          { jp: 'この電器製品を中国に持ち帰る事はできますか。', romaji: 'kono denki seihin o chūgoku ni mochikaeru koto wa dekimasu ka', cn: '我能把这个电器产品带到中国去吗？' }
-        ]},
-        { group: '会话一 · 申请护照', speaker: 'A', jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
-        { group: '会话一 · 申请护照', speaker: 'B', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
-        { group: '会话一 · 申请护照', speaker: 'A', jp: '持っています。あのう、パスポートの有効期限はどのくらいですか。', romaji: 'motte imasu. anō, pasupōto no yūkō kigen wa dono kurai desu ka', cn: '带了。对了，请问护照的有效期是多久？' },
-        { group: '会话一 · 申请护照', speaker: 'B', jp: '五年です。', romaji: 'go nen desu', cn: '五年。' },
-        { group: '会话二 · 签证丢失', speaker: 'A', jp: 'はじめまして、こちらは日本大使館です。何かご用ですか。', romaji: 'hajimemashite, kochira wa nihon taishikan desu. nanika goyō desu ka', cn: '您好，这里是日本大使馆。请问有什么事吗？' },
-        { group: '会话二 · 签证丢失', speaker: 'B', jp: '恐れ入りますが、私のビザをなくしてしまいました。', romaji: 'osoreirimasu ga, watashi no biza o nakushite shimaimashita', cn: '真不好意思，我把签证弄丢了。' },
-        { group: '会话二 · 签证丢失', speaker: 'A', jp: 'もう一度資料を出せば、ビザを申し込むことができます。ご心配しないでください。', romaji: 'mō ichido shiryō o daseba, biza o mōshikomu koto ga dekimasu. goshinpai shinaide kudasai', cn: '您再提交下资料就可以重新申请签证了，请不用担心。' },
-        { group: '会话二 · 签证丢失', speaker: 'B', jp: 'あ、そうですか。ありがとうございました。もう一度申し込みます。', romaji: 'a, sō desu ka. arigatō gozaimashita. mō ichido mōshikomimasu', cn: '啊，是吗？谢谢你，那我再申请一次。' },
-        { group: '会话三 · 入境申报', speaker: 'A', jp: '入国旅客荷物の書類を記入してください。', romaji: 'nyūkoku ryokaku nimotsu no shorui o kinyū shite kudasai', cn: '请填写一下入境旅客行李物品申报单。' },
-        { group: '会话三 · 入境申报', speaker: 'B', jp: '全部記入するんですか。', romaji: 'zenbu kinyū surun desu ka', cn: '所有的东西都要填写吗？' },
-        { group: '会话三 · 入境申报', speaker: 'A', jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
-        { group: '会话三 · 入境申报', speaker: 'B', jp: 'このカメラは税金を納めますか。', romaji: 'kono kamera wa zeikin o osamemasu ka', cn: '这个摄像机要不要缴税呢？' },
-        { group: '会话三 · 入境申报', speaker: 'A', jp: '税金を納めます。どの外貨を持っていますか。', romaji: 'zeikin o osamemasu. dono gaika o motte imasu ka', cn: '要缴税。您带的是什么外币呢？' },
-        { group: '会话三 · 入境申报', speaker: 'B', jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
+        { group: '对话1 · 申请护照', speaker: 'A', jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
+        { group: '对话1 · 申请护照', speaker: 'B', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
+        { group: '对话1 · 申请护照', speaker: 'A', jp: '持っています。あのう、パスポートの有効期限はどのくらいですか。', romaji: 'motte imasu. anō, pasupōto no yūkō kigen wa dono kurai desu ka', cn: '带了。对了，请问护照的有效期是多久？' },
+        { group: '对话1 · 申请护照', speaker: 'B', jp: '五年です。', romaji: 'go nen desu', cn: '五年。' },
+        { group: '对话2 · 签证丢失', speaker: 'A', jp: 'はじめまして、こちらは日本大使館です。何かご用ですか。', romaji: 'hajimemashite, kochira wa nihon taishikan desu. nanika goyō desu ka', cn: '您好，这里是日本大使馆。请问有什么事吗？' },
+        { group: '对话2 · 签证丢失', speaker: 'B', jp: '恐れ入りますが、私のビザをなくしてしまいました。', romaji: 'osoreirimasu ga, watashi no biza o nakushite shimaimashita', cn: '真不好意思，我把签证弄丢了。' },
+        { group: '对话2 · 签证丢失', speaker: 'A', jp: 'もう一度資料を出せば、ビザを申し込むことができます。ご心配しないでください。', romaji: 'mō ichido shiryō o daseba, biza o mōshikomu koto ga dekimasu. goshinpai shinaide kudasai', cn: '您再提交下资料就可以重新申请签证了，请不用担心。' },
+        { group: '对话2 · 签证丢失', speaker: 'B', jp: 'あ、そうですか。ありがとうございました。もう一度申し込みます。', romaji: 'a, sō desu ka. arigatō gozaimashita. mō ichido mōshikomimasu', cn: '啊，是吗？谢谢你，那我再申请一次。' },
+        { group: '对话3 · 入境申报', speaker: 'A', jp: '入国旅客荷物の書類を記入してください。', romaji: 'nyūkoku ryokaku nimotsu no shorui o kinyū shite kudasai', cn: '请填写一下入境旅客行李物品申报单。' },
+        { group: '对话3 · 入境申报', speaker: 'B', jp: '全部記入するんですか。', romaji: 'zenbu kinyū surun desu ka', cn: '所有的东西都要填写吗？' },
+        { group: '对话3 · 入境申报', speaker: 'A', jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
+        { group: '对话3 · 入境申报', speaker: 'B', jp: 'このカメラは税金を納めますか。', romaji: 'kono kamera wa zeikin o osamemasu ka', cn: '这个摄像机要不要缴税呢？' },
+        { group: '对话3 · 入境申报', speaker: 'A', jp: '税金を納めます。どの外貨を持っていますか。', romaji: 'zeikin o osamemasu. dono gaika o motte imasu ka', cn: '要缴税。您带的是什么外币呢？' },
+        { group: '对话3 · 入境申报', speaker: 'B', jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
       ]
     },
     { id: 'airplane', icon: '✈️', title_cn: '坐飞机', title_jp: '飛行機', items: [] },
@@ -5474,7 +5472,9 @@ function renderTopicEntries() {
       <div class="listening-body">
         ${e.items.length === 0
           ? `<div style="padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;">📝 内容待补充</div>`
-          : `<div class="topic-phrase-list">${renderTopicItems(e)}</div>`}
+          : (e.items.every(it => it.speaker)
+              ? renderTopicChat(e)
+              : `<div class="topic-phrase-list">${renderTopicItems(e)}</div>`)}
       </div>
     </div>
   `).join('');
@@ -5526,6 +5526,35 @@ function toggleVariants(id, btn) {
   if (!el) return;
   const open = el.classList.toggle('open');
   btn.textContent = `句型衍生 ${el.children.length} ${open ? '▴' : '▾'}`;
+}
+
+// 对话类 entry（所有 item 都带 speaker）渲染成两人聊天气泡：每段对话内首个出现的说话人靠左，第二个靠右
+function renderTopicChat(e) {
+  let html = '';
+  let lastGroup = null;
+  let sideMap = {};
+  const avatars = { left: '🧑', right: '🧑‍🦱' };
+  for (const it of e.items) {
+    if (it.group && it.group !== lastGroup) {
+      html += `<div class="chat-divider"><span>${escapeHtml(it.group)}</span></div>`;
+      lastGroup = it.group;
+      sideMap = {}; // 每段对话重新分左右
+    }
+    if (!(it.speaker in sideMap)) {
+      sideMap[it.speaker] = Object.keys(sideMap).length === 0 ? 'left' : 'right';
+    }
+    const side = sideMap[it.speaker];
+    html += `
+      <div class="chat-row ${side}">
+        <div class="chat-avatar">${avatars[side]}<span class="chat-who">${escapeHtml(it.speaker)}</span></div>
+        <div class="chat-bubble">
+          <div class="jp">${escapeHtml(it.jp)}</div>
+          ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
+          <div class="cn">${escapeHtml(it.cn)}</div>
+        </div>
+      </div>`;
+  }
+  return `<div class="chat-list">${html}</div>`;
 }
 
 function toggleTopicEntry(id) {

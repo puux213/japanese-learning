@@ -473,26 +473,25 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   }
   .listening-item.expanded .listening-body { display: block; }
   /* overflow:hidden (used for border-radius clipping) breaks position:sticky
-     on descendants, so drop it while expanded to let the header/audio bar pin */
+     on descendants, so drop it while expanded to let the sticky top bar pin */
   .listening-item.expanded { overflow: visible; }
-  /* Keep the opened item's title bar pinned to the top of the viewport while
-     scrolling through its transcript */
-  .listening-item.expanded .listening-header {
+  /* Title bar + audio bar form ONE sticky block, so they pin together to the top
+     of the viewport while scrolling through the transcript. Being a single
+     element they can never overlap and need no JS-measured offset. */
+  .listening-item.expanded .listening-sticky {
     position: sticky;
     top: 0;
     z-index: 21;
+    background: white;
   }
+  /* the audio bar belongs only to the opened item */
+  .listening-item:not(.expanded) .audio-player { display: none; }
 
   .audio-player {
     background: #fef6f0;
     border-radius: 8px;
     padding: 14px;
-    margin-bottom: 16px;
-  }
-  /* Audio bar pins right under the sticky header (top set in JS to header height) */
-  .listening-item.expanded .audio-player {
-    position: sticky;
-    z-index: 20;
+    margin: 12px 18px 16px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.06);
   }
   .audio-player audio {
@@ -521,23 +520,6 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .speed-btn.active {
     background: #d64545;
     border-color: #d64545;
-    color: white;
-    font-weight: bold;
-  }
-  .follow-btn {
-    background: white;
-    border: 1px solid #cddccf;
-    color: #4a7a63;
-    padding: 3px 10px;
-    border-radius: 14px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-left: auto;
-    transition: all 0.15s;
-  }
-  .follow-btn.active {
-    background: #6b8e7f;
-    border-color: #6b8e7f;
     color: white;
     font-weight: bold;
   }
@@ -734,6 +716,40 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   }
   .topic-phrase-actions .add-vocab-btn { border-color: #6b8e7f; color: #6b8e7f; }
   .topic-phrase-actions .add-vocab-btn:hover { background: #6b8e7f; color: white; }
+  .topic-group-header {
+    font-size: 12px;
+    font-weight: bold;
+    color: #a67c52;
+    background: #f5efe7;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin: 12px 0 4px;
+    display: inline-block;
+  }
+  .variants-toggle {
+    margin-top: 6px;
+    background: none;
+    border: 1px solid #d8c8b8;
+    color: #a67c52;
+    font-size: 12px;
+    padding: 2px 9px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .variants-toggle:hover { background: #f5efe7; }
+  .variants-block { display: none; margin-top: 6px; padding-left: 10px; border-left: 2px solid #ece0d2; }
+  .variants-block.open { display: block; }
+  .variant-row { padding: 5px 24px 5px 0; border-bottom: 1px dashed #ece0d2; position: relative; }
+  .variant-row:last-child { border-bottom: none; }
+  .variant-row .jp { font-size: 14px; color: #2a2a2a; }
+  .variant-row .romaji { font-size: 11px; color: #aaa; margin-top: 1px; }
+  .variant-row .cn { font-size: 12px; color: #777; margin-top: 2px; }
+  .variant-row .add-vocab-btn {
+    position: absolute; right: 0; top: 6px;
+    background: none; border: 1px solid #6b8e7f; color: #6b8e7f;
+    border-radius: 10px; padding: 0 7px; font-size: 12px; cursor: pointer;
+  }
+  .variant-row .add-vocab-btn:hover { background: #6b8e7f; color: white; }
 </style>
 </head>
 <body>
@@ -914,7 +930,6 @@ let state = {
   listeningEn: [],
   listeningEnDisplayCount: 7,
   listeningSpeed: 1,        // playback speed for 跟读/英语跟读 audio (persisted)
-  listeningAutoFollow: true, // auto-scroll current sentence to center while playing
   topicsCategory: null,
   topicsExpanded: {},
   activeTab: 'speaking',
@@ -4941,15 +4956,15 @@ function renderListening(kind) {
   ` : '');
   list.innerHTML = visible.map(l => `
     <div class="listening-item ${l.expanded ? 'expanded' : ''} ${l.completed ? 'completed' : ''}" data-id="${l.id}">
-      <div class="listening-header" onclick="toggleListeningExpand('${l.id}')" oncontextmenu="showListeningCtx(event, '${l.id}')" title="右键：删除">
-        <div class="topic-title">
-          <span class="topic-date">${formatDate(l.date)}</span>
-          <span class="topic-name">${escapeHtml(l.title_cn)}<span class="topic-name-jp">${escapeHtml(l.title_jp)}${l.speaker ? ' - ' + escapeHtml(l.speaker) : ''}</span></span>
-          <span class="check-mark">✓</span>
+      <div class="listening-sticky">
+        <div class="listening-header" onclick="toggleListeningExpand('${l.id}')" oncontextmenu="showListeningCtx(event, '${l.id}')" title="右键：删除">
+          <div class="topic-title">
+            <span class="topic-date">${formatDate(l.date)}</span>
+            <span class="topic-name">${escapeHtml(l.title_cn)}<span class="topic-name-jp">${escapeHtml(l.title_jp)}${l.speaker ? ' - ' + escapeHtml(l.speaker) : ''}</span></span>
+            <span class="check-mark">✓</span>
+          </div>
+          <span class="expand-icon">▶</span>
         </div>
-        <span class="expand-icon">▶</span>
-      </div>
-      <div class="listening-body">
         <div class="audio-player">
           <audio id="audio-${l.id}" controls preload="none" onloadedmetadata="onAudioReady('${l.id}')" ontimeupdate="onAudioTime('${l.id}')" onerror="onAudioError('${l.id}')">
             <source src="${escapeAttr(encodeURI(l.folder + '/' + l.audioFile))}" type="audio/mp4">
@@ -4959,11 +4974,12 @@ function renderListening(kind) {
             ${[0.75, 1, 1.25, 1.5, 2].map(r => `
               <button class="speed-btn ${state.listeningSpeed === r ? 'active' : ''}" data-rate="${r}" onclick="setListeningSpeed(${r})">${r}×</button>
             `).join('')}
-            <button class="follow-btn ${state.listeningAutoFollow ? 'active' : ''}" onclick="toggleAutoFollow(this)" title="播放时自动把当前句滚到屏幕中间">🎯 自动定位</button>
           </div>
-          <div class="audio-hint" id="audio-hint-${l.id}">💡 点击段落跳转 · ⏱ 手动校准时间戳 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">空格</kbd> 播放/暂停 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">←</kbd>/<kbd style="background:#eee;padding:1px 5px;border-radius:3px;">→</kbd> 快退/快进 2 秒</div>
+          <div class="audio-hint" id="audio-hint-${l.id}">💡 点击段落跳转 · ⏱ 手动校准时间戳 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">空格</kbd> 播放/暂停 · <kbd style="background:#eee;padding:1px 5px;border-radius:3px;">←</kbd>/<kbd style="background:#eee;padding:1px 5px;border-radius:3px;">→</kbd> 快退/快进 2 秒 · 🎯 播放时自动跟随当前句</div>
         </div>
+      </div>
 
+      <div class="listening-body">
         <div class="transcript-controls">
           <button class="btn btn-small ${l.showTranslation ? 'btn-ghost' : ''}" onclick="toggleTranslation('${l.id}')" title="切换中文翻译">
             ${l.showTranslation ? '🙈 关闭翻译' : '👁 显示翻译'}
@@ -5009,7 +5025,6 @@ function renderListening(kind) {
       </div>
     </div>
   `).join('') + more;
-  updateStickyOffsets();
 }
 
 function showMoreListening(kind) {
@@ -5090,23 +5105,6 @@ function setListeningSpeed(rate) {
   save();
 }
 
-// Toggle auto-centering the current sentence while playing
-function toggleAutoFollow(btn) {
-  state.listeningAutoFollow = !state.listeningAutoFollow;
-  document.querySelectorAll('.follow-btn').forEach(b => b.classList.toggle('active', state.listeningAutoFollow));
-  save();
-}
-
-// Pin the audio bar right below the sticky header (header height is variable)
-function updateStickyOffsets() {
-  document.querySelectorAll('#tab-listening .listening-item.expanded, #tab-listening-en .listening-item.expanded').forEach(item => {
-    const header = item.querySelector('.listening-header');
-    const player = item.querySelector('.audio-player');
-    if (header && player) player.style.top = header.offsetHeight + 'px';
-  });
-}
-window.addEventListener('resize', updateStickyOffsets);
-
 function onAudioError(id) {
   diagnoseAudio(id);
 }
@@ -5173,9 +5171,9 @@ function onAudioTime(id) {
     el.classList.toggle('playing', on);
     if (on) activeEl = el;
   });
-  // Auto-center the current sentence, but only when it changes (avoid fighting
-  // the user's scroll on every timeupdate) and only while actually playing
-  if (state.listeningAutoFollow && activeEl && activeIdx !== lastActiveIdx[id] && !audio.paused) {
+  // Auto-center the current sentence (always on), but only when it changes
+  // (avoid fighting the user's scroll on every timeupdate) and only while playing
+  if (activeEl && activeIdx !== lastActiveIdx[id] && !audio.paused) {
     activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   lastActiveIdx[id] = activeIdx;
@@ -5273,7 +5271,22 @@ function exportVocab() {
 // without touching the render logic (same pattern as PRESET_LISTENING 11-50).
 const TOPIC_CATEGORIES = [
   { id: 'sports', icon: '🏸', name_cn: '运动系列', name_jp: 'スポーツ' },
-  { id: 'restaurant', icon: '🍽️', name_cn: '餐厅预约', name_jp: 'レストラン予約' }
+  { id: 'restaurant', icon: '🍽️', name_cn: '餐厅预约', name_jp: 'レストラン予約' },
+  // ↓ 900句·玩转日语（14 大场景，段育文）
+  { id: 'travel', icon: '🛫', name_cn: '交通出行', name_jp: '交通・移動' },
+  { id: 'housing', icon: '🏠', name_cn: '住宿安家', name_jp: '宿泊・住まい' },
+  { id: 'social', icon: '👋', name_cn: '日常交际', name_jp: 'あいさつ・付き合い' },
+  { id: 'family', icon: '🏡', name_cn: '家庭生活', name_jp: '家庭・暮らし' },
+  { id: 'dining', icon: '🍜', name_cn: '餐饮美食', name_jp: '食事・グルメ' },
+  { id: 'shopping', icon: '🛍️', name_cn: '逛街购物', name_jp: '買い物' },
+  { id: 'attitude', icon: '💬', name_cn: '表达态度', name_jp: '態度・意見' },
+  { id: 'emotion', icon: '😊', name_cn: '情绪心情', name_jp: '気持ち・感情' },
+  { id: 'campus', icon: '🎓', name_cn: '留学校园', name_jp: '留学・キャンパス' },
+  { id: 'love', icon: '❤️', name_cn: '恋爱婚姻', name_jp: '恋愛・結婚' },
+  { id: 'chat', icon: '🗨️', name_cn: '闲聊话题', name_jp: '雑談・話題' },
+  { id: 'leisure', icon: '🎉', name_cn: '休闲娱乐', name_jp: '娯楽・レジャー' },
+  { id: 'health', icon: '🏥', name_cn: '健康就医', name_jp: '健康・医療' },
+  { id: 'service', icon: '🏦', name_cn: '公共服务', name_jp: '公共サービス' }
 ];
 
 const PRESET_TOPICS_DATA = {
@@ -5310,7 +5323,94 @@ const PRESET_TOPICS_DATA = {
     },
     { id: 'walkin', icon: '🚪', title_cn: '到店入座', title_jp: '来店時', items: [] },
     { id: 'ordering', icon: '📋', title_cn: '点餐', title_jp: '注文', items: [] }
-  ]
+  ],
+  // ===== 交通出行（场景一：日本，我来了）=====
+  travel: [
+    {
+      id: 'customs', icon: '🛂', title_cn: '通关检查', title_jp: '税関検査',
+      items: [
+        { group: '护照', jp: '私はパスポートを申請したいです。', romaji: 'watashi wa pasupōto o shinsei shitai desu', cn: '我想申请一份护照。', variants: [
+          { jp: '私はビザを申請したいです。', romaji: 'watashi wa biza o shinsei shitai desu', cn: '我想申请签证。' },
+          { jp: '私は日本に行くビザを申請したいです。', romaji: 'watashi wa nihon ni iku biza o shinsei shitai desu', cn: '我想申请去日本的签证。' },
+          { jp: '私はアメリカに行く入国ビザを申請したいです。', romaji: 'watashi wa amerika ni iku nyūkoku biza o shinsei shitai desu', cn: '我想申请去美国的入境签证。' }
+        ]},
+        { group: '护照', jp: '有効期間はどのぐらいでしょうか。', romaji: 'yūkō kikan wa dono gurai deshō ka', cn: '请问有效期是多长时间？', variants: [
+          { jp: '30日間以内は有効です。', romaji: 'sanjū nichikan inai wa yūkō desu', cn: '30天内有效。' },
+          { jp: 'どのぐらいは有効ですか。', romaji: 'dono gurai wa yūkō desu ka', cn: '多长时间有效？' },
+          { jp: '有効期間はどうしてこんなに短いのですか。延長することができませんか。', romaji: 'yūkō kikan wa dōshite konna ni mijikai no desu ka. enchō suru koto ga dekimasen ka', cn: '有效期怎么这么短呢？不能延长吗？' }
+        ]},
+        { group: '签证', jp: 'ビザを落とした。', romaji: 'biza o otoshita', cn: '我把签证弄丢了。', variants: [
+          { jp: '私はビザをとりました。', romaji: 'watashi wa biza o torimashita', cn: '我获得签证了。' },
+          { jp: '昨日観光ビザを申請しました。', romaji: 'kinō kankō biza o shinsei shimashita', cn: '我昨天申请了旅游签证。' },
+          { jp: '私の入国ビザはもうすぐ期限が切れます。', romaji: 'watashi no nyūkoku biza wa mōsugu kigen ga kiremasu', cn: '我的入境签证快到期了。' }
+        ]},
+        { group: '签证', jp: 'ビザの有効期限を延長したいです。', romaji: 'biza no yūkō kigen o enchō shitai desu', cn: '我想延长签证期限。', variants: [
+          { jp: '延長することができますか。', romaji: 'enchō suru koto ga dekimasu ka', cn: '可以延长期限吗？' },
+          { jp: 'ビザの有効期限を延長することができませんか。', romaji: 'biza no yūkō kigen o enchō suru koto ga dekimasen ka', cn: '不能延长签证期限吗？' },
+          { jp: 'ビザの有効期限を延長したいですが、どこで取り扱いますか。', romaji: 'biza no yūkō kigen o enchō shitai desu ga, doko de toriatsukaimasu ka', cn: '我想延长签证期限，请问在哪里办理？' }
+        ]},
+        { group: '海关', jp: 'すみません、税関申告の手続きを教えてくれませんか。', romaji: 'sumimasen, zeikan shinkoku no tetsuzuki o oshiete kuremasen ka', cn: '你能告诉我怎样办理通关手续吗？', variants: [
+          { jp: '通関手続きを教えて下さい。', romaji: 'tsūkan tetsuzuki o oshiete kudasai', cn: '请告诉我怎样办理通关手续。' },
+          { jp: 'どこで通関手続きをするのをお聞きしたいですが。', romaji: 'doko de tsūkan tetsuzuki o suru no o okiki shitai desu ga', cn: '请问在哪里办理通关手续？' },
+          { jp: 'どうやって通関手続きをするのを教えてくれませんか。', romaji: 'dōyatte tsūkan tetsuzuki o suru no o oshiete kuremasen ka', cn: '你能告诉我怎样办理通关手续吗？' }
+        ]},
+        { group: '海关', jp: '申告しなければならないことがない。', romaji: 'shinkoku shinakereba naranai koto ga nai', cn: '我没什么可申报的。', variants: [
+          { jp: '申告する必要がありません。', romaji: 'shinkoku suru hitsuyō ga arimasen', cn: '不需要申报。' },
+          { jp: '申告してから税を納めなければなりませんか。', romaji: 'shinkoku shite kara zei o osamenakereba narimasen ka', cn: '申报后必须缴税吗？' },
+          { jp: '私の荷物は全てここにあるので、申告する物はありません。', romaji: 'watashi no nimotsu wa subete koko ni aru node, shinkoku suru mono wa arimasen', cn: '我的行李全在这里，没有什么可申报的。' }
+        ]},
+        { group: '海关', jp: 'どんな物が免税できますか。', romaji: 'donna mono ga menzei dekimasu ka', cn: '哪些东西是可以免税的？', variants: [
+          { jp: 'これは免税品ですか。', romaji: 'kore wa menzeihin desu ka', cn: '这个是免税品吗？' },
+          { jp: '店員さん、免税品はどこにありますか。', romaji: 'tenin san, menzeihin wa doko ni arimasu ka', cn: '店员，免税的东西在哪里？' },
+          { jp: 'どんなものが免税することができますか。', romaji: 'donna mono ga menzei suru koto ga dekimasu ka', cn: '请问哪些东西是可以免税的？' }
+        ]},
+        { group: '出入境', jp: 'これを持って入国できますか。', romaji: 'kore o motte nyūkoku dekimasu ka', cn: '我能把这个带入境吗？', variants: [
+          { jp: 'この荷物を持って入国することができますか。', romaji: 'kono nimotsu o motte nyūkoku suru koto ga dekimasu ka', cn: '我能带这个行李入境吗？' },
+          { jp: 'この土産を持って入国することができますか。', romaji: 'kono miyage o motte nyūkoku suru koto ga dekimasu ka', cn: '我能带这个土产品入境吗？' },
+          { jp: 'これらのものをすべて入国することができますか。', romaji: 'korera no mono o subete nyūkoku suru koto ga dekimasu ka', cn: '我能把这些东西全都带入境吗？' }
+        ]},
+        { group: '出入境', jp: 'どのくらいの荷物が持てるのだろう？持参できますか？', romaji: 'dono kurai no nimotsu ga moteru no darō? jisan dekimasu ka', cn: '我能带多少行李？', variants: [
+          { jp: 'どのぐらいの荷物を持つことができますか。', romaji: 'dono gurai no nimotsu o motsu koto ga dekimasu ka', cn: '我能带多少行李呢？' },
+          { jp: 'このものを日本に持ち帰る事はできますか。', romaji: 'kono mono o nihon ni mochikaeru koto wa dekimasu ka', cn: '我能把这个东西带到日本去吗？' },
+          { jp: 'この電器製品を中国に持ち帰る事はできますか。', romaji: 'kono denki seihin o chūgoku ni mochikaeru koto wa dekimasu ka', cn: '我能把这个电器产品带到中国去吗？' }
+        ]},
+        { group: '会话一 · 申请护照', speaker: 'A', jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
+        { group: '会话一 · 申请护照', speaker: 'B', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
+        { group: '会话一 · 申请护照', speaker: 'A', jp: '持っています。あのう、パスポートの有効期限はどのくらいですか。', romaji: 'motte imasu. anō, pasupōto no yūkō kigen wa dono kurai desu ka', cn: '带了。对了，请问护照的有效期是多久？' },
+        { group: '会话一 · 申请护照', speaker: 'B', jp: '五年です。', romaji: 'go nen desu', cn: '五年。' },
+        { group: '会话二 · 签证丢失', speaker: 'A', jp: 'はじめまして、こちらは日本大使館です。何かご用ですか。', romaji: 'hajimemashite, kochira wa nihon taishikan desu. nanika goyō desu ka', cn: '您好，这里是日本大使馆。请问有什么事吗？' },
+        { group: '会话二 · 签证丢失', speaker: 'B', jp: '恐れ入りますが、私のビザをなくしてしまいました。', romaji: 'osoreirimasu ga, watashi no biza o nakushite shimaimashita', cn: '真不好意思，我把签证弄丢了。' },
+        { group: '会话二 · 签证丢失', speaker: 'A', jp: 'もう一度資料を出せば、ビザを申し込むことができます。ご心配しないでください。', romaji: 'mō ichido shiryō o daseba, biza o mōshikomu koto ga dekimasu. goshinpai shinaide kudasai', cn: '您再提交下资料就可以重新申请签证了，请不用担心。' },
+        { group: '会话二 · 签证丢失', speaker: 'B', jp: 'あ、そうですか。ありがとうございました。もう一度申し込みます。', romaji: 'a, sō desu ka. arigatō gozaimashita. mō ichido mōshikomimasu', cn: '啊，是吗？谢谢你，那我再申请一次。' },
+        { group: '会话三 · 入境申报', speaker: 'A', jp: '入国旅客荷物の書類を記入してください。', romaji: 'nyūkoku ryokaku nimotsu no shorui o kinyū shite kudasai', cn: '请填写一下入境旅客行李物品申报单。' },
+        { group: '会话三 · 入境申报', speaker: 'B', jp: '全部記入するんですか。', romaji: 'zenbu kinyū surun desu ka', cn: '所有的东西都要填写吗？' },
+        { group: '会话三 · 入境申报', speaker: 'A', jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
+        { group: '会话三 · 入境申报', speaker: 'B', jp: 'このカメラは税金を納めますか。', romaji: 'kono kamera wa zeikin o osamemasu ka', cn: '这个摄像机要不要缴税呢？' },
+        { group: '会话三 · 入境申报', speaker: 'A', jp: '税金を納めます。どの外貨を持っていますか。', romaji: 'zeikin o osamemasu. dono gaika o motte imasu ka', cn: '要缴税。您带的是什么外币呢？' },
+        { group: '会话三 · 入境申报', speaker: 'B', jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
+      ]
+    },
+    { id: 'airplane', icon: '✈️', title_cn: '坐飞机', title_jp: '飛行機', items: [] },
+    { id: 'directions', icon: '🧭', title_cn: '问路', title_jp: '道を尋ねる', items: [] },
+    { id: 'subway', icon: '🚇', title_cn: '坐地铁', title_jp: '地下鉄', items: [] },
+    { id: 'bus', icon: '🚌', title_cn: '坐公车', title_jp: 'バス', items: [] },
+    { id: 'taxi', icon: '🚕', title_cn: '坐出租车', title_jp: 'タクシー', items: [] },
+    { id: 'train', icon: '🚆', title_cn: '坐火车', title_jp: '電車', items: [] },
+    { id: 'driving', icon: '🚗', title_cn: '自驾车', title_jp: '運転', items: [] }
+  ],
+  housing: [],
+  social: [],
+  family: [],
+  dining: [],
+  shopping: [],
+  attitude: [],
+  emotion: [],
+  campus: [],
+  love: [],
+  chat: [],
+  leisure: [],
+  health: [],
+  service: []
 };
 
 function renderTopicsGrid() {
@@ -5372,29 +5472,60 @@ function renderTopicEntries() {
         <span class="expand-icon">▶</span>
       </div>
       <div class="listening-body">
-        ${e.items.length === 0 ? `
-          <div style="padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;">📝 内容待补充</div>
-        ` : `
-          <div class="topic-phrase-list">
-            ${e.items.map(it => `
-              <div class="topic-phrase-row">
-                <div class="topic-phrase-content">
-                  ${it.speaker ? `<span class="phrase-speaker">${escapeHtml(it.speaker)}</span>` : ''}
-                  <div class="jp">${escapeHtml(it.jp)}</div>
-                  ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
-                  <div class="cn">${escapeHtml(it.cn)}</div>
-                </div>
-                <div class="topic-phrase-actions">
-                  <button title="发音" onclick="speak('${escapeAttr(it.jp)}')">🔊</button>
-                  <button class="add-vocab-btn" onclick='addVocab(${JSON.stringify({ jp: it.jp, romaji: it.romaji || '', cn: it.cn, grammar: '' }).replace(/'/g, "&#39;")})'>➕ 加入生词本</button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `}
+        ${e.items.length === 0
+          ? `<div style="padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;">📝 内容待补充</div>`
+          : `<div class="topic-phrase-list">${renderTopicItems(e)}</div>`}
       </div>
     </div>
   `).join('');
+}
+
+function renderTopicItems(e) {
+  let lastGroup = null;
+  return e.items.map((it, idx) => {
+    let head = '';
+    if (it.group && it.group !== lastGroup) {
+      head = `<div class="topic-group-header">${escapeHtml(it.group)}</div>`;
+      lastGroup = it.group;
+    }
+    const vid = `var-${e.id}-${idx}`;
+    const variantsHtml = (it.variants && it.variants.length) ? `
+      <button class="variants-toggle" onclick="toggleVariants('${vid}', this)">句型衍生 ${it.variants.length} ▾</button>
+      <div class="variants-block" id="${vid}">
+        ${it.variants.map(v => `
+          <div class="variant-row">
+            <div class="jp">${escapeHtml(v.jp)}</div>
+            ${v.romaji ? `<div class="romaji">${escapeHtml(v.romaji)}</div>` : ''}
+            <div class="cn">${escapeHtml(v.cn)}</div>
+            <button class="add-vocab-btn" title="加入生词本" onclick='addVocab(${JSON.stringify({ jp: v.jp, romaji: v.romaji || '', cn: v.cn, grammar: '' }).replace(/'/g, "&#39;")})'>➕</button>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+    return `
+      ${head}
+      <div class="topic-phrase-row">
+        <div class="topic-phrase-content">
+          ${it.speaker ? `<span class="phrase-speaker">${escapeHtml(it.speaker)}</span>` : ''}
+          <div class="jp">${escapeHtml(it.jp)}</div>
+          ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
+          <div class="cn">${escapeHtml(it.cn)}</div>
+          ${variantsHtml}
+        </div>
+        <div class="topic-phrase-actions">
+          <button title="发音" onclick="speak('${escapeAttr(it.jp)}')">🔊</button>
+          <button class="add-vocab-btn" onclick='addVocab(${JSON.stringify({ jp: it.jp, romaji: it.romaji || '', cn: it.cn, grammar: '' }).replace(/'/g, "&#39;")})'>➕ 加入生词本</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleVariants(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const open = el.classList.toggle('open');
+  btn.textContent = `句型衍生 ${el.children.length} ${open ? '▴' : '▾'}`;
 }
 
 function toggleTopicEntry(id) {

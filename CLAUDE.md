@@ -108,7 +108,7 @@ Key 只存本地浏览器，不会外传。
 
 **代码结构**：`日语学习.html` 里
 - `TOPIC_CATEGORIES`：顶层图标网格的模块清单（目前 `sports` 运动系列 🏸、`restaurant` 餐厅预约 🍽️），每项 `{id, icon, name_cn, name_jp}`。
-- `PRESET_TOPICS_DATA`：按模块 id 分组的内容，每个模块下是 entries 数组（运动系列的 entry = 一项运动，餐厅预约的 entry = 一个场景如「电话预约」），每个 entry 的 `items` 数组是逐条单词/对话，`{jp, romaji, cn}`，对话类可以加 `speaker` 字段（如"客人"/"店员"）自动渲染成小标签，纯词表不用填这个字段。
+- `PRESET_TOPICS_DATA`：按模块 id 分组的内容，每个模块下是 entries 数组（运动系列的 entry = 一项运动，餐厅预约的 entry = 一个场景如「电话预约」），每个 entry 的 `items` 数组是逐条单词/对话，`{jp, romaji, cn}`，对话类可以加 `speaker` 字段（如"客人"/"店员"）自动渲染成小标签，纯词表不用填这个字段。**item 还支持两个可选字段**（2026-07-18 为「900句」书新增）：`group`（字符串，子分类小标题，如「护照」「海关」「会话一 · 申请护照」，相邻 item 的 `group` 变化时自动渲染一条暖色药丸小标题，用来在一张卡片内再分组）；`variants`（数组 `[{jp,romaji,cn}]`，即书里的「句型衍生」，核心句下渲染一个「句型衍生 N ▾」折叠按钮，点开显示变体，每条变体也能单独 ➕ 加生词本）。渲染逻辑在 `renderTopicItems(e)` + `toggleVariants(id, btn)`。
 - 渲染函数：`renderTopicsGrid()`（图标网格）/ `openTopicCategory()` `closeTopicCategory()`（进出某模块）/ `renderTopicEntries()`（该模块下的折叠卡片列表）/ `toggleTopicEntry()`（展开收起）。当前选中的模块存在 `state.topicsCategory`，卡片展开状态存 `state.topicsExpanded`，跟着 localStorage 走，刷新页面/换 tab 都还在原来的位置。
 - 每条 item 都能一键「➕ 加入生词本」（复用已有的 `addVocab()`），逻辑和跟读练习页面的生词条目一致。
 - entry 的 `items: []`（空数组）会自动显示「📝 内容待补充」占位，不用改渲染逻辑就能先占位后填内容——跟当年 50 篇演讲先占位再补讲稿一个思路。
@@ -116,6 +116,16 @@ Key 只存本地浏览器，不会外传。
 **目前内容**：运动系列下羽毛球（8 条词汇）已填，网球/游泳/跑步/篮球是空占位；餐厅预约下电话预约（6 句完整对话）已填，到店入座/点餐是空占位。
 
 **以后要加新模块/新内容**：告诉 Claude「日常用语加 XX 模块」或「补 XX 场景的内容」，改 `TOPIC_CATEGORIES`（加模块）或 `PRESET_TOPICS_DATA`（加 entry/填 items）即可，不用碰渲染代码。
+
+### 《就这900句·玩转日语》整书导入（2026-07-18 开工，框架已上线，内容分批补）
+
+书源 PDF：`~/Desktop/日语对话-段育文.pdf`（1151 页，段育文主编，calibre 生成）。全书 **14 大场景 / 96 小场景 / ~900 核心句**，结构极规整，天然对应日常用语的三层：**大场景 → `TOPIC_CATEGORIES` 模块**、**小场景 → entry 折叠卡片**、**每句 → item**。
+
+- **已建框架**：`TOPIC_CATEGORIES` 已加 14 个大场景图标（id：`travel/housing/social/family/dining/shopping/attitude/emotion/campus/love/chat/leisure/health/service`），连同原有 `sports/restaurant` 共 16 个。`PRESET_TOPICS_DATA` 里 `travel`（交通出行）已列全 8 个小场景 entry，其余 13 个模块暂为空数组 `[]`（进去显示「内容还在补充中」）。
+- **已填样例**：`travel → customs`（通关检查）完整填了 —— 口语大放送 9 个核心句（按 护照/签证/海关/出入境 用 `group` 分组，每句带 3 条 `variants` 句型衍生）+ 交流面对面 3 段会话（`group` 标「会话一/二/三」+ `speaker` A/B）。**文化穿越（纯文字文化贴士）暂未收录**，需要的话再单独设计怎么放。
+- **每个小场景在书里有三块**：① 口语大放送（核心句+句型衍生，按 ● 子标题分组）② 交流面对面（会话一/二/三，A/B 对话）③ 文化穿越（文化贴士）。前两块已能用 `group`/`variants`/`speaker` 完整表达，第三块目前不导。
+- **提取要点（下次补内容照此做）**：`pdftotext 整本.pdf full.txt` → 按 `grep -n "场景\|小场景名\|句型衍生"` 定位行号 → 读那一段原始文本。**振假名（汉字上方小假名）会作为独立短行插在汉字行前面**，pdftotext 抽出来是散的，别写正则硬拆——直接由 Claude 读原始文本、用日语知识重建成干净 `{jp,cn,variants}` 结构 + 自己生成 romaji 最可靠（振假名本身就是读音来源，可辅助注音）。
+- **扩充方式**：告诉 Claude「补 场景X」或「补 坐飞机/问路 这些小场景」→ Claude 从 PDF 提取那一段填进对应模块，其余保持占位。一次别贪多（900 句×带变体≈3000+ 条，分批做+浏览器实测）。
 
 ### 用 Notion 自助加内容 →「同步日常用语」（2026-07-15 约定，仿「同步邀请码」）
 
@@ -268,9 +278,19 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 **2026-07-18**
 - 跟读练习 + 英语跟读三项体验升级（共用同一套渲染引擎，一次改动两个模块都生效，改的是 `日语学习.html` 的渲染层，老数据不用点「🔄 更新讲稿」，刷新即生效）：
   - **🐢 变速**：音频条下方一排速度按钮（0.75×/1×/1.25×/1.5×/2×），`setListeningSpeed()` 全局生效并存 `state.listeningSpeed`，`onAudioReady` 里对新加载的音频自动套用所选速度
-  - **题目 + 语音条固定顶部**：展开的那篇标题栏 `.listening-header` 和音频条 `.audio-player` 用 `position: sticky` 钉在视口顶部，滚讲稿时常驻上方。语音条的 `top` 由 `updateStickyOffsets()` 按标题实际高度动态设置（标题换行不错位）；展开时把原本挡住 sticky 的 `overflow:hidden` 改成 `visible`
-  - **🎯 自动定位**：播放时当前朗读句自动平滑滚到屏幕中间（`onAudioTime` 里只在句子切换且未暂停时触发 `scrollIntoView({block:'center'})`，不跟手动滚动打架），右上角开关按钮，状态存 `state.listeningAutoFollow`（默认开）
-  - 已在浏览器实测：sticky 定位/语音条 top 对齐标题高度/速度按钮改 `playbackRate`/开关状态都持久化到 localStorage，无 console 报错
+  - **题目 + 语音条固定顶部**：展开的那篇，标题栏 `.listening-header` 和音频条 `.audio-player` 一起包在一个 `.listening-sticky` 里，整块 `position: sticky` 钉在视口顶部，滚讲稿时常驻上方。展开时把原本挡住 sticky 的 `overflow:hidden` 改成 `visible`
+  - **🎯 自动定位**：播放时当前朗读句自动平滑滚到屏幕中间（`onAudioTime` 里只在句子切换且未暂停时触发 `scrollIntoView({block:'center'})`，不跟手动滚动打架）
+  - 已在浏览器实测：sticky 定位/速度按钮改 `playbackRate`/速度持久化到 localStorage，无 console 报错
+
+**2026-07-18（日常用语接入《就这900句》整书）**
+- 开工把 `~/Desktop/日语对话-段育文.pdf`（900句·玩转日语，14 大场景/96 小场景）导入「📚 日常用语」，采用「框架先行 + 一个真实样例」：`TOPIC_CATEGORIES` 加了 14 个大场景图标（共 16 个），`travel`（交通出行）列全 8 个小场景 entry，`customs`（通关检查）完整填好（9 核心句+句型衍生 + 3 段会话），其余模块/小场景占位。详见上方「《就这900句·玩转日语》整书导入」
+- 给日常用语 item 加了两个可选字段的渲染支持：`group`（卡片内子分类小标题）+ `variants`（句型衍生折叠），`renderTopicItems()`/`toggleVariants()`，老数据（羽毛球/电话预约）不受影响
+- 已在本地 http server 浏览器实测：16 图标网格、分组标题、句型衍生折叠展开、会话 speaker 标签、每条变体单独加生词本，均正常，无 console 报错
+
+**2026-07-18（当天二次调整，据用户反馈）**
+- **自动定位改成常驻功能**：去掉了「🎯 自动定位」开关按钮和 `state.listeningAutoFollow` 状态、`toggleAutoFollow()` 函数——播放时永远自动跟随当前句（`onAudioTime` 里不再判断开关），提示行里加了「🎯 播放时自动跟随当前句」说明。原来要点一下才生效，用户希望它是固定行为
+- **语音条跟标题一起吸顶（修真机制）**：之前标题栏和音频条是两个各自 `position: sticky` 的元素，音频条的 `top` 靠 `updateStickyOffsets()` 用 JS 量标题高度动态设。窄窗口/浏览器缩放/长标题导致标题换行变高时，量出来的 `top` 偏小，音频条（语音条）会缩到标题栏底下被盖住，只剩下面的语速条露出来——就是用户说的「只有语速条跟着滑动」。改成把标题栏＋音频条包进同一个 `.listening-sticky` 单元一起吸顶，天然不可能互相重叠，彻底不需要 JS 量高度（`updateStickyOffsets()` 已删）。折叠态用 `.listening-item:not(.expanded) .audio-player{display:none}` 藏掉音频条
+- 已在浏览器实测（本地 localhost 起服务加载最新文件）：展开后标题栏+语音条+语速条整块吸顶不重叠、内容在下方滚过、折叠态音频条隐藏、无「🎯」开关、无 console 报错。改的是渲染层，老数据刷新即生效，不用点「🔄 更新讲稿」
 
 **2026-07-15**
 - 新增「📚 日常用语」顶层模块（框架先行）：图标网格入口 → 点开模块 → 折叠卡片列表，复用跟读练习的卡片视觉。目前上线 🏸 运动系列（羽毛球词汇已填，其余空占位）+ 🍽️ 餐厅预约（电话预约对话已填，其余空占位），详见上方「日常用语模块」。已在浏览器里过了一遍完整流程（进模块/展开卡片/加生词本/刷新页面状态保留），无 console 报错

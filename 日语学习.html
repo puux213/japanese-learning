@@ -5450,7 +5450,26 @@ const PRESET_TOPICS_DATA = {
       ]
     },
     { id: 'walkin', icon: '🚪', title_cn: '到店入座', title_jp: '来店時', items: [] },
-    { id: 'ordering', icon: '📋', title_cn: '点餐', title_jp: '注文', items: [] }
+    {
+      id: 'ordering', icon: '📋', title_cn: '点餐', title_jp: '注文',
+      audio: '日常用语音频/restaurant_ordering/audio.m4a',
+      times: [1.58, 4.32, 8.92, 10.74, 14.62, 19.92, 25.14, 26.58, 28.52, 33.15, 39.11, 41.95, 42.95],
+      items: [
+        { speaker: '店员', jp: 'ご注文はお決まりですか？', romaji: 'gochūmon wa okimari desu ka', cn: '您决定好点什么了吗？' },
+        { speaker: '我', mine: true, jp: 'はい、すみません。和風サラダに卵は入っていますか？', romaji: 'hai, sumimasen. wafū sarada ni tamago wa haitte imasu ka', cn: '好的，请问，和风沙拉里有鸡蛋吗？' },
+        { speaker: '店员', jp: 'はい、卵入りです。', romaji: 'hai, tamago-iri desu', cn: '有的，含鸡蛋。' },
+        { speaker: '我', mine: true, jp: '卵アレルギーなんです。卵抜きでお願いします。', romaji: 'tamago arerugī nan desu. tamago-nuki de onegai shimasu', cn: '我对鸡蛋过敏，请去掉鸡蛋。' },
+        { speaker: '店员', jp: '卵なしですね。かしこまりました。他にご注文はございますか？', romaji: 'tamago nashi desu ne. kashikomarimashita. hoka ni gochūmon wa gozaimasu ka', cn: '不要鸡蛋是吧，好的。还需要点别的吗？' },
+        { speaker: '我', mine: true, jp: 'あと、このミルクティーなんですけど、牛乳を豆乳に変更できますか？', romaji: 'ato, kono miruku tī nan desu kedo, gyūnyū o tōnyū ni henkō dekimasu ka', cn: '还有，这个奶茶，能把牛奶换成豆浆吗？' },
+        { speaker: '店员', jp: 'はい、できます。', romaji: 'hai, dekimasu', cn: '可以的。' },
+        { speaker: '我', mine: true, jp: 'じゃあ、それでお願いします。', romaji: 'jā, sore de onegai shimasu', cn: '那就那样，麻烦了。' },
+        { speaker: '店员', jp: 'かしこまりました。少々お待ちください。', romaji: 'kashikomarimashita. shōshō omachi kudasai', cn: '好的，请稍等。' },
+        { speaker: '店员', jp: 'お待たせいたしました。和風サラダ、卵抜きと豆乳のミルクティーになります。', romaji: 'omatase itashimashita. wafū sarada, tamago-nuki to tōnyū no miruku tī ni narimasu', cn: '让您久等了。这是去蛋的和风沙拉和豆浆奶茶。' },
+        { speaker: '店员', jp: 'ご注文の品は以上でよろしいでしょうか？', romaji: 'gochūmon no shina wa ijō de yoroshii deshō ka', cn: '您点的就这些，可以吗？' },
+        { speaker: '我', mine: true, jp: 'はい。', romaji: 'hai', cn: '是的。' },
+        { speaker: '店员', jp: 'お会計の際に、こちらの伝票をレジまでお持ちください。', romaji: 'okaikei no sai ni, kochira no denpyō o reji made omochi kudasai', cn: '结账时，请把这张单子拿到收银台。' }
+      ]
+    }
   ],
   // ===== 交通出行（场景一：日本，我来了）=====
   travel: [

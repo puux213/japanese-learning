@@ -118,7 +118,7 @@ Key 只存本地浏览器，不会外传。
 - 每条 item 都能一键「➕ 加入生词本」（复用已有的 `addVocab()`），逻辑和跟读练习页面的生词条目一致。
 - entry 的 `items: []`（空数组）会自动显示「📝 内容待补充」占位，不用改渲染逻辑就能先占位后填内容——跟当年 50 篇演讲先占位再补讲稿一个思路。
 
-**目前内容**：运动系列下羽毛球（8 条词汇）已填，网球/游泳/跑步/篮球是空占位；餐厅预约下电话预约（6 句完整对话）已填，到店入座/点餐是空占位。
+**目前内容**：运动系列下羽毛球（8 条词汇）已填，网球/游泳/跑步/篮球是空占位；餐厅预约下电话预约（14 句真人录音对话）+ 点餐（13 句真人录音对话）已填，到店入座是空占位。
 
 **以后要加新模块/新内容**：告诉 Claude「日常用语加 XX 模块」或「补 XX 场景的内容」，改 `TOPIC_CATEGORIES`（加模块）或 `PRESET_TOPICS_DATA`（加 entry/填 items）即可，不用碰渲染代码。
 
@@ -141,7 +141,12 @@ Key 只存本地浏览器，不会外传。
 - **数据字段**：对话 entry 上加 `audio`（相对路径，如 `日常用语音频/travel_customs/audio.m4a`）+ `times`（数组，每句在音频里的**绝对起始秒数**，和 `items` 下标一一对应，给高亮/跳转用）。渲染层：`renderTopicPlayer(e)`（顶部 sticky 播放器）/ `topicAudioTime(entryId)`（timeupdate 高亮当前句）/ `topicJumpLine(entryId, idx)`（seek 到某句）/ `findTopicEntry(entryId)`，加了 `#tab-topics` 的空格/方向键 keydown 处理。CSS：`.topic-audio-sticky`、`.chat-row.playing`、`.chat-bubble.clickable`（hover 微浮起）。**点气泡** = 跳到那句播放（`topicJumpLine`），没 `audio` 的对话退回 `speak()`。（2026-07-19 起气泡上**没有 🔊 按钮**了，点整个气泡就播。）
 - **生成脚本**（每次开新会话要重搭，没存仓库；放 scratchpad）：核心逻辑——遍历对话的每句 → `python3 -m edge_tts --voice <voice> --text <jp> --write-media x.mp3` → **每句 mp3 先用 ffmpeg 转成统一 wav**（`-ar 24000 -ac 1`，**直接 concat mp3 会导致成品 m4a 时长元数据错乱**，坑过一次：65 秒文件报成 38765 秒，进度条/跳转全失灵，务必先转 wav）→ 句间插 0.45s 静音 wav、开头 0.15s → `ffmpeg -f concat` 拼接 → `-ac 1 -b:a 64k -ar 44100` 出 `audio.m4a`。**时间戳靠累加每句 wav 的 `ffprobe` 时长**得到（`ffprobe -show_entries format=duration -of default=noprint_wrappers=1:nokey=1`，注意别写 `np=0` 那种旧版不认的简写）。产出 `日常用语音频/<folder>/audio.m4a` + 一份 `times` 数组，Claude 把 `audio`/`times` 手动注入 `日语学习.html` 对应 entry。
 - **已生成**：`travel/customs`（通关检查 14 句，66s，edge-tts）、`restaurant/phone_reservation`（电话预约 14 句，62s，**真人录音**）。音频存 `日常用语音频/` 顶层文件夹（未被 `.gitignore` 忽略，跟着仓库同步上线）。**以后补对话内容时，一并按上面流程生成音频 + 填 `audio`/`times`**。
-- **也可以用用户提供的真人录音**（2026-07-20 electric_phone 就是这么做的）：用户把 mp3 丢桌面 → ① `ffmpeg -i x.mp3 -ac 1 -b:a 64k -ar 44100 -movflags +faststart 日常用语音频/<folder>/audio.m4a`（**`-movflags +faststart` 必加**，否则 m4a 索引在文件末尾，点气泡 seek 会失灵/跳回 0，本地 python http.server 尤其明显）→ ② 没有文字稿就用 **faster-whisper** 转写（`pip install --user faster-whisper`；`WhisperModel("medium", device="cpu", compute_type="int8")`，`language="ja"`，`word_timestamps=True` 拿词级时间）→ ③ Claude 读转写结果、用日语知识**修正 ASR 错误**（whisper 常错：`承ります`↔受け賜ります、`かしこまりました`↔確かまりました、`禁煙席`↔近園席、`復唱`↔複証 等敬语词）+ 按说话人拆成轮次、合并同一人连续句 + 每轮取词级起始秒数当 `times` → ④ 填 `audio`/`times`/`items`（"我"说的加 `mine: true`）。⚠️ ASR 会有识别错误，成品要让用户对照音频核对文字。转写脚本放 scratchpad，没存仓库。
+- **⭐ 标准指令：用户发来一段对话音频 → 直接按下面流程接进对应对话场景（2026-07-20 与用户约定，`restaurant/phone_reservation` 就是这么做的，不用再讨论一遍可不可行）**。用户会说类似「这段音频用到 XX 场景」或「餐厅电话预约用这个音频」并把 mp3 丢桌面；先判断对应哪个 `TOPIC_CATEGORIES` 模块 / 哪个 entry（拿不准就问一句），然后：
+  - ① **转 m4a**：`ffmpeg -i x.mp3 -ac 1 -b:a 64k -ar 44100 -movflags +faststart 日常用语音频/<folder>/audio.m4a`。**`-movflags +faststart` 必加**——否则 m4a 索引在文件末尾，点气泡 seek 会失灵/跳回 0（本地 python http.server 尤其明显，线上 CDN 支持 range 会好些，但一律加最稳）。整段替换就覆盖同名 `audio.m4a`。
+  - ② **转写**（没有现成文字稿时）：**faster-whisper**（`pip install --user faster-whisper`；`WhisperModel("medium", device="cpu", compute_type="int8")`，`language="ja"`，`beam_size=5`，`vad_filter=True`，`word_timestamps=True` 拿词级时间）。
+  - ③ **整理**：Claude 读转写结果、用日语知识**修正 ASR 错误**（whisper 常把敬语词认错：`承ります`↔受け賜ります、`かしこまりました`↔確かまりました、`禁煙席`↔近園席、`復唱`↔複証、`お日にち`↔お日日 等）→ 按说话人**拆成轮次**、合并同一人连续句 → 每轮起始秒数取自词级时间戳当 `times`（录音开头若有旁白引导，不做成气泡，但音频保留，第一句 `times` 用它真实起点，用户想剪开头再说）。
+  - ④ **填数据**：更新那个 entry 的 `audio`/`times`/`items`；对话里**"我"（学习者）说的每句加 `mine: true`**（→ 右边绿气泡），对方（店员/工作人员）不加（→ 左边）。speaker 标签直接用「我」「店员」「工作人员」这类。
+  - ⑤ **验收**：本地 http server + 浏览器实测（时长、左右、点气泡跳句+高亮、无 console 报错），并把整理后的**文字稿列给用户对照音频核对**（⚠️ ASR 一定有识别误差，务必让用户过一遍）→ 提醒双击 `同步到网站.command` 上线。转写/生成脚本放 scratchpad，不存仓库。
 
 ### 用 Notion 自助加内容 →「同步日常用语」（2026-07-15 约定，仿「同步邀请码」）
 
@@ -291,8 +296,11 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 ## 更新日志
 
+**2026-07-20（点餐场景）**
+- 餐厅→点餐（`ordering`，原空占位）填入用户录屏（`ScreenRecording_07-20…MP4`，50.6s）里的**真人点餐对话**：从 MP4 提取音频 → faster-whisper 转写 → 修正 ASR（`伝票`↔電票、`レジまで`↔デジマ 等）→ 拆成 13 句（店员 ↔ 我，含"和风沙拉去蛋/牛奶换豆浆/结账拿伝票到收银台"）。走的就是「对话音频」小节那条标准指令。已本地实测：50.6s、13 句店员左/我右、点气泡跳句+高亮、无报错
+
 **2026-07-20**
-- 餐厅电话预约换成用户提供的**真人录音**（`~/Desktop/7月15日 (1).mp3`，62s）：原来那 6 句是 edge-tts 编的，现替换成录音里的完整对话（14 轮，桜レストラン店员金泽 ↔ 客人远藤，5月2日12点2位/包间/禁烟席/电话010-9988-7766）。用 faster-whisper 转写（medium 模型，词级时间戳）→ 修正 whisper 的日语识别错误 → 拆成 14 轮填进 `items`+`times`。音频用 `ffmpeg ... -movflags +faststart` 转 m4a（不加 faststart 点气泡 seek 会失灵）。详见「日常用语模块」→「对话音频」的「也可以用用户提供的真人录音」
+- 餐厅电话预约换成用户提供的**真人录音**（`~/Desktop/7月15日 (1).mp3`，62s）：原来那 6 句是 edge-tts 编的，现替换成录音里的完整对话（14 轮，桜レストラン店员金泽 ↔ 客人远藤，5月2日12点2位/包间/禁烟席/电话010-9988-7766）。用 faster-whisper 转写（medium 模型，词级时间戳）→ 修正 whisper 的日语识别错误 → 拆成 14 轮填进 `items`+`times`。音频用 `ffmpeg ... -movflags +faststart` 转 m4a（不加 faststart 点气泡 seek 会失灵）。详见「日常用语模块」→「对话音频」的「⭐ 标准指令：用户发来一段对话音频」
 - 已本地实测：时长 62.3s、14 句店员左/我右交替、点气泡准确跳句+高亮（seek 已修）、无喇叭按钮、无 console 报错
 - ⚠️ 文字是 whisper 转写+我人工修正的，**建议对照音频再核一遍**（个别敬语词可能识别有误）
 

@@ -140,7 +140,8 @@ Key 只存本地浏览器，不会外传。
 - **A/B 双人声**：`ja-JP-KeitaNeural`（男）+ `ja-JP-NanamiNeural`（女），按每个 entry 内说话人**出现顺序**分配（第 1 个说话人=Keita 男、第 2 个=Nanami 女），A/B、客人/店员 都通用。
 - **数据字段**：对话 entry 上加 `audio`（相对路径，如 `日常用语音频/travel_customs/audio.m4a`）+ `times`（数组，每句在音频里的**绝对起始秒数**，和 `items` 下标一一对应，给高亮/跳转用）。渲染层：`renderTopicPlayer(e)`（顶部 sticky 播放器）/ `topicAudioTime(entryId)`（timeupdate 高亮当前句）/ `topicJumpLine(entryId, idx)`（seek 到某句）/ `findTopicEntry(entryId)`，加了 `#tab-topics` 的空格/方向键 keydown 处理。CSS：`.topic-audio-sticky`、`.chat-row.playing`、`.chat-bubble.clickable`（hover 微浮起）。**点气泡** = 跳到那句播放（`topicJumpLine`），没 `audio` 的对话退回 `speak()`。（2026-07-19 起气泡上**没有 🔊 按钮**了，点整个气泡就播。）
 - **生成脚本**（每次开新会话要重搭，没存仓库；放 scratchpad）：核心逻辑——遍历对话的每句 → `python3 -m edge_tts --voice <voice> --text <jp> --write-media x.mp3` → **每句 mp3 先用 ffmpeg 转成统一 wav**（`-ar 24000 -ac 1`，**直接 concat mp3 会导致成品 m4a 时长元数据错乱**，坑过一次：65 秒文件报成 38765 秒，进度条/跳转全失灵，务必先转 wav）→ 句间插 0.45s 静音 wav、开头 0.15s → `ffmpeg -f concat` 拼接 → `-ac 1 -b:a 64k -ar 44100` 出 `audio.m4a`。**时间戳靠累加每句 wav 的 `ffprobe` 时长**得到（`ffprobe -show_entries format=duration -of default=noprint_wrappers=1:nokey=1`，注意别写 `np=0` 那种旧版不认的简写）。产出 `日常用语音频/<folder>/audio.m4a` + 一份 `times` 数组，Claude 把 `audio`/`times` 手动注入 `日语学习.html` 对应 entry。
-- **已生成**：`travel/customs`（通关检查 14 句，66s）、`restaurant/phone_reservation`（电话预约 6 句，25s）。音频存 `日常用语音频/` 顶层文件夹（未被 `.gitignore` 忽略，跟着仓库同步上线）。**以后补对话内容时，一并按上面流程生成音频 + 填 `audio`/`times`**。
+- **已生成**：`travel/customs`（通关检查 14 句，66s，edge-tts）、`restaurant/phone_reservation`（电话预约 14 句，62s，**真人录音**）。音频存 `日常用语音频/` 顶层文件夹（未被 `.gitignore` 忽略，跟着仓库同步上线）。**以后补对话内容时，一并按上面流程生成音频 + 填 `audio`/`times`**。
+- **也可以用用户提供的真人录音**（2026-07-20 electric_phone 就是这么做的）：用户把 mp3 丢桌面 → ① `ffmpeg -i x.mp3 -ac 1 -b:a 64k -ar 44100 -movflags +faststart 日常用语音频/<folder>/audio.m4a`（**`-movflags +faststart` 必加**，否则 m4a 索引在文件末尾，点气泡 seek 会失灵/跳回 0，本地 python http.server 尤其明显）→ ② 没有文字稿就用 **faster-whisper** 转写（`pip install --user faster-whisper`；`WhisperModel("medium", device="cpu", compute_type="int8")`，`language="ja"`，`word_timestamps=True` 拿词级时间）→ ③ Claude 读转写结果、用日语知识**修正 ASR 错误**（whisper 常错：`承ります`↔受け賜ります、`かしこまりました`↔確かまりました、`禁煙席`↔近園席、`復唱`↔複証 等敬语词）+ 按说话人拆成轮次、合并同一人连续句 + 每轮取词级起始秒数当 `times` → ④ 填 `audio`/`times`/`items`（"我"说的加 `mine: true`）。⚠️ ASR 会有识别错误，成品要让用户对照音频核对文字。转写脚本放 scratchpad，没存仓库。
 
 ### 用 Notion 自助加内容 →「同步日常用语」（2026-07-15 约定，仿「同步邀请码」）
 
@@ -289,6 +290,11 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 跟进方式待用户决定——两条视频条目还需要具体文案/脚本，「资料库」目前对视频制作没有直接可用素材。
 
 ## 更新日志
+
+**2026-07-20**
+- 餐厅电话预约换成用户提供的**真人录音**（`~/Desktop/7月15日 (1).mp3`，62s）：原来那 6 句是 edge-tts 编的，现替换成录音里的完整对话（14 轮，桜レストラン店员金泽 ↔ 客人远藤，5月2日12点2位/包间/禁烟席/电话010-9988-7766）。用 faster-whisper 转写（medium 模型，词级时间戳）→ 修正 whisper 的日语识别错误 → 拆成 14 轮填进 `items`+`times`。音频用 `ffmpeg ... -movflags +faststart` 转 m4a（不加 faststart 点气泡 seek 会失灵）。详见「日常用语模块」→「对话音频」的「也可以用用户提供的真人录音」
+- 已本地实测：时长 62.3s、14 句店员左/我右交替、点气泡准确跳句+高亮（seek 已修）、无喇叭按钮、无 console 报错
+- ⚠️ 文字是 whisper 转写+我人工修正的，**建议对照音频再核一遍**（个别敬语词可能识别有误）
 
 **2026-07-19（当天二次调整，据用户反馈）**
 - 对话气泡左右**按语义对调**：学习者"我"（`mine: true`）靠右绿气泡、对方（店员/工作人员）靠左白气泡。左右分配从"首个说话人靠左"改成靠 item 的 `mine` 字段——因为通关检查 A/B 角色跨对话翻转，只有按语义标才能保证"工作人员永远左、我永远右"。customs 的 speaker 顺带从 A/B 改叫「我」「工作人员」，头像换成 🙋(我)/🧑‍💼(对方)。详见「日常用语模块」的「两种渲染模式」

@@ -767,19 +767,12 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .chat-who { font-size: 11px; color: #999; }
   .chat-bubble {
     position: relative; max-width: 74%;
-    padding: 9px 34px 9px 13px; border-radius: 14px;
+    padding: 9px 13px; border-radius: 14px;
     background: #ffffff; border: 1px solid #ece0d2;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
-  .chat-speak {
-    position: absolute; top: 6px; right: 7px;
-    width: 24px; height: 24px; padding: 0;
-    border: none; border-radius: 50%; cursor: pointer;
-    background: #f2a17a; color: #fff; font-size: 13px; line-height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  }
-  .chat-speak:hover { background: #e88a5f; }
+  .chat-bubble.clickable { cursor: pointer; transition: box-shadow 0.12s, transform 0.12s; }
+  .chat-bubble.clickable:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); transform: translateY(-1px); }
   .chat-row.right .chat-bubble { background: #6b8e7f; border-color: #6b8e7f; }
   /* 小尾巴 */
   .chat-bubble::before {
@@ -808,7 +801,6 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
     background: white; margin: -20px -20px 4px; padding: 8px 2px 2px;
   }
   .topic-audio-sticky .audio-player { margin: 6px 6px 8px; }
-  .chat-bubble.seekable { cursor: pointer; }
   /* 播放到当前句：气泡高亮 */
   .chat-row.playing .chat-bubble {
     box-shadow: 0 0 0 2px #f2a17a, 0 2px 8px rgba(242,161,122,0.35);
@@ -5441,12 +5433,12 @@ const PRESET_TOPICS_DATA = {
       audio: '日常用语音频/restaurant_phone_reservation/audio.m4a',
       times: [0.15, 5.06, 11.01, 13.55, 17.45, 21.62],
       items: [
-        { speaker: '客人', jp: 'すみません、今晩7時に2名で予約したいのですが。', romaji: 'sumimasen, konban shichiji ni ninmei de yoyaku shitai no desu ga', cn: '不好意思，我想预约今晚7点2位。' },
+        { speaker: '客人', mine: true, jp: 'すみません、今晩7時に2名で予約したいのですが。', romaji: 'sumimasen, konban shichiji ni ninmei de yoyaku shitai no desu ga', cn: '不好意思，我想预约今晚7点2位。' },
         { speaker: '店员', jp: 'かしこまりました。お名前をお伺いしてもよろしいですか？', romaji: 'kashikomarimashita. onamae o oukagai shite mo yoroshii desu ka', cn: '好的。请问您贵姓？' },
-        { speaker: '客人', jp: '田中と申します。', romaji: 'tanaka to mōshimasu', cn: '我姓田中。' },
+        { speaker: '客人', mine: true, jp: '田中と申します。', romaji: 'tanaka to mōshimasu', cn: '我姓田中。' },
         { speaker: '店员', jp: 'お電話番号を教えていただけますか？', romaji: 'odenwa bangō o oshiete itadakemasu ka', cn: '能告诉我您的电话号码吗？' },
-        { speaker: '客人', jp: 'すみません、予約を変更したいのですが。', romaji: 'sumimasen, yoyaku o henkō shitai no desu ga', cn: '不好意思，我想改一下预约。' },
-        { speaker: '客人', jp: 'キャンセルさせていただきたいのですが。', romaji: 'kyanseru sasete itadakitai no desu ga', cn: '我想取消预约。' }
+        { speaker: '客人', mine: true, jp: 'すみません、予約を変更したいのですが。', romaji: 'sumimasen, yoyaku o henkō shitai no desu ga', cn: '不好意思，我想改一下预约。' },
+        { speaker: '客人', mine: true, jp: 'キャンセルさせていただきたいのですが。', romaji: 'kyanseru sasete itadakitai no desu ga', cn: '我想取消预约。' }
       ]
     },
     { id: 'walkin', icon: '🚪', title_cn: '到店入座', title_jp: '来店時', items: [] },
@@ -5459,20 +5451,20 @@ const PRESET_TOPICS_DATA = {
       audio: '日常用语音频/travel_customs/audio.m4a',
       times: [0.15, 4.92, 8.11, 14.34, 16.57, 22.75, 27.79, 35.24, 42.63, 46.7, 49.87, 52.62, 56.43, 61.46],
       items: [
-        { group: '对话1 · 申请护照', speaker: 'A', jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
-        { group: '对话1 · 申请护照', speaker: 'B', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
-        { group: '对话1 · 申请护照', speaker: 'A', jp: '持っています。あのう、パスポートの有効期限はどのくらいですか。', romaji: 'motte imasu. anō, pasupōto no yūkō kigen wa dono kurai desu ka', cn: '带了。对了，请问护照的有效期是多久？' },
-        { group: '对话1 · 申请护照', speaker: 'B', jp: '五年です。', romaji: 'go nen desu', cn: '五年。' },
-        { group: '对话2 · 签证丢失', speaker: 'A', jp: 'はじめまして、こちらは日本大使館です。何かご用ですか。', romaji: 'hajimemashite, kochira wa nihon taishikan desu. nanika goyō desu ka', cn: '您好，这里是日本大使馆。请问有什么事吗？' },
-        { group: '对话2 · 签证丢失', speaker: 'B', jp: '恐れ入りますが、私のビザをなくしてしまいました。', romaji: 'osoreirimasu ga, watashi no biza o nakushite shimaimashita', cn: '真不好意思，我把签证弄丢了。' },
-        { group: '对话2 · 签证丢失', speaker: 'A', jp: 'もう一度資料を出せば、ビザを申し込むことができます。ご心配しないでください。', romaji: 'mō ichido shiryō o daseba, biza o mōshikomu koto ga dekimasu. goshinpai shinaide kudasai', cn: '您再提交下资料就可以重新申请签证了，请不用担心。' },
-        { group: '对话2 · 签证丢失', speaker: 'B', jp: 'あ、そうですか。ありがとうございました。もう一度申し込みます。', romaji: 'a, sō desu ka. arigatō gozaimashita. mō ichido mōshikomimasu', cn: '啊，是吗？谢谢你，那我再申请一次。' },
-        { group: '对话3 · 入境申报', speaker: 'A', jp: '入国旅客荷物の書類を記入してください。', romaji: 'nyūkoku ryokaku nimotsu no shorui o kinyū shite kudasai', cn: '请填写一下入境旅客行李物品申报单。' },
-        { group: '对话3 · 入境申报', speaker: 'B', jp: '全部記入するんですか。', romaji: 'zenbu kinyū surun desu ka', cn: '所有的东西都要填写吗？' },
-        { group: '对话3 · 入境申报', speaker: 'A', jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
-        { group: '对话3 · 入境申报', speaker: 'B', jp: 'このカメラは税金を納めますか。', romaji: 'kono kamera wa zeikin o osamemasu ka', cn: '这个摄像机要不要缴税呢？' },
-        { group: '对话3 · 入境申报', speaker: 'A', jp: '税金を納めます。どの外貨を持っていますか。', romaji: 'zeikin o osamemasu. dono gaika o motte imasu ka', cn: '要缴税。您带的是什么外币呢？' },
-        { group: '对话3 · 入境申报', speaker: 'B', jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
+        { group: '对话1 · 申请护照', speaker: '我', mine: true, jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
+        { group: '对话1 · 申请护照', speaker: '工作人员', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
+        { group: '对话1 · 申请护照', speaker: '我', mine: true, jp: '持っています。あのう、パスポートの有効期限はどのくらいですか。', romaji: 'motte imasu. anō, pasupōto no yūkō kigen wa dono kurai desu ka', cn: '带了。对了，请问护照的有效期是多久？' },
+        { group: '对话1 · 申请护照', speaker: '工作人员', jp: '五年です。', romaji: 'go nen desu', cn: '五年。' },
+        { group: '对话2 · 签证丢失', speaker: '工作人员', jp: 'はじめまして、こちらは日本大使館です。何かご用ですか。', romaji: 'hajimemashite, kochira wa nihon taishikan desu. nanika goyō desu ka', cn: '您好，这里是日本大使馆。请问有什么事吗？' },
+        { group: '对话2 · 签证丢失', speaker: '我', mine: true, jp: '恐れ入りますが、私のビザをなくしてしまいました。', romaji: 'osoreirimasu ga, watashi no biza o nakushite shimaimashita', cn: '真不好意思，我把签证弄丢了。' },
+        { group: '对话2 · 签证丢失', speaker: '工作人员', jp: 'もう一度資料を出せば、ビザを申し込むことができます。ご心配しないでください。', romaji: 'mō ichido shiryō o daseba, biza o mōshikomu koto ga dekimasu. goshinpai shinaide kudasai', cn: '您再提交下资料就可以重新申请签证了，请不用担心。' },
+        { group: '对话2 · 签证丢失', speaker: '我', mine: true, jp: 'あ、そうですか。ありがとうございました。もう一度申し込みます。', romaji: 'a, sō desu ka. arigatō gozaimashita. mō ichido mōshikomimasu', cn: '啊，是吗？谢谢你，那我再申请一次。' },
+        { group: '对话3 · 入境申报', speaker: '工作人员', jp: '入国旅客荷物の書類を記入してください。', romaji: 'nyūkoku ryokaku nimotsu no shorui o kinyū shite kudasai', cn: '请填写一下入境旅客行李物品申报单。' },
+        { group: '对话3 · 入境申报', speaker: '我', mine: true, jp: '全部記入するんですか。', romaji: 'zenbu kinyū surun desu ka', cn: '所有的东西都要填写吗？' },
+        { group: '对话3 · 入境申报', speaker: '工作人员', jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
+        { group: '对话3 · 入境申报', speaker: '我', mine: true, jp: 'このカメラは税金を納めますか。', romaji: 'kono kamera wa zeikin o osamemasu ka', cn: '这个摄像机要不要缴税呢？' },
+        { group: '对话3 · 入境申报', speaker: '工作人员', jp: '税金を納めます。どの外貨を持っていますか。', romaji: 'zeikin o osamemasu. dono gaika o motte imasu ka', cn: '要缴税。您带的是什么外币呢？' },
+        { group: '对话3 · 入境申报', speaker: '我', mine: true, jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
       ]
     },
     { id: 'airplane', icon: '✈️', title_cn: '坐飞机', title_jp: '飛行機', items: [] },
@@ -5633,27 +5625,21 @@ function renderTopicPlayer(e) {
 function renderTopicChat(e) {
   let html = '';
   let lastGroup = null;
-  let sideMap = {};
-  const avatars = { left: '🧑', right: '🧑‍🦱' };
+  // 店员/工作人员在左，"我"（带 mine 标记）在右
+  const avatars = { left: '🧑‍💼', right: '🙋' };
   const hasAudio = !!e.audio;
   e.items.forEach((it, idx) => {
     if (it.group && it.group !== lastGroup) {
       html += `<div class="chat-divider"><span>${escapeHtml(it.group)}</span></div>`;
       lastGroup = it.group;
-      sideMap = {}; // 每段对话重新分左右
     }
-    if (!(it.speaker in sideMap)) {
-      sideMap[it.speaker] = Object.keys(sideMap).length === 0 ? 'left' : 'right';
-    }
-    const side = sideMap[it.speaker];
-    // 有整段音频时：🔊 和点气泡都跳到这句；没有则退回浏览器合成发音
-    const speakAction = hasAudio ? `topicJumpLine('${e.id}', ${idx})` : `speak('${escapeAttr(it.jp)}')`;
-    const bubbleClick = hasAudio ? ` onclick="topicJumpLine('${e.id}', ${idx})"` : '';
+    const side = it.mine ? 'right' : 'left';
+    // 点气泡就跳到这句播放；没整段音频的对话退回浏览器合成发音
+    const clickAction = hasAudio ? `topicJumpLine('${e.id}', ${idx})` : `speak('${escapeAttr(it.jp)}')`;
     html += `
       <div class="chat-row ${side}" data-idx="${idx}">
         <div class="chat-avatar">${avatars[side]}<span class="chat-who">${escapeHtml(it.speaker)}</span></div>
-        <div class="chat-bubble${hasAudio ? ' seekable' : ''}"${bubbleClick}>
-          <button class="chat-speak" title="${hasAudio ? '从这句播放' : '发音'}" onclick="event.stopPropagation(); ${speakAction}">🔊</button>
+        <div class="chat-bubble clickable" onclick="${clickAction}" title="点击播放这句">
           <div class="jp">${escapeHtml(it.jp)}</div>
           ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
           <div class="cn">${escapeHtml(it.cn)}</div>

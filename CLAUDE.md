@@ -111,7 +111,7 @@ Key 只存本地浏览器，不会外传。
 - `PRESET_TOPICS_DATA`：按模块 id 分组的内容，每个模块下是 entries 数组（运动系列的 entry = 一项运动，餐厅预约的 entry = 一个场景如「电话预约」），每个 entry 的 `items` 数组是逐条单词/对话，`{jp, romaji, cn}`，对话类要加 `speaker` 字段（如"客人"/"店员"/"A"/"B"），纯词表不填。
 
 **两种渲染模式（entry 自动判断，2026-07-18）**：
-- **对话气泡模式**：当一个 entry 的**所有 item 都带 `speaker`** 时，自动渲染成两人聊天界面（`renderTopicChat(e)`）——每段对话内**首个出现的说话人靠左、第二个靠右**（所以 A/B、客人/店员 都通用），左边白气泡、右边绿气泡，带小人头像+说话人标签+气泡尾巴，每条显示日文/罗马音/中文三行，**不带任何按钮**（纯看对话）。左右靠 `group` 分段重置（见下）。
+- **对话气泡模式**：当一个 entry 的**所有 item 都带 `speaker`** 时，自动渲染成两人聊天界面（`renderTopicChat(e)`）。**左右分配靠 item 的 `mine` 字段**（2026-07-19 改）：`mine: true` 的句子（=学习者"我"说的）靠**右**（绿气泡、🙋 头像），其余（店员/工作人员/对方）靠**左**（白气泡、🧑‍💼 头像）。**为什么不用"首个说话人靠左"**：通关检查里 A/B 的角色跨对话翻转（对话1 里 A 是我、对话2/3 里 A 是工作人员），只有按语义标 `mine` 才能保证"工作人员永远左、我永远右"。所以**补对话内容时，给"我"说的每一句加 `mine: true`**（对方的句子不加）。每条显示日文/罗马音/中文三行，带头像+说话人标签+气泡尾巴，**不带小喇叭按钮**；有整段音频时**点气泡就跳到那句播放**（`topicJumpLine`），没音频的对话点气泡退回浏览器合成 `speak()`。`speaker` 字段的值直接当标签显示（customs 已把 A/B 改成「我」「工作人员」）。
 - **词表模式**：只要有 item 不带 `speaker`，走原来的 `renderTopicItems(e)`（逐条列表，带 🔊 和 ➕ 加生词本）。羽毛球那种词表就是这个模式。
 - **item 可选字段**：`group`（字符串，分段小标题；词表模式渲染成暖色药丸标题，对话模式渲染成居中的「对话N · XX」分隔条，且每遇到新 `group` 就重置左右分配）；`variants`（数组 `[{jp,romaji,cn}]`，词表模式下渲染「句型衍生 N ▾」折叠按钮，`toggleVariants()`——这个字段是给书里「句型衍生」用的，但**对话内容不用它**）。
 - 渲染函数：`renderTopicsGrid()`（图标网格）/ `openTopicCategory()` `closeTopicCategory()`（进出某模块）/ `renderTopicEntries()`（该模块下的折叠卡片列表）/ `toggleTopicEntry()`（展开收起）。当前选中的模块存在 `state.topicsCategory`，卡片展开状态存 `state.topicsExpanded`，跟着 localStorage 走，刷新页面/换 tab 都还在原来的位置。
@@ -138,7 +138,7 @@ Key 只存本地浏览器，不会外传。
 
 - **声音来源**：一开始想用 VOICEVOX（免费本地），但它是没做苹果公证的 app，Mac 打开会弹「无法验证开发者/可能是恶意软件」的吓人警告（其实不是真检测到病毒，任何没交钱公证的 app 都弹这个），用户不放心 → **改用 `edge-tts`**（Python 包，`python3 -m pip install --user edge-tts`）。edge-tts 用的是微软 Edge 朗读那套**神经语音**，免费、不用登录/不用 key，日语很自然，最接近真人。生成时联网把日语句子发给微软语音服务（课本对话，无隐私）。**已排除**：VOICEVOX（吓人警告）、Mac 自带 `say`（有机器味，达不到真人）、浏览器 `speechSynthesis`（更差）。
 - **A/B 双人声**：`ja-JP-KeitaNeural`（男）+ `ja-JP-NanamiNeural`（女），按每个 entry 内说话人**出现顺序**分配（第 1 个说话人=Keita 男、第 2 个=Nanami 女），A/B、客人/店员 都通用。
-- **数据字段**：对话 entry 上加 `audio`（相对路径，如 `日常用语音频/travel_customs/audio.m4a`）+ `times`（数组，每句在音频里的**绝对起始秒数**，和 `items` 下标一一对应，给高亮/跳转用）。渲染层：`renderTopicPlayer(e)`（顶部 sticky 播放器）/ `topicAudioTime(entryId)`（timeupdate 高亮当前句）/ `topicJumpLine(entryId, idx)`（seek 到某句）/ `findTopicEntry(entryId)`，加了 `#tab-topics` 的空格/方向键 keydown 处理。CSS：`.topic-audio-sticky`、`.chat-row.playing`、`.chat-bubble.seekable`。有 `audio` 时每条气泡的 🔊 和点气泡都跳到那句播放；没 `audio` 的对话退回浏览器合成 `speak()`。
+- **数据字段**：对话 entry 上加 `audio`（相对路径，如 `日常用语音频/travel_customs/audio.m4a`）+ `times`（数组，每句在音频里的**绝对起始秒数**，和 `items` 下标一一对应，给高亮/跳转用）。渲染层：`renderTopicPlayer(e)`（顶部 sticky 播放器）/ `topicAudioTime(entryId)`（timeupdate 高亮当前句）/ `topicJumpLine(entryId, idx)`（seek 到某句）/ `findTopicEntry(entryId)`，加了 `#tab-topics` 的空格/方向键 keydown 处理。CSS：`.topic-audio-sticky`、`.chat-row.playing`、`.chat-bubble.clickable`（hover 微浮起）。**点气泡** = 跳到那句播放（`topicJumpLine`），没 `audio` 的对话退回 `speak()`。（2026-07-19 起气泡上**没有 🔊 按钮**了，点整个气泡就播。）
 - **生成脚本**（每次开新会话要重搭，没存仓库；放 scratchpad）：核心逻辑——遍历对话的每句 → `python3 -m edge_tts --voice <voice> --text <jp> --write-media x.mp3` → **每句 mp3 先用 ffmpeg 转成统一 wav**（`-ar 24000 -ac 1`，**直接 concat mp3 会导致成品 m4a 时长元数据错乱**，坑过一次：65 秒文件报成 38765 秒，进度条/跳转全失灵，务必先转 wav）→ 句间插 0.45s 静音 wav、开头 0.15s → `ffmpeg -f concat` 拼接 → `-ac 1 -b:a 64k -ar 44100` 出 `audio.m4a`。**时间戳靠累加每句 wav 的 `ffprobe` 时长**得到（`ffprobe -show_entries format=duration -of default=noprint_wrappers=1:nokey=1`，注意别写 `np=0` 那种旧版不认的简写）。产出 `日常用语音频/<folder>/audio.m4a` + 一份 `times` 数组，Claude 把 `audio`/`times` 手动注入 `日语学习.html` 对应 entry。
 - **已生成**：`travel/customs`（通关检查 14 句，66s）、`restaurant/phone_reservation`（电话预约 6 句，25s）。音频存 `日常用语音频/` 顶层文件夹（未被 `.gitignore` 忽略，跟着仓库同步上线）。**以后补对话内容时，一并按上面流程生成音频 + 填 `audio`/`times`**。
 
@@ -289,6 +289,11 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 跟进方式待用户决定——两条视频条目还需要具体文案/脚本，「资料库」目前对视频制作没有直接可用素材。
 
 ## 更新日志
+
+**2026-07-19（当天二次调整，据用户反馈）**
+- 对话气泡左右**按语义对调**：学习者"我"（`mine: true`）靠右绿气泡、对方（店员/工作人员）靠左白气泡。左右分配从"首个说话人靠左"改成靠 item 的 `mine` 字段——因为通关检查 A/B 角色跨对话翻转，只有按语义标才能保证"工作人员永远左、我永远右"。customs 的 speaker 顺带从 A/B 改叫「我」「工作人员」，头像换成 🙋(我)/🧑‍💼(对方)。详见「日常用语模块」的「两种渲染模式」
+- **去掉气泡上的 🔊 小喇叭按钮**，改成**点整个气泡**就跳到那句播放（`topicJumpLine`）
+- 已在本地浏览器实测：我右/对方左（含 A/B 翻转的对话2/3）、无喇叭按钮、点气泡跳句+高亮、空格播放暂停、无 console 报错
 
 **2026-07-19**
 - 给日常用语的**对话类**场景加了「整段真人音质音频 + 跟读同款播放器」：折叠页顶部完整进度条、空格播放/暂停、←/→ 快退快进、点气泡跳到那句、播到哪句自动高亮居中。详见上方「日常用语模块」的「对话音频」小节

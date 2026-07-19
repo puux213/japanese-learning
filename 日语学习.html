@@ -802,6 +802,20 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .chat-row.right .chat-bubble .jp { color: #ffffff; }
   .chat-row.right .chat-bubble .romaji { color: #d6e4dd; }
   .chat-row.right .chat-bubble .cn { color: #eaf2ee; }
+  /* 对话整段音频播放器：钉在折叠页顶部 */
+  .topic-audio-sticky {
+    position: sticky; top: 0; z-index: 21;
+    background: white; margin: -20px -20px 4px; padding: 8px 2px 2px;
+  }
+  .topic-audio-sticky .audio-player { margin: 6px 6px 8px; }
+  .chat-bubble.seekable { cursor: pointer; }
+  /* 播放到当前句：气泡高亮 */
+  .chat-row.playing .chat-bubble {
+    box-shadow: 0 0 0 2px #f2a17a, 0 2px 8px rgba(242,161,122,0.35);
+  }
+  .chat-row.playing.right .chat-bubble {
+    box-shadow: 0 0 0 2px #f2a17a, 0 2px 8px rgba(0,0,0,0.15);
+  }
 </style>
 </head>
 <body>
@@ -5299,6 +5313,33 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// 日常用语（对话）标签页的键盘快捷键：空格播放/暂停、←/→ 快退快进
+document.addEventListener('keydown', (e) => {
+  if (state.activeTab !== 'topics') return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  const scope = document.getElementById('tab-topics');
+  if (!scope) return;
+  const allAudios = scope.querySelectorAll('audio');
+  let audio = null;
+  for (const a of allAudios) { if (!a.paused) { audio = a; break; } }
+  if (!audio) {
+    const expanded = scope.querySelector('.listening-item.expanded audio');
+    if (expanded) audio = expanded;
+  }
+  if (!audio) return;
+  if (e.code === 'Space' || e.key === ' ') {
+    e.preventDefault();
+    if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    audio.currentTime = Math.max(0, audio.currentTime - 2);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 2);
+  }
+});
+
 function jumpToParagraph(id, idx) {
   const audio = document.getElementById('audio-' + id);
   const l = findListeningEntry(id).entry;
@@ -5397,6 +5438,8 @@ const PRESET_TOPICS_DATA = {
   restaurant: [
     {
       id: 'phone_reservation', icon: '📞', title_cn: '电话预约', title_jp: '電話予約',
+      audio: '日常用语音频/restaurant_phone_reservation/audio.m4a',
+      times: [0.15, 5.06, 11.01, 13.55, 17.45, 21.62],
       items: [
         { speaker: '客人', jp: 'すみません、今晩7時に2名で予約したいのですが。', romaji: 'sumimasen, konban shichiji ni ninmei de yoyaku shitai no desu ga', cn: '不好意思，我想预约今晚7点2位。' },
         { speaker: '店员', jp: 'かしこまりました。お名前をお伺いしてもよろしいですか？', romaji: 'kashikomarimashita. onamae o oukagai shite mo yoroshii desu ka', cn: '好的。请问您贵姓？' },
@@ -5413,6 +5456,8 @@ const PRESET_TOPICS_DATA = {
   travel: [
     {
       id: 'customs', icon: '🛂', title_cn: '通关检查', title_jp: '税関検査',
+      audio: '日常用语音频/travel_customs/audio.m4a',
+      times: [0.15, 4.92, 8.11, 14.34, 16.57, 22.75, 27.79, 35.24, 42.63, 46.7, 49.87, 52.62, 56.43, 61.46],
       items: [
         { group: '对话1 · 申请护照', speaker: 'A', jp: '失礼ですが、私はパスポートを申し込みに来ました。', romaji: 'shitsurei desu ga, watashi wa pasupōto o mōshikomi ni kimashita', cn: '你好，我来申请护照。' },
         { group: '对话1 · 申请护照', speaker: 'B', jp: '身分証を持っていますか。', romaji: 'mibunshō o motte imasu ka', cn: '您带身份证了吗？' },
@@ -5515,7 +5560,7 @@ function renderTopicEntries() {
         ${e.items.length === 0
           ? `<div style="padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:8px;font-size:13px;">📝 内容待补充</div>`
           : (e.items.every(it => it.speaker)
-              ? renderTopicChat(e)
+              ? (renderTopicPlayer(e) + renderTopicChat(e))
               : `<div class="topic-phrase-list">${renderTopicItems(e)}</div>`)}
       </div>
     </div>
@@ -5571,12 +5616,27 @@ function toggleVariants(id, btn) {
 }
 
 // 对话类 entry（所有 item 都带 speaker）渲染成两人聊天气泡：每段对话内首个出现的说话人靠左，第二个靠右
+// 折叠页顶部：整段对话音频播放器（有 audio 才渲染）。空格播放/暂停、进度条、播到哪句高亮哪句
+function renderTopicPlayer(e) {
+  if (!e.audio) return '';
+  return `
+    <div class="topic-audio-sticky">
+      <div class="audio-player">
+        <audio id="topic-audio-${e.id}" controls preload="metadata" ontimeupdate="topicAudioTime('${e.id}')">
+          <source src="${escapeAttr(encodeURI(e.audio))}" type="audio/mp4">
+        </audio>
+        <div class="audio-hint">💡 <kbd>空格</kbd> 播放/暂停 · 点气泡跳到那句 · 播到哪句自动高亮</div>
+      </div>
+    </div>`;
+}
+
 function renderTopicChat(e) {
   let html = '';
   let lastGroup = null;
   let sideMap = {};
   const avatars = { left: '🧑', right: '🧑‍🦱' };
-  for (const it of e.items) {
+  const hasAudio = !!e.audio;
+  e.items.forEach((it, idx) => {
     if (it.group && it.group !== lastGroup) {
       html += `<div class="chat-divider"><span>${escapeHtml(it.group)}</span></div>`;
       lastGroup = it.group;
@@ -5586,18 +5646,61 @@ function renderTopicChat(e) {
       sideMap[it.speaker] = Object.keys(sideMap).length === 0 ? 'left' : 'right';
     }
     const side = sideMap[it.speaker];
+    // 有整段音频时：🔊 和点气泡都跳到这句；没有则退回浏览器合成发音
+    const speakAction = hasAudio ? `topicJumpLine('${e.id}', ${idx})` : `speak('${escapeAttr(it.jp)}')`;
+    const bubbleClick = hasAudio ? ` onclick="topicJumpLine('${e.id}', ${idx})"` : '';
     html += `
-      <div class="chat-row ${side}">
+      <div class="chat-row ${side}" data-idx="${idx}">
         <div class="chat-avatar">${avatars[side]}<span class="chat-who">${escapeHtml(it.speaker)}</span></div>
-        <div class="chat-bubble">
-          <button class="chat-speak" title="发音" onclick="speak('${escapeAttr(it.jp)}')">🔊</button>
+        <div class="chat-bubble${hasAudio ? ' seekable' : ''}"${bubbleClick}>
+          <button class="chat-speak" title="${hasAudio ? '从这句播放' : '发音'}" onclick="event.stopPropagation(); ${speakAction}">🔊</button>
           <div class="jp">${escapeHtml(it.jp)}</div>
           ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
           <div class="cn">${escapeHtml(it.cn)}</div>
         </div>
       </div>`;
-  }
+  });
   return `<div class="chat-list">${html}</div>`;
+}
+
+// 跳到某句：seek 到该句起点并播放
+function topicJumpLine(entryId, idx) {
+  const audio = document.getElementById('topic-audio-' + entryId);
+  const entry = findTopicEntry(entryId);
+  if (!audio || !entry || !entry.times || entry.times[idx] == null) return;
+  audio.currentTime = entry.times[idx];
+  audio.play().catch(() => {});
+}
+
+// 播放时高亮当前句 + 自动居中
+const topicLastActive = {};
+function topicAudioTime(entryId) {
+  const audio = document.getElementById('topic-audio-' + entryId);
+  const entry = findTopicEntry(entryId);
+  if (!audio || !entry || !entry.times) return;
+  const t = audio.currentTime;
+  let activeIdx = -1;
+  for (let i = 0; i < entry.times.length; i++) {
+    if (entry.times[i] <= t + 0.02) activeIdx = i; else break;
+  }
+  let activeEl = null;
+  document.querySelectorAll(`.listening-item[data-id="${entryId}"] .chat-row`).forEach(el => {
+    const on = parseInt(el.dataset.idx) === activeIdx;
+    el.classList.toggle('playing', on);
+    if (on) activeEl = el;
+  });
+  if (activeEl && topicLastActive[entryId] !== activeIdx && !audio.paused) {
+    activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  topicLastActive[entryId] = activeIdx;
+}
+
+function findTopicEntry(entryId) {
+  for (const cat in PRESET_TOPICS_DATA) {
+    const hit = (PRESET_TOPICS_DATA[cat] || []).find(x => x.id === entryId);
+    if (hit) return hit;
+  }
+  return null;
 }
 
 function toggleTopicEntry(id) {

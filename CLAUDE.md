@@ -132,6 +132,16 @@ Key 只存本地浏览器，不会外传。
 - **提取要点（下次补内容照此做）**：`pdftotext 整本.pdf full.txt` → 按 `grep -n "场景\|小场景名\|句型衍生"` 定位行号 → 读那一段原始文本。**振假名（汉字上方小假名）会作为独立短行插在汉字行前面**，pdftotext 抽出来是散的，别写正则硬拆——直接由 Claude 读原始文本、用日语知识重建成干净 `{jp,cn,variants}` 结构 + 自己生成 romaji 最可靠（振假名本身就是读音来源，可辅助注音）。
 - **扩充方式**：告诉 Claude「补 场景X」或「补 坐飞机/问路 这些小场景」→ Claude 从 PDF 提取那一段填进对应模块，其余保持占位。一次别贪多（900 句×带变体≈3000+ 条，分批做+浏览器实测）。
 
+### 对话音频（真人音质，2026-07-19 新增，用 edge-tts 生成）
+
+日常用语的**对话类** entry 支持整段音频：折叠页展开后顶部有一条完整音频播放器（原生进度条），**空格播放/暂停 · ←/→ 快退快进 2 秒 · 点气泡跳到那句 · 播到哪句自动高亮居中**——和跟读练习同款体验。词表类（羽毛球那种）没有音频，不受影响。
+
+- **声音来源**：一开始想用 VOICEVOX（免费本地），但它是没做苹果公证的 app，Mac 打开会弹「无法验证开发者/可能是恶意软件」的吓人警告（其实不是真检测到病毒，任何没交钱公证的 app 都弹这个），用户不放心 → **改用 `edge-tts`**（Python 包，`python3 -m pip install --user edge-tts`）。edge-tts 用的是微软 Edge 朗读那套**神经语音**，免费、不用登录/不用 key，日语很自然，最接近真人。生成时联网把日语句子发给微软语音服务（课本对话，无隐私）。**已排除**：VOICEVOX（吓人警告）、Mac 自带 `say`（有机器味，达不到真人）、浏览器 `speechSynthesis`（更差）。
+- **A/B 双人声**：`ja-JP-KeitaNeural`（男）+ `ja-JP-NanamiNeural`（女），按每个 entry 内说话人**出现顺序**分配（第 1 个说话人=Keita 男、第 2 个=Nanami 女），A/B、客人/店员 都通用。
+- **数据字段**：对话 entry 上加 `audio`（相对路径，如 `日常用语音频/travel_customs/audio.m4a`）+ `times`（数组，每句在音频里的**绝对起始秒数**，和 `items` 下标一一对应，给高亮/跳转用）。渲染层：`renderTopicPlayer(e)`（顶部 sticky 播放器）/ `topicAudioTime(entryId)`（timeupdate 高亮当前句）/ `topicJumpLine(entryId, idx)`（seek 到某句）/ `findTopicEntry(entryId)`，加了 `#tab-topics` 的空格/方向键 keydown 处理。CSS：`.topic-audio-sticky`、`.chat-row.playing`、`.chat-bubble.seekable`。有 `audio` 时每条气泡的 🔊 和点气泡都跳到那句播放；没 `audio` 的对话退回浏览器合成 `speak()`。
+- **生成脚本**（每次开新会话要重搭，没存仓库；放 scratchpad）：核心逻辑——遍历对话的每句 → `python3 -m edge_tts --voice <voice> --text <jp> --write-media x.mp3` → **每句 mp3 先用 ffmpeg 转成统一 wav**（`-ar 24000 -ac 1`，**直接 concat mp3 会导致成品 m4a 时长元数据错乱**，坑过一次：65 秒文件报成 38765 秒，进度条/跳转全失灵，务必先转 wav）→ 句间插 0.45s 静音 wav、开头 0.15s → `ffmpeg -f concat` 拼接 → `-ac 1 -b:a 64k -ar 44100` 出 `audio.m4a`。**时间戳靠累加每句 wav 的 `ffprobe` 时长**得到（`ffprobe -show_entries format=duration -of default=noprint_wrappers=1:nokey=1`，注意别写 `np=0` 那种旧版不认的简写）。产出 `日常用语音频/<folder>/audio.m4a` + 一份 `times` 数组，Claude 把 `audio`/`times` 手动注入 `日语学习.html` 对应 entry。
+- **已生成**：`travel/customs`（通关检查 14 句，66s）、`restaurant/phone_reservation`（电话预约 6 句，25s）。音频存 `日常用语音频/` 顶层文件夹（未被 `.gitignore` 忽略，跟着仓库同步上线）。**以后补对话内容时，一并按上面流程生成音频 + 填 `audio`/`times`**。
+
 ### 用 Notion 自助加内容 →「同步日常用语」（2026-07-15 约定，仿「同步邀请码」）
 
 **目的**：让用户不用把每条内容都用文字描述给 Claude，而是自己在 Notion 表里加行，Claude 批量读进来。这是"内容与代码分离"的落地方式——`日语学习.html` 只管渲染（模板），内容维护在 Notion（数据源）。
@@ -279,6 +289,13 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 跟进方式待用户决定——两条视频条目还需要具体文案/脚本，「资料库」目前对视频制作没有直接可用素材。
 
 ## 更新日志
+
+**2026-07-19**
+- 给日常用语的**对话类**场景加了「整段真人音质音频 + 跟读同款播放器」：折叠页顶部完整进度条、空格播放/暂停、←/→ 快退快进、点气泡跳到那句、播到哪句自动高亮居中。详见上方「日常用语模块」的「对话音频」小节
+- 声音方案几经周折：VOICEVOX（免费本地）打开弹「无法验证/可能恶意软件」吓到用户 → 改用 `edge-tts`（微软神经语音，免费无 key，最接近真人），A=Keita 男声 / B=Nanami 女声
+- 先给 `travel/customs`（通关检查）和 `restaurant/phone_reservation`（电话预约）生成了音频，存 `日常用语音频/`，对话 entry 加 `audio`+`times` 字段
+- 顺带：这次之前先给对话气泡加了每条 🔊（原本漏了），有整段音频后 🔊 改成「从这句播放」
+- 已在本地 http server 浏览器实测：播放器进度条/空格播放暂停/跳句高亮/两段对话时长正确（66s、25s）/无 console 报错。改的是渲染层 + 新增音频文件，老数据刷新即生效
 
 **2026-07-18**
 - 跟读练习 + 英语跟读三项体验升级（共用同一套渲染引擎，一次改动两个模块都生效，改的是 `日语学习.html` 的渲染层，老数据不用点「🔄 更新讲稿」，刷新即生效）：

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>小红书封面生成器 · 日语学习</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1a1f;color:#dbeef5;font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  display:flex;gap:36px;padding:36px;min-height:100vh;flex-wrap:wrap;justify-content:center}
+.panel{width:380px;background:#16262e;border-radius:20px;padding:28px;height:fit-content}
+.panel h1{font-size:22px;margin-bottom:6px}
+.panel .sub{font-size:13px;color:#7ba7b8;margin-bottom:22px;line-height:1.6}
+label{display:block;font-size:13px;color:#8fc0d0;margin:16px 0 7px;font-weight:600}
+input,select{width:100%;padding:11px 13px;border-radius:10px;border:1px solid #2c4552;
+  background:#0f1a1f;color:#eaf7fb;font-size:15px;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:#3fb98a}
+.row{display:flex;gap:10px}
+.row input{flex:1}
+button{width:100%;margin-top:24px;padding:15px;border:none;border-radius:12px;
+  background:#3fb98a;color:#04231a;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+button:hover{background:#4fd09c}
+.tip{margin-top:16px;font-size:12px;color:#6b95a6;line-height:1.7}
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+canvas{width:432px;height:576px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.cap{font-size:12px;color:#6b95a6}
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>小红书封面生成器</h1>
+  <div class="sub">3:4 / 1080×1440，配色和卡片一致。<br>改字 → 实时预览 → 下载 PNG。</div>
+
+  <label>系列名</label>
+  <input id="series" value="在日本这样说">
+
+  <label>期数</label>
+  <input id="ep" value="1">
+
+  <label>主标题（第 1 行，≤10 字）</label>
+  <input id="t1" value="说「大丈夫です」">
+
+  <label>主标题（第 2 行，可留空）</label>
+  <input id="t2" value="到底是要还是不要？">
+
+  <label>副行（3 个具体词，制造"点进去能学到"）</label>
+  <input id="sub" value="便利店结账 8 句全给你">
+
+  <label>配色</label>
+  <select id="theme">
+    <option value="teal">清新青（默认，和卡片一致）</option>
+    <option value="warm">暖橘（对话/生活类）</option>
+    <option value="mint">薄荷绿（运动/词表类）</option>
+    <option value="sakura">樱粉（旅游/情绪类）</option>
+  </select>
+
+  <button onclick="download()">⬇️ 下载 PNG</button>
+
+  <div class="tip">
+    · 主标题用大白话，<b>不要放日文</b>——刷到的人大多不认识<br>
+    · 左上角系列名固定不动，这是系列辨识度<br>
+    · 同一套配色一直用下去，主页九宫格才好看
+  </div>
+</div>
+
+<div class="stage">
+  <canvas id="cv" width="1080" height="1440"></canvas>
+  <div class="cap">预览（实际导出 1080×1440）</div>
+</div>
+
+<script>
+const THEMES = {
+  teal  : {bg1:'#eafaff', bg2:'#a9ddee', main:'#0e7490', sub:'#c2710c', ink:'#0d3b4d', pill:'rgba(14,116,144,.13)'},
+  warm  : {bg1:'#fff5ea', bg2:'#ffd7ab', main:'#b8541a', sub:'#7a6a2f', ink:'#4a2a12', pill:'rgba(184,84,26,.13)'},
+  mint  : {bg1:'#eafaf0', bg2:'#a9e6c4', main:'#0f7a53', sub:'#b0700f', ink:'#0d3d2b', pill:'rgba(15,122,83,.13)'},
+  sakura: {bg1:'#fff0f5', bg2:'#f8c2d6', main:'#b03a67', sub:'#a06a2a', ink:'#4d1930', pill:'rgba(176,58,103,.13)'}
+};
+const F = '"PingFang SC","Hiragino Sans","Microsoft YaHei",sans-serif';
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+function draw(){
+  const T = THEMES[document.getElementById('theme').value];
+  const series = document.getElementById('series').value.trim();
+  const ep     = document.getElementById('ep').value.trim();
+  const t1     = document.getElementById('t1').value.trim();
+  const t2     = document.getElementById('t2').value.trim();
+  const sub    = document.getElementById('sub').value.trim();
+
+  // 背景渐变
+  const g = ctx.createLinearGradient(0,0,1080,1440);
+  g.addColorStop(0,T.bg1); g.addColorStop(1,T.bg2);
+  ctx.fillStyle=g; ctx.fillRect(0,0,1080,1440);
+
+  // 右下角装饰圆
+  ctx.globalAlpha=.20; ctx.fillStyle=T.main;
+  ctx.beginPath(); ctx.arc(1010,1370,260,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=.13;
+  ctx.beginPath(); ctx.arc(120,180,180,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+
+  // 左上角系列药丸（固定位置 = 系列辨识度）
+  const tag = series + ' · 第' + ep + '期';
+  ctx.font = '700 40px ' + F;
+  const tw = ctx.measureText(tag).width;
+  ctx.fillStyle = T.pill;
+  roundRect(80, 92, tw+66, 84, 42); ctx.fill();
+  ctx.fillStyle = T.main; ctx.textBaseline='middle';
+  ctx.fillText(tag, 113, 136);
+
+  // 主标题
+  ctx.textBaseline='alphabetic';
+  const lines = t2 ? [t1,t2] : [t1];
+  let size = 128;
+  // 自动缩字号，保证不出血
+  lines.forEach(l=>{
+    ctx.font='800 '+size+'px '+F;
+    while(ctx.measureText(l).width > 920 && size > 62){
+      size -= 4; ctx.font='800 '+size+'px '+F;
+    }
+  });
+  ctx.font='800 '+size+'px '+F;
+  const lh = size*1.32;
+  let y = 640 - (lines.length-1)*lh/2;
+  lines.forEach(l=>{
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.fillText(l, 82, y+5);           // 轻描边，增强对比
+    ctx.fillStyle=T.main;
+    ctx.fillText(l, 80, y);
+    y += lh;
+  });
+
+  // 分隔短线
+  ctx.strokeStyle=T.sub; ctx.lineWidth=9; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(84, y+34); ctx.lineTo(228, y+34); ctx.stroke();
+
+  // 副行
+  if(sub){
+    let ss = 52; ctx.font='700 '+ss+'px '+F;
+    while(ctx.measureText('▸ '+sub).width > 920 && ss > 32){
+      ss -= 2; ctx.font='700 '+ss+'px '+F;
+    }
+    ctx.fillStyle=T.sub;
+    ctx.fillText('▸ '+sub, 80, y+140);
+  }
+
+  // 底部一句固定署名（不是水印，是人设）
+  ctx.font='600 36px '+F; ctx.fillStyle='rgba(13,59,77,.38)';
+  ctx.fillText('每天一个日本人真实说法', 80, 1352);
+}
+
+function download(){
+  draw();
+  const ep = document.getElementById('ep').value.trim();
+  const a = document.createElement('a');
+  a.download = '封面_第'+ep+'期.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',draw));
+document.fonts && document.fonts.ready.then(draw);
+draw();
+</script>
+</body>
+</html>

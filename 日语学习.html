@@ -767,10 +767,19 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .chat-who { font-size: 11px; color: #999; }
   .chat-bubble {
     position: relative; max-width: 74%;
-    padding: 9px 13px; border-radius: 14px;
+    padding: 9px 34px 9px 13px; border-radius: 14px;
     background: #ffffff; border: 1px solid #ece0d2;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
+  .chat-speak {
+    position: absolute; top: 6px; right: 7px;
+    width: 24px; height: 24px; padding: 0;
+    border: none; border-radius: 50%; cursor: pointer;
+    background: #f2a17a; color: #fff; font-size: 13px; line-height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+  .chat-speak:hover { background: #e88a5f; }
   .chat-row.right .chat-bubble { background: #6b8e7f; border-color: #6b8e7f; }
   /* 小尾巴 */
   .chat-bubble::before {
@@ -4521,15 +4530,48 @@ async function callZhipu(systemPrompt, userMessage) {
   }
 }
 
+// ============ 体验额度（新用户零配置直接用）============
+// 站长自备的智谱 GLM-4-Flash Key（免费模型），给没填 Key 的新用户每天 TRIAL_DAILY_LIMIT 次。
+// ⚠️ 前端明文，会被人拿走 —— 所以只放免费模型的 Key，且务必在智谱后台设消费限额。
+// 填空字符串 = 关闭体验额度（回到"必须自己填 Key"）。
+const TRIAL_ZHIPU_KEY = '';   // ← 把你的智谱 Key 粘到这里
+const TRIAL_DAILY_LIMIT = 20; // 每人每天免费次数
+
+function trialToday() { return new Date().toISOString().slice(0, 10); }
+function trialUsed() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('trialQuota') || '{}');
+    return raw.date === trialToday() ? (raw.n || 0) : 0;
+  } catch (e) { return 0; }
+}
+function trialLeft() {
+  if (!TRIAL_ZHIPU_KEY) return 0;
+  return Math.max(0, TRIAL_DAILY_LIMIT - trialUsed());
+}
+function trialConsume() {
+  localStorage.setItem('trialQuota', JSON.stringify({ date: trialToday(), n: trialUsed() + 1 }));
+}
+async function callTrial(systemPrompt, userMessage) {
+  if (trialLeft() <= 0) return null;
+  const saved = state.settings.zhipuKey;
+  state.settings.zhipuKey = TRIAL_ZHIPU_KEY;
+  try {
+    const r = await callZhipu(systemPrompt, userMessage);
+    if (r) trialConsume();
+    return r;
+  } finally { state.settings.zhipuKey = saved; }
+}
+
 // ============ MULTI-PROVIDER AI CHAIN ============
-// Priority: 国内直连优先 (DeepSeek → 智谱) → Groq → Claude → Gemini
+// Priority: 国内直连优先 (DeepSeek → 智谱) → Groq → Claude → Gemini → 体验额度兜底
 async function callAIChain(systemPrompt, userMessage) {
   const providers = [
     { key: state.settings.deepseekKey, fn: callDeepseek, name: 'deepseek' },
     { key: state.settings.zhipuKey, fn: callZhipu, name: 'zhipu' },
     { key: state.settings.groqKey, fn: callGroq, name: 'groq' },
     { key: state.settings.apiKey, fn: callClaude, name: 'claude' },
-    { key: state.settings.geminiKey, fn: callGemini, name: 'gemini' }
+    { key: state.settings.geminiKey, fn: callGemini, name: 'gemini' },
+    { key: trialLeft() > 0 ? TRIAL_ZHIPU_KEY : '', fn: callTrial, name: 'trial' }
   ];
   for (const p of providers) {
     if (!p.key) continue;
@@ -4540,7 +4582,7 @@ async function callAIChain(systemPrompt, userMessage) {
 }
 function hasAnyAIKey() {
   const s = state.settings;
-  return !!(s.deepseekKey || s.zhipuKey || s.groqKey || s.apiKey || s.geminiKey);
+  return !!(s.deepseekKey || s.zhipuKey || s.groqKey || s.apiKey || s.geminiKey) || trialLeft() > 0;
 }
 
 // ============ GEMINI: LIST MODELS ============
@@ -5548,6 +5590,7 @@ function renderTopicChat(e) {
       <div class="chat-row ${side}">
         <div class="chat-avatar">${avatars[side]}<span class="chat-who">${escapeHtml(it.speaker)}</span></div>
         <div class="chat-bubble">
+          <button class="chat-speak" title="发音" onclick="speak('${escapeAttr(it.jp)}')">🔊</button>
           <div class="jp">${escapeHtml(it.jp)}</div>
           ${it.romaji ? `<div class="romaji">${escapeHtml(it.romaji)}</div>` : ''}
           <div class="cn">${escapeHtml(it.cn)}</div>

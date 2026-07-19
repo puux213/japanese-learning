@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>日语场景对话卡片</title>
+<style>
+:root{
+  --bg1:#eafaff; --bg2:#a9ddee;
+  --jp:#0e7490; --gold:#c2710c; --ink:#0d3b4d; --muted:#4d8298;
+  --bubbleL:#ffffff; --bubbleR:#3fb98a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0b1418;overflow:hidden;
+  font-family:"PingFang SC","Hiragino Sans","Noto Sans JP","Microsoft YaHei",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1080px;height:1920px;transform-origin:center center;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── 顶部场景标题 ── */
+.scene-bar{padding:80px 80px 30px;text-align:center;flex:0 0 auto}
+.scene-bar .badge{display:inline-block;background:rgba(14,116,144,.12);color:var(--jp);
+  font-size:34px;font-weight:700;padding:14px 40px;border-radius:999px;letter-spacing:2px}
+.scene-bar .title{margin-top:26px;font-size:62px;font-weight:800;color:var(--ink)}
+.scene-bar .sub{margin-top:14px;font-size:34px;color:var(--muted)}
+
+/* ── 对话区 ── */
+.chat{flex:1 1 auto;padding:20px 70px 60px;display:flex;flex-direction:column;
+  justify-content:center;gap:38px;overflow:hidden}
+.row{display:flex;align-items:flex-end;gap:22px;opacity:0;transform:translateY(28px);
+  transition:opacity .35s ease,transform .35s ease}
+.row.show{opacity:1;transform:none}
+.row.right{flex-direction:row-reverse}
+.avatar{width:96px;height:96px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 40% 35%,#fff,#cfe9f3);
+  border:4px solid rgba(14,116,144,.25);display:flex;align-items:center;
+  justify-content:center;font-size:48px}
+.col{max-width:760px}
+.who{font-size:30px;color:var(--muted);margin:0 12px 10px;font-weight:600}
+.row.right .who{text-align:right}
+.bubble{position:relative;background:var(--bubbleL);border-radius:34px;
+  padding:32px 38px;box-shadow:0 10px 30px rgba(13,59,77,.12)}
+.row.right .bubble{background:var(--bubbleR)}
+.bubble:after{content:"";position:absolute;bottom:18px;width:0;height:0;
+  border:16px solid transparent}
+.row.left  .bubble:after{left:-26px;border-right-color:var(--bubbleL)}
+.row.right .bubble:after{right:-26px;border-left-color:var(--bubbleR)}
+.jp{font-size:52px;font-weight:800;color:var(--jp);line-height:1.35;
+  text-shadow:0 2px 10px rgba(14,116,144,.18)}
+.row.right .jp{color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.18)}
+.ro{margin-top:10px;font-size:32px;font-style:italic;color:var(--gold)}
+.row.right .ro{color:#eafff6}
+.cn{margin-top:16px;font-size:40px;font-weight:700;color:var(--ink);
+  opacity:0;transition:opacity .4s ease .55s}
+.row.right .cn{color:#f2fffa}
+.row.show .cn{opacity:1}
+
+/* ── 总结屏 ── */
+#summary{position:absolute;inset:0;background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  padding:120px 90px;display:none;flex-direction:column;gap:34px;overflow:hidden}
+#summary.on{display:flex}
+#summary h2{font-size:72px;color:var(--ink);text-align:center;font-weight:800}
+#summary .tip{text-align:center;font-size:36px;color:var(--muted);margin-top:-14px}
+.sum-item{display:flex;flex-direction:column;gap:6px;
+  border-left:8px solid rgba(14,116,144,.35);padding-left:28px}
+.sum-item .sj{font-size:44px;font-weight:800;color:var(--jp)}
+.sum-item .sc{font-size:34px;color:var(--ink)}
+
+.hint{position:absolute;bottom:34px;width:100%;text-align:center;
+  font-size:26px;color:rgba(13,59,77,.35)}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div class="scene-bar">
+    <span class="badge" id="badge"></span>
+    <div class="title" id="title"></div>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="chat" id="chat"></div>
+  <div id="summary"></div>
+  <div class="hint">空格 / → 下一句 &nbsp;·&nbsp; ← 上一句 &nbsp;·&nbsp; S 重听 &nbsp;·&nbsp; R 重来</div>
+</div></div>
+
+<script>
+/* ═══════════ 只改这一块 DECK ═══════════ */
+const DECK = {
+  badge: "在日本这样说 · 第1期",
+  title: "在日本理发店",
+  sub : "美容室での会話",
+  // speaker 第一个出现的人靠左，第二个靠右
+  // read: 汉字词的假名读音，TTS 用；纯假名句可省略
+  lines: [
+    {who:"店员", jp:"今日はどうなさいますか。", read:"きょうはどうなさいますか",
+     ro:"kyou wa dou nasaimasu ka", cn:"今天想怎么剪呢？"},
+    {who:"客人", jp:"少し短くしてください。", read:"すこしみじかくしてください",
+     ro:"sukoshi mijikaku shite kudasai", cn:"麻烦稍微剪短一点。"},
+    {who:"店员", jp:"どのくらい切りますか。", read:"どのくらいきりますか",
+     ro:"dono kurai kirimasu ka", cn:"要剪掉多少呢？"},
+    {who:"客人", jp:"二センチくらいでお願いします。", read:"にセンチくらいでおねがいします",
+     ro:"ni senchi kurai de onegai shimasu", cn:"两厘米左右就好。"},
+    {who:"客人", jp:"すきばさみでお願いします。", read:"すきばさみでおねがいします",
+     ro:"sukibasami de onegai shimasu", cn:"麻烦帮我打薄。"},
+    {who:"店员", jp:"かしこまりました。", read:"かしこまりました",
+     ro:"kashikomarimashita", cn:"好的，明白了。"}
+  ],
+  summaryTitle: "📌 收藏起来，去日本前翻一遍"
+};
+/* ═══════════ 以下是引擎，一般不用改 ═══════════ */
+
+// 自适应缩放到窗口
+function fit(){
+  const s=Math.min(innerWidth/1080, innerHeight/1920);
+  document.getElementById('stage').style.transform='scale('+s+')';
+}
+addEventListener('resize',fit); fit();
+
+document.getElementById('badge').textContent = DECK.badge;
+document.getElementById('title').textContent = DECK.title;
+document.getElementById('sub').textContent   = DECK.sub;
+
+// 决定左右：第一个出现的说话人靠左
+const speakers=[...new Set(DECK.lines.map(l=>l.who))];
+const sideOf=w=>w===speakers[0]?'left':'right';
+const faceOf=w=>w===speakers[0]?'🙂':'💁';
+
+const chat=document.getElementById('chat');
+DECK.lines.forEach((l,i)=>{
+  const row=document.createElement('div');
+  row.className='row '+sideOf(l.who);
+  row.innerHTML=
+    '<div class="avatar">'+faceOf(l.who)+'</div>'+
+    '<div class="col"><div class="who">'+l.who+'</div>'+
+    '<div class="bubble"><div class="jp">'+l.jp+'</div>'+
+    '<div class="ro">'+l.ro+'</div>'+
+    '<div class="cn">'+l.cn+'</div></div></div>';
+  chat.appendChild(row);
+});
+
+// 总结屏
+const sum=document.getElementById('summary');
+sum.innerHTML='<h2>'+DECK.summaryTitle+'</h2>'+
+  '<div class="tip">'+DECK.title+' · '+DECK.lines.length+'句</div>'+
+  DECK.lines.map(l=>'<div class="sum-item"><div class="sj">'+l.jp+
+    '</div><div class="sc">'+l.cn+'</div></div>').join('');
+
+let idx=-1;                       // -1 = 只有标题；0..n-1 逐句；n = 总结屏
+const rows=[...document.querySelectorAll('.row')];
+
+function speak(i){
+  const l=DECK.lines[i]; if(!l||!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(l.read||l.jp);
+  u.lang='ja-JP'; u.rate=.9; speechSynthesis.speak(u);
+}
+function render(){
+  rows.forEach((r,i)=>r.classList.toggle('show', i<=idx));
+  sum.classList.toggle('on', idx>=DECK.lines.length);
+  // 只显示最近 4 句，长对话不会溢出
+  const start=Math.max(0, idx-3);
+  rows.forEach((r,i)=>r.style.display = (i<start? 'none':'flex'));
+}
+function next(){
+  if(idx>=DECK.lines.length) return;
+  idx++; render(); if(idx<DECK.lines.length) speak(idx);
+}
+function prev(){ if(idx>-1){ idx--; render(); } }
+
+addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowRight'){e.preventDefault();next();}
+  else if(e.code==='ArrowLeft'){e.preventDefault();prev();}
+  else if(e.key==='s'||e.key==='S'){speak(idx);}
+  else if(e.key==='r'||e.key==='R'){idx=-1;render();}
+});
+addEventListener('click',next);
+render();
+</script>
+</body>
+</html>

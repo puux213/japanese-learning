@@ -5389,7 +5389,7 @@ function exportVocab() {
 // without touching the render logic (same pattern as PRESET_LISTENING 11-50).
 const TOPIC_CATEGORIES = [
   { id: 'sports', icon: '🏸', name_cn: '运动系列', name_jp: 'スポーツ' },
-  { id: 'restaurant', icon: '🍽️', name_cn: '餐厅预约', name_jp: 'レストラン予約' },
+  { id: 'restaurant', icon: '🍽️', name_cn: '餐厅', name_jp: 'レストラン' },
   // ↓ 900句·玩转日语（14 大场景，段育文）
   { id: 'travel', icon: '🛫', name_cn: '交通出行', name_jp: '交通・移動' },
   { id: 'housing', icon: '🏠', name_cn: '住宿安家', name_jp: '宿泊・住まい' },
@@ -5490,6 +5490,27 @@ const PRESET_TOPICS_DATA = {
         { speaker: '我', mine: true, jp: '注文していません。', romaji: 'chūmon shite imasen', cn: '我没点这个。' },
         { speaker: '店员', jp: '失礼いたしました。', romaji: 'shitsurei itashimashita', cn: '非常抱歉。' }
       ]
+    },
+    {
+      id: 'fastfood_order', icon: '🍔', title_cn: '快餐店点单', title_jp: 'ファストフードで注文',
+      audio: '日常用语音频/restaurant_fastfood_order/audio.m4a',
+      times: [8.6, 12.04, 13.74, 17.6, 20.1, 22.76, 27.16, 32.92, 34.12, 35.68, 39.58, 42.36, 43.2, 50.68],
+      items: [
+        { speaker: '店员', jp: 'いらっしゃいませ。店内で召し上がりますか？', romaji: 'irasshaimase. tennai de meshiagarimasu ka', cn: '欢迎光临。在店内用餐吗？' },
+        { speaker: '我', mine: true, jp: 'テイクアウトしたいんですけど。', romaji: 'teikuauto shitai n desu kedo', cn: '我想外带。' },
+        { speaker: '店员', jp: 'かしこまりました。ご注文はお決まりですか？', romaji: 'kashikomarimashita. gochūmon wa okimari desu ka', cn: '好的。您决定好点什么了吗？' },
+        { speaker: '我', mine: true, jp: 'はい、この和牛バーガーのセットで。', romaji: 'hai, kono wagyū bāgā no setto de', cn: '好的，就要这个和牛汉堡套餐。' },
+        { speaker: '店员', jp: 'お飲み物はいかがなさいますか？', romaji: 'onomimono wa ikaga nasaimasu ka', cn: '饮料要什么呢？' },
+        { speaker: '我', mine: true, jp: 'オレンジジュースでお願いします。あと、単品でコーンスープを一つ。', romaji: 'orenji jūsu de onegai shimasu. ato, tanpin de kōn sūpu o hitotsu', cn: '要橙汁。另外，单点一份玉米浓汤。' },
+        { speaker: '店员', jp: 'かしこまりました。スプーンや袋は有料になりますが、いかがなさいますか？', romaji: 'kashikomarimashita. supūn ya fukuro wa yūryō ni narimasu ga, ikaga nasaimasu ka', cn: '好的。勺子和袋子是收费的，您需要吗？' },
+        { speaker: '我', mine: true, jp: 'いくらですか？', romaji: 'ikura desu ka', cn: '多少钱？' },
+        { speaker: '店员', jp: 'それぞれ3円になります。', romaji: 'sorezore san en ni narimasu', cn: '各3日元。' },
+        { speaker: '我', mine: true, jp: 'じゃあ、スプーンを1本と袋を1枚お願いします。', romaji: 'jā, supūn o ippon to fukuro o ichimai onegai shimasu', cn: '那给我一根勺子和一个袋子。' },
+        { speaker: '店员', jp: 'お手拭きは何枚おつけしますか？', romaji: 'otefuki wa nanmai otsuke shimasu ka', cn: '湿巾要几张呢？' },
+        { speaker: '我', mine: true, jp: '2枚で。', romaji: 'nimai de', cn: '两张。' },
+        { speaker: '店员', jp: 'かしこまりました。こちらの番号札をお持ちください。ご用意できましたら、こちらの番号をお呼びいたします。', romaji: 'kashikomarimashita. kochira no bangōfuda o omochi kudasai. goyōi dekimashitara, kochira no bangō o oyobi itashimasu', cn: '好的。请拿好这个号码牌。做好后我们会叫这个号码。' },
+        { speaker: '我', mine: true, jp: 'わかりました。', romaji: 'wakarimashita', cn: '好的，明白了。' }
+      ]
     }
   ],
   // ===== 交通出行（场景一：日本，我来了）=====
@@ -5515,27 +5536,366 @@ const PRESET_TOPICS_DATA = {
         { group: '对话3 · 入境申报', speaker: '我', mine: true, jp: 'ドルです。クレジットや現金もあります。', romaji: 'doru desu. kurejitto ya genkin mo arimasu', cn: '美元。有信用卡，也有现金。' }
       ]
     },
-    { id: 'airplane', icon: '✈️', title_cn: '坐飞机', title_jp: '飛行機', items: [] },
-    { id: 'directions', icon: '🧭', title_cn: '问路', title_jp: '道を尋ねる', items: [] },
+    {
+      id: 'buy_ticket', icon: '🎫', title_cn: '买车票', title_jp: '切符を買う',
+      audio: '日常用语音频/travel_buy_ticket/audio.m4a',
+      times: [6.33, 10.81, 12.77, 14.05, 19.95, 23.27, 30.61, 33.93, 41.27, 47.81],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、切符の買い方を教えてもらえませんか？', romaji: 'sumimasen , kippu no kai houwo oshie temoraemasenka ？', cn: '请问，能教我怎么买票吗？' },
+        { speaker: '站员', jp: 'どの駅で降りますか？', romaji: 'dono eki de ori masuka ？', cn: '您在哪个站下车？' },
+        { speaker: '我', mine: true, jp: '横浜です。', romaji: 'yokohama desu .', cn: '横滨。' },
+        { speaker: '站员', jp: 'じゃあ310円ですね。310円を押して、お金を入れてください。', romaji: 'jaa 310 en desune . 310 en wo oshi te , o kin wo ire tekudasai .', cn: '那是310日元。按310日元，然后投币就行。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。何線に乗ればいいですか？', romaji: 'arigatougozaimasu . nanisen ni nore baiidesuka ？', cn: '谢谢。我该坐哪条线呢？' },
+        { speaker: '站员', jp: '品川駅からだと東海道線とか横須賀線ですね。一番早いのは東海道線です。', romaji: 'shinagawaeki karadato toukaidousen toka yokosukasen desune . ichiban hayai noha toukaidousen desu .', cn: '从品川站的话是东海道线或横须贺线。最快的是东海道线。' },
+        { speaker: '我', mine: true, jp: 'じゃあ13番線ですか？', romaji: 'jaa 13 bansen desuka ？', cn: '那是13号站台吗？' },
+        { speaker: '站员', jp: 'えっと、12番線ですね。16時57分発の小田原行きに乗ればいいですよ。', romaji: 'etto , 12 bansen desune . 16 toki 57 fun hatsu no odawaraiki kini nore baiidesuyo .', cn: '嗯，是12号站台。坐16点57分开往小田原的车就行。' },
+        { speaker: '我', mine: true, jp: '何から何までありがとうございます。関東に初めて来たので、調べてもよくわからなくて。', romaji: 'nanika ra nanima dearigatougozaimasu . kantou ni hajimete kita node , shirabe temoyokuwakaranakute .', cn: '太感谢您了。我第一次来关东，查了也不太懂。' },
+        { speaker: '站员', jp: 'そうでしたか。気をつけて行ってくださいね。', romaji: 'soudeshitaka . kiwo tsukete itte kudasaine .', cn: '原来如此。路上小心啊。' },
+      ]
+    },
+    {
+      id: 'station_broadcast', icon: '📢', title_cn: '车站·列车广播', title_jp: '駅・車内アナウンス',
+      audio: '日常用语音频/travel_station_broadcast/audio.m4a',
+      times: [3.16, 9.78, 16.58, 19.96, 24.24, 30.1, 34.04, 39.46, 44.58, 49.46],
+      items: [
+        { speaker: '广播', jp: '緊急停止します。お立ちのお客様は、お近くの手すりや吊り革におつかまりください。', romaji: 'kinkyuuteishi shimasu . o tachi noo kyakusama ha , o chikaku no te suriya tsuri kawa niotsukamarikudasai .', cn: '紧急停车。站立的乘客请抓好附近的扶手或吊环。' },
+        { speaker: '广播', jp: 'ただいま、線路内に人が立ち入ったとの情報があり、緊急停止いたしました。', romaji: 'tadaima , senro nai ni nin ga tachi itsutsu tatono jouhou gaari , kinkyuuteishi itashimashita .', cn: '刚刚收到有人进入轨道的信息，因此紧急停车。' },
+        { speaker: '广播', jp: '安全確認のため、しばらく停車いたします。', romaji: 'anzenkakunin notame , shibaraku teisha itashimasu .', cn: '为确认安全，将停车片刻。' },
+        { speaker: '广播', jp: 'ただいま、詳しい状況を確認中です。', romaji: 'tadaima , kuwashii joukyou wo kakunin naka desu .', cn: '目前正在确认详细情况。' },
+        { speaker: '广播', jp: 'お急ぎのところ、列車遅れまして大変申し訳ございません。', romaji: 'o isogi notokoro , ressha okure mashite taihenmoushi wake gozaimasen .', cn: '您赶时间，列车延误，非常抱歉。' },
+        { speaker: '广播', jp: '安全の確認が取れましたので、列車動き出します。', romaji: 'anzen no kakunin ga tore mashitanode , ressha ugoki dashi masu .', cn: '已确认安全，列车即将启动。' },
+        { speaker: '广播', jp: 'お立ちのお客様は、お近くの手すりや吊り革におつかまりください。', romaji: 'o tachi noo kyakusama ha , o chikaku no te suriya tsuri kawa niotsukamarikudasai .', cn: '站立的乘客请抓好附近的扶手或吊环。' },
+        { speaker: '广播', jp: 'まもなく大塚です。お出口は右側です。', romaji: 'mamonaku ootsuka desu . o deguchi ha migigawa desu .', cn: '大冢站快到了。出口在右侧。' },
+        { speaker: '广播', jp: 'お降りのお客様は、傘などのお忘れ物がないようご注意ください。', romaji: 'o ori noo kyakusama ha , kasa nadonoo wasuremono ganaiyougo chuui kudasai .', cn: '下车的乘客请注意不要遗忘雨伞等物品。' },
+        { speaker: '广播', jp: 'この列車は緊急停止したため、5分ほど遅れております。ご迷惑をおかけし、大変申し訳ございませんでした。', romaji: 'kono ressha ha kinkyuuteishi shitatame , 5 fun hodo okure teorimasu . go meiwaku wookakeshi , taihenmoushi wake gozaimasendeshita .', cn: '本次列车因紧急停车延误了约5分钟。给您带来不便，非常抱歉。' },
+      ]
+    },
+    {
+      id: 'directions', icon: '🧭', title_cn: '问路', title_jp: '道を尋ねる',
+      audio: '日常用语音频/travel_directions/audio.m4a',
+      times: [7.71, 11.13, 20.59, 25.03, 33.75, 40.05, 45.87, 49.33],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、成田空港に行きたいんですけど。', romaji: 'sumimasen , naritakuukou ni iki taindesukedo .', cn: '请问，我想去成田机场。' },
+        { speaker: '站员', jp: 'ここはJRの上野駅なので、京成上野駅でスカイライナーに乗り換えてください。40分くらいで着きますよ。', romaji: 'kokoha jr no uenoeki nanode , keiseiueno eki de sukairainaa ni norikae tekudasai . 40 waku raide tsuki masuyo .', cn: '这里是JR上野站，请在京成上野站换乘Skyliner。大概40分钟就能到。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。京成上野駅までどうやって行けばいいですか？', romaji: 'arigatougozaimasu . keiseiueno eki madedouyatte ike baiidesuka ？', cn: '谢谢。到京成上野站怎么走呢？' },
+        { speaker: '站员', jp: 'まずは、しのばず改札を出てください。エスカレーターを降りて、しのばず口を出て、右に曲がってください。', romaji: 'mazuha , shinobazu kaisatsu wo dete kudasai . esukareetaa wo ori te , shinobazu kuchi wo dete , migi ni magatsu tekudasai .', cn: '首先，请出「不忍」检票口。下扶梯，从不忍口出去，然后右转。' },
+        { speaker: '站员', jp: '横断歩道を渡って左に進むと、京成上野駅の看板が見えますよ。', romaji: 'oudanhodou wo watatsu te hidari ni susumu to , keiseiueno eki no kanban ga mie masuyo .', cn: '过人行横道往左走，就能看到京成上野站的招牌了。' },
+        { speaker: '我', mine: true, jp: 'しのばず口から京成上野駅まで歩いてどのくらいかかりますか？', romaji: 'shinobazu kuchi kara keiseiueno eki made arui tedonokuraikakarimasuka ？', cn: '从不忍口走到京成上野站大概要多久？' },
+        { speaker: '站员', jp: 'そうですね。2分くらいだと思いますよ。', romaji: 'soudesune . 2 waku raidato omoi masuyo .', cn: '嗯，我想大概2分钟吧。' },
+        { speaker: '我', mine: true, jp: 'わかりました。ありがとうございます。', romaji: 'wakarimashita . arigatougozaimasu .', cn: '明白了。谢谢。' },
+      ]
+    },
+    {
+      id: 'wrong_seat', icon: '💺', title_cn: '坐错座位', title_jp: '座席の間違い',
+      audio: '日常用语音频/travel_wrong_seat/audio.m4a',
+      times: [3.28, 7.44, 9.74, 10.78, 14.02, 15.94, 17.94, 23.9, 28.24, 33.86],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、ここ私が予約した席なんですけど。', romaji: 'sumimasen , koko watashi ga yoyaku shita seki nandesukedo .', cn: '不好意思，这是我订的座位。' },
+        { speaker: '乘客', jp: 'えっ、12号車の4Dですか？', romaji: 'etsu , 12 gousha no 4d desuka ？', cn: '咦，12号车4D吗？' },
+        { speaker: '我', mine: true, jp: 'そうです。', romaji: 'soudesu .', cn: '是的。' },
+        { speaker: '乘客', jp: 'あれ、私も12号車の4Dです。', romaji: 'are , watashi mo 12 gousha no 4d desu .', cn: '咦，我也是12号车4D。' },
+        { speaker: '我', mine: true, jp: 'チケットを見てもいいですか？', romaji: 'chiketto wo mite moiidesuka ？', cn: '我能看看您的票吗？' },
+        { speaker: '乘客', jp: 'どうぞ。', romaji: 'douzo .', cn: '请。' },
+        { speaker: '我', mine: true, jp: 'あ、時間間違えてますよ。多分、1本後の新幹線だと思います。', romaji: 'a , jikan machigae temasuyo . tabun , 1 hon nochino shinkansen dato omoi masu .', cn: '啊，您弄错时间了。应该是下一班新干线。' },
+        { speaker: '乘客', jp: '本当だ。すみません、すぐに移動しますね。', romaji: 'hontou da . sumimasen , suguni idou shimasune .', cn: '真的呢。不好意思，我马上换过去。' },
+        { speaker: '我', mine: true, jp: 'いやいや、急がなくていいですよ。自由席、空いているといいですね。', romaji: 'iyaiya , isoga nakuteiidesuyo . jiyuuseki , ai teirutoiidesune .', cn: '不不，不用急。希望自由席还有空位。' },
+        { speaker: '乘客', jp: 'ありがとうございます。今日は平日だから、多分空いていると思います。', romaji: 'arigatougozaimasu . konnichiha heijitsu dakara , tabun ai teiruto omoi masu .', cn: '谢谢。今天是工作日，应该有空位。' },
+      ]
+    },
     { id: 'subway', icon: '🚇', title_cn: '坐地铁', title_jp: '地下鉄', items: [] },
     { id: 'bus', icon: '🚌', title_cn: '坐公车', title_jp: 'バス', items: [] },
-    { id: 'taxi', icon: '🚕', title_cn: '坐出租车', title_jp: 'タクシー', items: [] },
+    {
+      id: 'taxi', icon: '🚕', title_cn: '坐出租车', title_jp: 'タクシー',
+      audio: '日常用语音频/travel_taxi/audio.m4a',
+      times: [5.52, 7.74, 10.26, 11.22, 14.48, 18.2, 28.58, 35.96, 38.66],
+      items: [
+        { speaker: '司机', jp: 'どちらまで行かれますか？', romaji: 'dochiramade ika remasuka ？', cn: '您要去哪里？' },
+        { speaker: '我', mine: true, jp: '千葉ホテルまでお願いします。', romaji: 'chiba hoteru madeo negai shimasu .', cn: '麻烦到千叶酒店。' },
+        { speaker: '司机', jp: 'わかりました。', romaji: 'wakarimashita .', cn: '好的。' },
+        { speaker: '我', mine: true, jp: 'ここからだとどれくらいかかりますか？', romaji: 'kokokaradatodorekuraikakarimasuka ？', cn: '从这里过去大概要多久？' },
+        { speaker: '司机', jp: '渋滞がなければ15分くらいで着くと思いますよ。', romaji: 'juutai ganakereba 15 waku raide tsuku to omoi masuyo .', cn: '不堵车的话大概15分钟能到。' },
+        { speaker: '我', mine: true, jp: 'わかりました。すみません、やっぱり次の信号を右に曲がってください。すぐにコンビニが見えると思うので、コンビニの前で降ろしてください。', romaji: 'wakarimashita . sumimasen , yappari tsugino shingou wo migi ni magatsu tekudasai . suguni konbini ga mie ruto omou node , konbini no mae de furo shitekudasai .', cn: '明白了。不好意思，还是麻烦在下个红绿灯右转。马上会看到便利店，请在便利店前面让我下车。' },
+        { speaker: '司机', jp: 'あのコンビニの前は他の車が停まっていますね。コンビニの少し先で止めましょうか。', romaji: 'ano konbini no mae ha hokano kuruma ga toma tteimasune . konbini no sukoshi saki de tome mashouka .', cn: '那家便利店前面停着别的车呢。在便利店稍往前一点停可以吗？' },
+        { speaker: '我', mine: true, jp: 'じゃあ、ここで降ろしてもらえますか？', romaji: 'jaa , kokode furo shitemoraemasuka ？', cn: '那，能在这里让我下车吗？' },
+        { speaker: '司机', jp: 'わかりました。', romaji: 'wakarimashita .', cn: '好的。' },
+      ]
+    },
     { id: 'train', icon: '🚆', title_cn: '坐火车', title_jp: '電車', items: [] },
-    { id: 'driving', icon: '🚗', title_cn: '自驾车', title_jp: '運転', items: [] }
+    { id: 'driving', icon: '🚗', title_cn: '自驾车', title_jp: '運転', items: [] },
+    {
+      id: 'airplane', icon: '🛫', title_cn: '值机 check-in', title_jp: '搭乗手続き',
+      audio: '日常用语音频/travel_airplane/audio.m4a',
+      times: [2.99, 5.07, 8.85, 10.23, 16.81, 19.29, 22.97, 24.89, 34.75, 37.57, 42.03, 47.23],
+      items: [
+        { speaker: '我', mine: true, jp: 'チェックインお願いします。', romaji: 'chekkuin o negai shimasu .', cn: '麻烦办理登机手续。' },
+        { speaker: '工作人员', jp: 'かしこまりました。パスポートを拝見してもよろしいですか？', romaji: 'kashikomarimashita . pasupooto wo haiken shitemoyoroshiidesuka ？', cn: '好的。可以看一下您的护照吗？' },
+        { speaker: '我', mine: true, jp: 'はい。', romaji: 'hai .', cn: '好的。' },
+        { speaker: '工作人员', jp: '羽田空港行き、本日19時ご出発ですね。お預けになるお荷物はいくつございますか？', romaji: 'hanedakuukou iki , honjitsu 19 toki go shuppatsu desune . o azuke ninaruo nimotsu haikutsugozaimasuka ？', cn: '飞往羽田机场，今天19点出发是吧。您要托运几件行李？' },
+        { speaker: '我', mine: true, jp: 'このスーツケース1つです。', romaji: 'kono suutsukeesu 1 tsudesu .', cn: '就这一个行李箱。' },
+        { speaker: '工作人员', jp: '中に壊れやすいものや危険物などはございませんか？', romaji: 'nakani koware yasuimonoya kikenbutsu nadohagozaimasenka ？', cn: '里面有易碎品或危险物品吗？' },
+        { speaker: '我', mine: true, jp: 'ありません。', romaji: 'arimasen .', cn: '没有。' },
+        { speaker: '工作人员', jp: 'あの、お荷物なんですが、重量制限を超えておりまして、超過料金を2万円お支払いいただくことになるのですが。', romaji: 'ano , o nimotsu nandesuga , juuryou seigen wo koe teorimashite , choukaryoukin wo 2 manen o shiharai itadakukotoninarunodesuga .', cn: '那个，您的行李超过了重量限制，需要支付2万日元的超重费。' },
+        { speaker: '我', mine: true, jp: '何キロオーバーしていますか？', romaji: 'nani kirooobaa shiteimasuka ？', cn: '超了几公斤？' },
+        { speaker: '工作人员', jp: '23キロまでとなっておりまして、5キロオーバーしております。', romaji: '23 kiro madetonatteorimashite , 5 kirooobaa shiteorimasu .', cn: '限重是23公斤，您超了5公斤。' },
+        { speaker: '我', mine: true, jp: 'わかりました。もう手荷物に入らないので、超過料金を支払います。', romaji: 'wakarimashita . mou tenimotsu ni ira nainode , choukaryoukin wo shiharai masu .', cn: '明白了。手提行李也放不下了，我付超重费吧。' },
+        { speaker: '工作人员', jp: 'かしこまりました。', romaji: 'kashikomarimashita .', cn: '好的。' },
+      ]
+    },
+    {
+      id: 'airplane_broadcast', icon: '📢', title_cn: '飞机广播', title_jp: '機内アナウンス',
+      audio: '日常用语音频/travel_airplane_broadcast/audio.m4a',
+      times: [1.02, 12.29, 18.89, 26.41, 32.95, 37.77, 43.33],
+      items: [
+        { speaker: '机内广播', jp: '本日は、あかね航空、新千歳空港行き28便にご搭乗いただき、ありがとうございます。', romaji: 'honjitsu ha , akane koukuu , shinchitosekuukou iki 28 bin nigo toujou itadaki , arigatougozaimasu .', cn: '今天感谢您搭乘茜航空飞往新千岁机场的28次航班。' },
+        { speaker: '机内广播', jp: '新千歳空港までの飛行時間は、離陸後1時間30分を予定しております。', romaji: 'shinchitosekuukou madeno hikoujikan ha , ririkugo 1 jikan 30 fun wo yotei shiteorimasu .', cn: '到新千岁机场的飞行时间预计为起飞后1小时30分。' },
+        { speaker: '机内广播', jp: '当機は間もなく離陸いたします。お座席にお座りになり、シートベルトをしっかりお締めください。', romaji: 'touki ha kan monaku ririku itashimasu . o zaseki nio suwari ninari , shiitoberuto woshikkario shime kudasai .', cn: '本机即将起飞。请就座并系好安全带。' },
+        { speaker: '机内广播', jp: '携帯電話など電波を発する電子機器の使用は、法律で禁じられております。', romaji: 'keitaidenwa nado denpa wo hassu ru denshikiki no shiyou ha , houritsu de kinji rareteorimasu .', cn: '手机等会发出电波的电子设备，法律禁止使用。' },
+        { speaker: '机内广播', jp: '機内モードなどに設定するか、電源をお切りください。', romaji: 'kinai moodo nadoni settei suruka , dengen woo kiri kudasai .', cn: '请设为飞行模式或关闭电源。' },
+        { speaker: '机内广播', jp: '機内は化粧室を含め全席禁煙です。ご了承ください。', romaji: 'kinai ha keshoushitsu wo fukume zensekikinen desu . go ryoushou kudasai .', cn: '机内包括洗手间在内全席禁烟。敬请谅解。' },
+        { speaker: '机内广播', jp: 'それでは、新千歳空港までの空の旅、ごゆっくりお過ごしください。', romaji: 'soredeha , shinchitosekuukou madeno sora no tabi , goyukkurio sugo shikudasai .', cn: '那么，祝您在飞往新千岁机场的旅途中过得愉快。' },
+      ]
+    }
   ],
-  housing: [],
+  housing: [
+    {
+      id: 'phone_booking', icon: '📞', title_cn: '电话预订房间', title_jp: '電話予約',
+      audio: '日常用语音频/housing_phone_booking/audio.m4a',
+      times: [5.84, 9.08, 12.6, 14.78, 18.72, 21.6, 23.46, 27.56, 31.5, 33.36, 38.54, 42.72, 50.6, 51.96],
+      items: [
+        { speaker: '我', mine: true, jp: 'もしもし、予約したいんですけど。', romaji: 'moshimoshi , yoyaku shitaindesukedo .', cn: '喂，我想订房。' },
+        { speaker: '店员', jp: 'かしこまりました。お日にちはお決まりですか？', romaji: 'kashikomarimashita . o nichi nichihao kima ridesuka ？', cn: '好的。您定好日期了吗？' },
+        { speaker: '我', mine: true, jp: 'あの、今日泊まれますか？', romaji: 'ano , kyoudomari maremasuka ？', cn: '那个，今天能住吗？' },
+        { speaker: '店员', jp: '本日ですね。お部屋のご希望はございますか？', romaji: 'honjitsu desune . o heya nogo kibou hagozaimasuka ？', cn: '今天是吧。您对房间有什么要求吗？' },
+        { speaker: '我', mine: true, jp: 'シングルルームを2部屋お願いします。', romaji: 'shingururuumu wo 2 heya o negai shimasu .', cn: '麻烦要两间单人房。' },
+        { speaker: '店员', jp: '1泊でよろしいですか？', romaji: '1 haku deyoroshiidesuka ？', cn: '住一晚可以吗？' },
+        { speaker: '我', mine: true, jp: 'できれば2泊したいんですけど、空いていますか？', romaji: 'dekireba 2 haku shitaindesukedo , ai teimasuka ？', cn: '可以的话我想住两晚，有空房吗？' },
+        { speaker: '店员', jp: '申し訳ありません、明日は満室でして。', romaji: 'moushiwake arimasen , ashita ha manshitsu deshite .', cn: '非常抱歉，明天客满了。' },
+        { speaker: '我', mine: true, jp: 'じゃあ1泊でお願いします。', romaji: 'jaa 1 haku deo negai shimasu .', cn: '那就住一晚吧。' },
+        { speaker: '店员', jp: 'かしこまりました。それでは、ご予約者様のお名前よろしいですか？', romaji: 'kashikomarimashita . soredeha , go yoyakusha youno o namae yoroshiidesuka ？', cn: '好的。那么，可以告诉我预约人的姓名吗？' },
+        { speaker: '我', mine: true, jp: '石川です。あの、朝食付きのプランですか？', romaji: 'ishikawa desu . ano , choushokutsuki kino puran desuka ？', cn: '我姓石川。那个，是含早餐的套餐吗？' },
+        { speaker: '店员', jp: '朝食付きのプランですと、お一人様につきプラス1200円の追加料金がかかりますが、よろしいですか？', romaji: 'choushokutsuki kino puran desuto , o hitori youni tsuki purasu 1200 en no tsuikaryoukin gakakarimasuga , yoroshiidesuka ？', cn: '含早餐套餐的话，每人要加1200日元，可以吗？' },
+        { speaker: '我', mine: true, jp: 'はい、大丈夫です。', romaji: 'hai , daijoubu desu .', cn: '好的，没问题。' },
+        { speaker: '店员', jp: 'では、本日のご来館お待ちしております。', romaji: 'deha , honjitsu nogo raikan o machi shiteorimasu .', cn: '那么，恭候您今天光临。' },
+      ]
+    },
+    {
+      id: 'checkin', icon: '🏨', title_cn: '入住登记', title_jp: 'チェックイン',
+      audio: '日常用语音频/housing_checkin/audio.m4a',
+      times: [7.73, 10.85, 13.17, 19.43, 21.67, 29.53, 32.59, 34.55, 38.75, 44.17, 48.87, 52.13],
+      items: [
+        { speaker: '店员', jp: '本日ご宿泊でございますか？', romaji: 'honjitsu go shukuhaku degozaimasuka ？', cn: '您今天是要住宿吗？' },
+        { speaker: '我', mine: true, jp: 'はい、予約した北村です。', romaji: 'hai , yoyaku shita kitamura desu .', cn: '是的，我是预约过的北村。' },
+        { speaker: '店员', jp: '北村様、お待ちしておりました。こちらにご住所とお名前、お電話番号をご記入ください。', romaji: 'kitamura sama , o machi shiteorimashita . kochiranigo juusho too namae , o denwabangou wogo kinyuu kudasai .', cn: '北村先生，恭候您了。请在这里填写地址、姓名和电话号码。' },
+        { speaker: '我', mine: true, jp: 'はい。', romaji: 'hai .', cn: '好的。' },
+        { speaker: '店员', jp: 'ありがとうございます。本日のお部屋は302号室でございます。こちらがルームキーでございます。ごゆっくりお過ごしください。', romaji: 'arigatougozaimasu . honjitsu noo heya ha 302 goushitsu degozaimasu . kochiraga ruumukii degozaimasu . goyukkurio sugo shikudasai .', cn: '谢谢。您今天的房间是302号房。这是房卡。祝您住得愉快。' },
+        { speaker: '我', mine: true, jp: 'すみません、チェックアウトは何時ですか？', romaji: 'sumimasen , chekkuauto ha nanji desuka ？', cn: '请问，退房是几点？' },
+        { speaker: '店员', jp: '午前11時でございます。', romaji: 'gozen 11 toki degozaimasu .', cn: '上午11点。' },
+        { speaker: '我', mine: true, jp: 'わかりました。この近くにコンビニはありますか？', romaji: 'wakarimashita . kono chikaku ni konbini haarimasuka ？', cn: '明白了。这附近有便利店吗？' },
+        { speaker: '店员', jp: 'はい、この道をまっすぐ行って、1つ目の信号の右側にございます。', romaji: 'hai , kono michi womassugu itte , 1 tsu meno shingou no migigawa nigozaimasu .', cn: '有的，沿这条路直走，第一个红绿灯的右边就有。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。あと、あの、Wi-Fiは有料ですか？', romaji: 'arigatougozaimasu . ato , ano , wi-fi ha yuuryou desuka ？', cn: '谢谢。还有，那个，Wi-Fi收费吗？' },
+        { speaker: '店员', jp: 'ご宿泊のお客様は無料でお使いいただけます。', romaji: 'go shukuhaku noo kyakusama ha muryou deo tsukai itadakemasu .', cn: '住宿的客人可以免费使用。' },
+        { speaker: '我', mine: true, jp: 'わかりました、ありがとうございます。', romaji: 'wakarimashita , arigatougozaimasu .', cn: '明白了，谢谢。' },
+      ]
+    },
+    {
+      id: 'room_service', icon: '🍽️', title_cn: '客房送餐', title_jp: 'ルームサービス',
+      audio: '日常用语音频/housing_room_service/audio.m4a',
+      times: [8.78, 12.3, 14.9, 19.58, 24.74, 26.76, 28.72, 31.92, 33.62, 38.46, 40.72],
+      items: [
+        { speaker: '店员', jp: 'かしこまりました。お部屋番号をお願いします。', romaji: 'kashikomarimashita . o heya bangou woo negai shimasu .', cn: '好的。请告诉我房间号。' },
+        { speaker: '我', mine: true, jp: '506号室です。', romaji: '506 goushitsu desu .', cn: '506号房。' },
+        { speaker: '店员', jp: '506号室の工藤様ですね。メニューはお決まりですか？', romaji: '506 goushitsu no kudou sama desune . menyuu hao kima ridesuka ？', cn: '506号房的工藤先生是吧。您决定好点什么了吗？' },
+        { speaker: '我', mine: true, jp: 'はい、おにぎりのセットを頼みたいんですけど、おにぎりの具は何ですか？', romaji: 'hai , onigirino setto wo tanomi taindesukedo , onigirino sonaha nande suka ？', cn: '嗯，我想点饭团套餐，饭团的馅是什么？' },
+        { speaker: '店员', jp: '梅とたらこでございます。', romaji: 'ume totarakodegozaimasu .', cn: '是梅子和鳕鱼子。' },
+        { speaker: '我', mine: true, jp: 'じゃあ、それでお願いします。', romaji: 'jaa , soredeo negai shimasu .', cn: '那就要那个，麻烦了。' },
+        { speaker: '店员', jp: 'かしこまりました。お支払いはどうなさいますか？', romaji: 'kashikomarimashita . o shiharai hadounasaimasuka ？', cn: '好的。您怎么付款呢？' },
+        { speaker: '我', mine: true, jp: '部屋付けでお願いします。', romaji: 'heya tsuke deo negai shimasu .', cn: '记到房费里吧。' },
+        { speaker: '店员', jp: 'お部屋付けですね。かしこまりました。お食事は何時頃をお持ちしますか？', romaji: 'o heya tsuke desune . kashikomarimashita . o shokuji ha nanjigoro woo mochi shimasuka ？', cn: '记到房费里是吧，好的。餐点大概几点给您送来呢？' },
+        { speaker: '我', mine: true, jp: '19時頃、持ってきてもらえますか？', romaji: '19 jikoro , motsu tekitemoraemasuka ？', cn: '19点左右送来可以吗？' },
+        { speaker: '店员', jp: 'かしこまりました。', romaji: 'kashikomarimashita .', cn: '好的。' },
+      ]
+    },
+    {
+      id: 'onsen', icon: '♨️', title_cn: '使用温泉（包场浴）', title_jp: '貸切風呂',
+      audio: '日常用语音频/housing_onsen/audio.m4a',
+      times: [5.65, 10.15, 13.61, 16.07, 20.21, 30.47, 34.19, 39.09, 44.03, 47.93, 51.87, 54.29, 58.39],
+      items: [
+        { speaker: '工作人员', jp: 'それでは、貸切風呂についてご説明いたします。', romaji: 'soredeha , kashikiri furo nitsuitego setsumei itashimasu .', cn: '那么，我来为您说明一下包场浴的事项。' },
+        { speaker: '工作人员', jp: '貸切風呂は地下1階にございます。', romaji: 'kashikiri furo ha chika 1 kai nigozaimasu .', cn: '包场浴在地下一层。' },
+        { speaker: '工作人员', jp: 'こちら、予約制となっております。', romaji: 'kochira , yoyakusei tonatteorimasu .', cn: '这里是需要预约的。' },
+        { speaker: '工作人员', jp: 'お電話またはフロントにてご予約をお願いいたします。', romaji: 'o denwa mataha furonto nitego yoyaku woo negai itashimasu .', cn: '请通过电话或前台预约。' },
+        { speaker: '工作人员', jp: 'ご入浴される際は、お風呂の入り口にございます札を入浴中に変えていただき、鍵をかけてご利用ください。', romaji: 'go nyuuyoku sareru kiwa ha , o furo no iriguchi nigozaimasu satsu wo nyuuyoku nakani kae teitadaki , kagi wokaketego riyou kudasai .', cn: '入浴时，请把浴室入口的牌子翻到「使用中」，并锁上门使用。' },
+        { speaker: '工作人员', jp: '次は注意事項についてお伝えします。', romaji: 'tsugi ha chuuijikou nitsuiteo tsutae shimasu .', cn: '接下来说明注意事项。' },
+        { speaker: '工作人员', jp: 'まずは、飲酒直後のご入浴はご遠慮ください。', romaji: 'mazuha , inshu chokugo nogo nyuuyoku hago enryo kudasai .', cn: '首先，饮酒后请勿立即入浴。' },
+        { speaker: '工作人员', jp: 'また、ご入浴される前に体を洗ってください。', romaji: 'mata , go nyuuyoku sareru mae ni karada wo aratsu tekudasai .', cn: '另外，入浴前请先冲洗身体。' },
+        { speaker: '工作人员', jp: 'タオルを浴槽に入れないようお願いいたします。', romaji: 'taoru wo yokusou ni ire naiyouo negai itashimasu .', cn: '请不要把毛巾放进浴池里。' },
+        { speaker: '工作人员', jp: '以上でございますが、何かご質問はございますか？', romaji: 'ijou degozaimasuga , nanika go shitsumon hagozaimasuka ？', cn: '以上就是这些，您有什么问题吗？' },
+        { speaker: '我', mine: true, jp: '貸切風呂にタオルはありますか？', romaji: 'kashikiri furo ni taoru haarimasuka ？', cn: '包场浴那边有毛巾吗？' },
+        { speaker: '工作人员', jp: '申し訳ございませんが、お部屋にあるタオルをお持ちください。', romaji: 'moushiwake gozaimasenga , o heya niaru taoru woo mochi kudasai .', cn: '非常抱歉，请携带房间里的毛巾。' },
+        { speaker: '我', mine: true, jp: 'わかりました。', romaji: 'wakarimashita .', cn: '明白了。' },
+      ]
+    },
+    {
+      id: 'checkout', icon: '🔑', title_cn: '退房结账', title_jp: 'チェックアウト',
+      audio: '日常用语音频/housing_checkout/audio.m4a',
+      times: [8.69, 10.45, 19.87, 21.25, 24.73, 26.25, 29.95, 33.17, 40.18, 42.96, 46.48, 49.74, 55.1, 57.66],
+      items: [
+        { speaker: '我', mine: true, jp: 'チェックアウトお願いします。', romaji: 'chekkuauto o negai shimasu .', cn: '麻烦办理退房。' },
+        { speaker: '店员', jp: 'かしこまりました。ルームサービスのご利用分をこちらで精算いたします。2500円でございます。お支払いはいかがなさいますか？', romaji: 'kashikomarimashita . ruumusaabisu nogo riyou fun wokochirade seisan itashimasu . 2500 en degozaimasu . o shiharai haikaganasaimasuka ？', cn: '好的。客房服务的费用在这里结算。一共2500日元。您怎么付款呢？' },
+        { speaker: '我', mine: true, jp: 'クレジットカードで。', romaji: 'kurejittokaado de .', cn: '用信用卡。' },
+        { speaker: '店员', jp: 'かしこまりました。暗証番号をお願いいたします。', romaji: 'kashikomarimashita . anshoubangou woo negai itashimasu .', cn: '好的。请输入密码。' },
+        { speaker: '我', mine: true, jp: 'サインでもいいですか？', romaji: 'sain demoiidesuka ？', cn: '签名也可以吗？' },
+        { speaker: '店员', jp: 'はい。ではこちらにサインをお願いいたします。', romaji: 'hai . dehakochirani sain woo negai itashimasu .', cn: '可以。那请在这里签名。' },
+        { speaker: '我', mine: true, jp: 'すみません、荷物を預かってもらえますか？', romaji: 'sumimasen , nimotsu wo azuka ttemoraemasuka ？', cn: '请问，可以帮我寄存行李吗？' },
+        { speaker: '店员', jp: 'はい、承知しました。お戻りの際に、こちらの番号札をフロントにご提示ください。', romaji: 'hai , shouchi shimashita . o modori no saini , kochirano bangou satsu wo furonto nigo teiji kudasai .', cn: '好的，明白了。回来时请把这个号码牌出示给前台。' },
+        { speaker: '我', mine: true, jp: 'すみません、荷物お願いします。', romaji: 'sumimasen , nimotsu o negai shimasu .', cn: '不好意思，麻烦取一下行李。' },
+        { speaker: '店员', jp: 'かしこまりました。少々お待ちください。', romaji: 'kashikomarimashita . shoushou o machi kudasai .', cn: '好的，请稍等。' },
+        { speaker: '店员', jp: 'こちらのスーツケースでお間違いないですか？', romaji: 'kochirano suutsukeesu deo machigai naidesuka ？', cn: '是这个行李箱没错吧？' },
+        { speaker: '我', mine: true, jp: 'あれ？もう一つあると思うんですけど、黒いスーツケースです。', romaji: 'are ？ mou hitotsu aruto omou ndesukedo , kuroi suutsukeesu desu .', cn: '咦？我记得还有一个，是黑色的行李箱。' },
+        { speaker: '店员', jp: '申し訳ありません。こちらでしょうか？', romaji: 'moushiwake arimasen . kochiradeshouka ？', cn: '非常抱歉。是这个吗？' },
+        { speaker: '我', mine: true, jp: 'それです。ありがとうございます。', romaji: 'soredesu . arigatougozaimasu .', cn: '就是那个。谢谢。' },
+      ]
+    },
+  ],
   social: [],
   family: [],
-  dining: [],
-  shopping: [],
+  dining: [
+    {
+      id: 'izakaya_lost', icon: '🏮', title_cn: '居酒屋·找回手机', title_jp: '居酒屋・忘れ物',
+      audio: '日常用语音频/dining_izakaya_lost/audio.m4a',
+      times: [10.09, 16.39, 18.95, 22.27, 24.89, 26.07, 29.91, 33.99, 37.85, 39.83],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、お店にスマホ忘れたみたいなんですけど、どこかに置いてありませんでしたか？', romaji: 'sumimasen , o mise ni sumaho wasure tamitainandesukedo , dokokani oi tearimasendeshitaka ？', cn: '不好意思，我好像把手机忘在店里了，有没有放在哪里？' },
+        { speaker: '店员', jp: 'いつご来店されましたか？', romaji: 'itsugo raiten saremashitaka ？', cn: '您是什么时候来的？' },
+        { speaker: '我', mine: true, jp: '今日です。30分前にお店を出ました。', romaji: 'kyou desu . 30 funmae nio mise wo dema shita .', cn: '今天。30分钟前离开的。' },
+        { speaker: '店员', jp: 'お名前伺ってもよろしいですか？', romaji: 'o namae ukagatsu temoyoroshiidesuka ？', cn: '可以请教您的名字吗？' },
+        { speaker: '我', mine: true, jp: 'カンダです。', romaji: 'kanda desu .', cn: '我姓神田。' },
+        { speaker: '店员', jp: 'カンダ様ですね。スマホのケースは何色ですか？', romaji: 'kanda sama desune . sumaho no keesu ha naniiro desuka ？', cn: '神田先生是吧。手机壳是什么颜色？' },
+        { speaker: '我', mine: true, jp: 'ケースの色は青です。iPhoneです。', romaji: 'keesu no iro ha ao desu . iphone desu .', cn: '壳是蓝色的。是iPhone。' },
+        { speaker: '店员', jp: '確認しますので、少々お待ちください。', romaji: 'kakuninshi masunode , shoushou o machi kudasai .', cn: '我确认一下，请稍等。' },
+        { speaker: '店员', jp: 'もしかして、これですか？', romaji: 'moshikashite , koredesuka ？', cn: '会不会是这个？' },
+        { speaker: '我', mine: true, jp: 'それです。見つかってよかった。本当にありがとうございます。', romaji: 'soredesu . mitsu katteyokatta . hontou niarigatougozaimasu .', cn: '就是那个。找到了太好了。真的非常感谢。' },
+      ]
+    },
+  ],
+  shopping: [
+    {
+      id: 'convenience_store', icon: '🏪', title_cn: '便利店结账', title_jp: 'コンビニ会計',
+      audio: '日常用语音频/shopping_convenience_store/audio.m4a',
+      times: [7.29, 13.01, 14.31, 15.55, 18.41, 21.47, 24.17, 26.43, 26.87, 34.05],
+      items: [
+        { speaker: '店员', jp: 'いらっしゃいませ。お次の方どうぞ。こちらのお弁当、温めますか？', romaji: 'irasshaimase . o tsugino hou douzo . kochiranoo bentou , atatame masuka ？', cn: '欢迎光临。下一位请。这个便当要加热吗？' },
+        { speaker: '我', mine: true, jp: 'はい、お願いします。', romaji: 'hai , o negai shimasu .', cn: '好的，麻烦了。' },
+        { speaker: '店员', jp: 'かしこまりました。', romaji: 'kashikomarimashita .', cn: '好的。' },
+        { speaker: '我', mine: true, jp: 'あと、アイスコーヒーのMお願いします。', romaji: 'ato , aisukoohii no m o negai shimasu .', cn: '还有，要一杯中杯冰咖啡。' },
+        { speaker: '店员', jp: 'かしこまりました。袋はお持ちですか？', romaji: 'kashikomarimashita . fukuro hao mochi desuka ？', cn: '好的。您带袋子了吗？' },
+        { speaker: '我', mine: true, jp: 'はい、あります。あ、お箸ください。', romaji: 'hai , arimasu . a , o hashi kudasai .', cn: '带了。啊，请给我筷子。' },
+        { speaker: '店员', jp: 'お一つでよろしいですか？', romaji: 'o hitotsu deyoroshiidesuka ？', cn: '一双就够了吗？' },
+        { speaker: '我', mine: true, jp: 'はい。', romaji: 'hai .', cn: '嗯。' },
+        { speaker: '店员', jp: 'お会計867円でございます。こちらのタッチパネルからお支払い方法を選択してください。', romaji: 'o kaikei 867 en degozaimasu . kochirano tatchipaneru karao shiharai houhou wo sentakushi tekudasai .', cn: '一共867日元。请在这个触屏上选择付款方式。' },
+        { speaker: '店员', jp: 'レシートをお取りください。ありがとうございました。', romaji: 'reshiito woo tori kudasai . arigatougozaimashita .', cn: '请取走小票。谢谢惠顾。' },
+      ]
+    },
+    {
+      id: 'supermarket', icon: '🛒', title_cn: '超市购物·询问商品', title_jp: 'スーパーで買い物',
+      audio: '日常用语音频/shopping_supermarket/audio.m4a',
+      times: [5.85, 9.25, 11.59, 17.37, 20.13, 23.89, 28.99, 32.73, 36.89, 38.77],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、おにぎりはどこにありますか？', romaji: 'sumimasen , onigirihadokoniarimasuka ？', cn: '请问，饭团在哪里？' },
+        { speaker: '店员', jp: 'お弁当コーナーにありますよ。', romaji: 'o bentou koonaa niarimasuyo .', cn: '在便当区哦。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。あの、人気があるおにぎりはどれですか？', romaji: 'arigatougozaimasu . ano , ninki gaaruonigirihadoredesuka ？', cn: '谢谢。那个，哪种饭团比较受欢迎？' },
+        { speaker: '店员', jp: 'そうですね、当店ではツナマヨが人気です。', romaji: 'soudesune , touten deha tsunamayo ga ninki desu .', cn: '嗯，本店金枪鱼蛋黄酱的很受欢迎。' },
+        { speaker: '我', mine: true, jp: 'ツナマヨってどんな味ですか？辛いですか？', romaji: 'tsunamayo ttedonna aji desuka ？ tsurai desuka ？', cn: '金枪鱼蛋黄酱是什么味道？辣吗？' },
+        { speaker: '店员', jp: '辛くないですよ。マヨネーズの味です。ツナはマグロのことです。', romaji: 'tsuraku naidesuyo . mayoneezu no aji desu . tsuna ha maguro nokotodesu .', cn: '不辣哦。是蛋黄酱的味道。金枪鱼就是鲔鱼。' },
+        { speaker: '我', mine: true, jp: 'そうなんですね。賞味期限はいつまでですか？', romaji: 'sounandesune . shoumikigen haitsumadedesuka ？', cn: '这样啊。保质期到什么时候？' },
+        { speaker: '店员', jp: '明日までです。お早めにお召し上がりください。', romaji: 'ashita madedesu . o hayame nio meshi aga rikudasai .', cn: '到明天。请尽早食用。' },
+        { speaker: '我', mine: true, jp: 'わかりました。ありがとうございます。', romaji: 'wakarimashita . arigatougozaimasu .', cn: '明白了。谢谢。' },
+        { speaker: '店员', jp: 'お客様、よろしければこちらのカゴをお使いください。', romaji: 'o kyakusama , yoroshikerebakochirano kago woo tsukai kudasai .', cn: '这位客人，方便的话请用这个购物篮。' },
+      ]
+    },
+    {
+      id: 'clothes', icon: '👕', title_cn: '买衣服·试穿', title_jp: '服を買う',
+      audio: '日常用语音频/shopping_clothes/audio.m4a',
+      times: [9.07, 12.75, 18.09, 23.11, 26.49, 33.89, 36.21, 39.59, 43.87, 47.39, 48.65, 54.63, 57.81],
+      items: [
+        { speaker: '店员', jp: 'お客様、何かお探しですか？', romaji: 'o kyakusama , nanika o sagashi desuka ？', cn: '这位客人，您在找什么吗？' },
+        { speaker: '我', mine: true, jp: 'あの、このTシャツってブラックだけですか？他の色はありますか？', romaji: 'ano , kono t shatsu tte burakku dakedesuka ？ hokano iro haarimasuka ？', cn: '那个，这件T恤只有黑色吗？有别的颜色吗？' },
+        { speaker: '店员', jp: 'こちらはですね、他にはホワイトとブルーがございます。', romaji: 'kochirahadesune , hokani ha howaito to buruu gagozaimasu .', cn: '这款的话，另外还有白色和蓝色。' },
+        { speaker: '我', mine: true, jp: 'じゃあ、ホワイトの方、試着してもいいですか？', romaji: 'jaa , howaito no hou , shichaku shitemoiidesuka ？', cn: '那，白色的能试穿吗？' },
+        { speaker: '店员', jp: 'かしこまりました。試着室をご案内いたします。靴を脱いで、こちらでご試着お願いいたします。', romaji: 'kashikomarimashita . shichakushitsu wogo annai itashimasu . kutsu wo nui de , kochiradego shichaku o negai itashimasu .', cn: '好的。我带您去试衣间。请脱鞋，在这里试穿。' },
+        { speaker: '我', mine: true, jp: 'わかりました。', romaji: 'wakarimashita .', cn: '好的。' },
+        { speaker: '店员', jp: 'お客様、いかがですか？', romaji: 'o kyakusama , ikagadesuka ？', cn: '这位客人，怎么样？' },
+        { speaker: '我', mine: true, jp: 'ちょっと小さいですね。Lサイズはありますか？', romaji: 'chotto chiisai desune . l saizu haarimasuka ？', cn: '有点小呢。有L码吗？' },
+        { speaker: '店员', jp: '在庫を確認しますので、少々お待ちください。', romaji: 'zaiko wo kakuninshi masunode , shoushou o machi kudasai .', cn: '我确认一下库存，请稍等。' },
+        { speaker: '我', mine: true, jp: 'お願いします。', romaji: 'o negai shimasu .', cn: '麻烦了。' },
+        { speaker: '店员', jp: 'お客様、ホワイトのLサイズご用意しました。ご試着されますか？', romaji: 'o kyakusama , howaito no l saizu go youishi mashita . go shichaku saremasuka ？', cn: '这位客人，白色L码给您拿来了。您要试穿吗？' },
+        { speaker: '我', mine: true, jp: 'いえ、大丈夫です。それください。', romaji: 'ie , daijoubu desu . sorekudasai .', cn: '不用了，没关系。就要那个。' },
+        { speaker: '店员', jp: 'ありがとうございます。では、レジにご案内いたします。', romaji: 'arigatougozaimasu . deha , reji nigo annai itashimasu .', cn: '谢谢。那么，我带您去收银台。' },
+      ]
+    },
+    {
+      id: 'clothes_checkout', icon: '💳', title_cn: '买衣服结账·会员积分', title_jp: '会計・ポイント',
+      audio: '日常用语音频/shopping_clothes_checkout/audio.m4a',
+      times: [7.64, 15.98, 17.54, 19.1, 21.56, 29.84, 33.18, 37.6],
+      items: [
+        { speaker: '店员', jp: 'いらっしゃいませ。こちらのスニーカー1点で5080円になります。当店のポイントカードやアプリはお持ちですか？', romaji: 'irasshaimase . kochirano suniikaa 1 ten de 5080 en ninarimasu . touten no pointokaado ya apuri hao mochi desuka ？', cn: '欢迎光临。这双运动鞋一共5080日元。您有本店的积分卡或APP吗？' },
+        { speaker: '我', mine: true, jp: 'いや、持っていないです。', romaji: 'iya , motsu teinaidesu .', cn: '没有。' },
+        { speaker: '店员', jp: 'お作りしますか？', romaji: 'o tsukuri shimasuka ？', cn: '要办一个吗？' },
+        { speaker: '我', mine: true, jp: 'はい、お願いします。', romaji: 'hai , o negai shimasu .', cn: '好的，麻烦了。' },
+        { speaker: '店员', jp: 'ありがとうございます。ポイントが管理できるアプリがございますので、こちらのQRコードを読み取ってダウンロードして、ご登録をお願いいたします。', romaji: 'arigatougozaimasu . pointo ga kanri dekiru apuri gagozaimasunode , kochirano qr koodo wo yomi totsu te daunroodo shite , go touroku woo negai itashimasu .', cn: '谢谢。有一个能管理积分的APP，请扫这个二维码下载并注册。' },
+        { speaker: '我', mine: true, jp: 'はい、今ダウンロードできました。', romaji: 'hai , ima daunroodo dekimashita .', cn: '好，现在下载好了。' },
+        { speaker: '店员', jp: 'ありがとうございます。お買い上げ金額100円につき1ポイント貯まります。', romaji: 'arigatougozaimasu . o kai age kingaku 100 en nitsuki 1 pointo tama rimasu .', cn: '谢谢。每消费100日元积1分。' },
+        { speaker: '店员', jp: '貯めたポイントは1.1円からご利用いただけます。ただし、セール品は対象外となりますのでご注意ください。', romaji: 'tame ta pointo ha 1 . 1 en karago riyou itadakemasu . tadashi , seeru hin ha taishougai tonarimasunodego chuui kudasai .', cn: '积分从1.1日元起可以使用。不过特价品不参与，请注意。' },
+      ]
+    },
+  ],
   attitude: [],
   emotion: [],
   campus: [],
   love: [],
-  chat: [],
+  chat: [
+    {
+      id: 'travel_smalltalk', icon: '🗨️', title_cn: '旅途闲聊', title_jp: '旅の雑談',
+      audio: '日常用语音频/chat_travel_smalltalk/audio.m4a',
+      times: [7.31, 9.37, 11.77, 12.97, 14.61, 17.59, 21.53, 27.25, 33.99, 37.23, 40.99, 46.83],
+      items: [
+        { speaker: '店员', jp: 'どちらからいらっしゃったんですか？', romaji: 'dochira kara irasshatta n desu ka', cn: '您是从哪里来的呢？' },
+        { speaker: '我', mine: true, jp: 'アメリカのカリフォルニアから来ました。', romaji: 'amerika no kariforunia kara kimashita', cn: '我从美国加利福尼亚来的。' },
+        { speaker: '店员', jp: 'ご旅行ですか？', romaji: 'goryokō desu ka', cn: '是来旅行的吗？' },
+        { speaker: '我', mine: true, jp: 'はい、そうです。', romaji: 'hai, sō desu', cn: '是的。' },
+        { speaker: '店员', jp: '日本にはどのくらい滞在されるんですか？', romaji: 'nihon ni wa dono kurai taizai sareru n desu ka', cn: '您会在日本待多久呢？' },
+        { speaker: '我', mine: true, jp: '3週間くらいです。明日から北海道に行きます。', romaji: 'san shūkan kurai desu. ashita kara hokkaidō ni ikimasu', cn: '大概三周。明天开始去北海道。' },
+        { speaker: '店员', jp: '北海道ですか、いいですね。日本語はどのくらい勉強しているんですか？', romaji: 'hokkaidō desu ka, ii desu ne. nihongo wa dono kurai benkyō shite iru n desu ka', cn: '北海道啊，真好。您学日语学多久了呢？' },
+        { speaker: '我', mine: true, jp: '3年くらいです。大学で勉強しました。卒業してからはYouTubeで勉強しています。', romaji: 'san nen kurai desu. daigaku de benkyō shimashita. sotsugyō shite kara wa YouTube de benkyō shite imasu', cn: '大概三年。在大学学过，毕业后一直用YouTube学。' },
+        { speaker: '店员', jp: 'すごいですね。北海道には初めて行くんですか？', romaji: 'sugoi desu ne. hokkaidō ni wa hajimete iku n desu ka', cn: '真厉害。是第一次去北海道吗？' },
+        { speaker: '我', mine: true, jp: 'いいえ、2回行ったことがあるので、今回で3回目です。', romaji: 'iie, nikai itta koto ga aru node, konkai de sankaime desu', cn: '不，去过两次了，这次是第三次。' },
+        { speaker: '店员', jp: '北海道は何回行っても楽しめる場所ですよね。今回の旅行も楽しんでください。', romaji: 'hokkaidō wa nankai itte mo tanoshimeru basho desu yo ne. konkai no ryokō mo tanoshinde kudasai', cn: '北海道是去多少次都能玩得开心的地方呢。祝您这次旅行也玩得愉快。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。', romaji: 'arigatō gozaimasu', cn: '谢谢。' }
+      ]
+    }
+  ],
   leisure: [],
   health: [],
-  service: []
+  service: [
+    {
+      id: 'exchange', icon: '💱', title_cn: '换钱（外币兑换）', title_jp: '両替',
+      audio: '日常用语音频/service_exchange/audio.m4a',
+      times: [5.88, 8.74, 11.12, 13.48, 18.54, 24.1, 27.5, 29.04, 30.4, 35.76, 44.66],
+      items: [
+        { speaker: '我', mine: true, jp: 'すみません、両替できますか？', romaji: 'sumimasen , ryougae dekimasuka ？', cn: '请问，可以换钱吗？' },
+        { speaker: '店员', jp: 'はい、こちらで承ります。', romaji: 'hai , kochirade uketamawari masu .', cn: '可以，在这里办理。' },
+        { speaker: '我', mine: true, jp: 'ユーロを円に両替してください。', romaji: 'yuuro wo en ni ryougae shitekudasai .', cn: '请把欧元换成日元。' },
+        { speaker: '店员', jp: 'かしこまりました。こちらにお名前やご希望金額をお書きください。', romaji: 'kashikomarimashita . kochiranio namae yago kiboukingaku woo kaki kudasai .', cn: '好的。请在这里写下姓名和希望兑换的金额。' },
+        { speaker: '我', mine: true, jp: 'わかりました。ユーロから日本円の為替レートはいくらですか？', romaji: 'wakarimashita . yuuro kara nihonen no kawase reeto haikuradesuka ？', cn: '好的。欧元换日元的汇率是多少？' },
+        { speaker: '店员', jp: '今日は1ユーロ169円です。', romaji: 'konnichiha 1 yuuro 169 en desu .', cn: '今天1欧元169日元。' },
+        { speaker: '我', mine: true, jp: 'これでお願いします。', romaji: 'koredeo negai shimasu .', cn: '就按这个换，麻烦了。' },
+        { speaker: '店员', jp: 'かしこまりました。', romaji: 'kashikomarimashita .', cn: '好的。' },
+        { speaker: '我', mine: true, jp: 'できれば1000円札を10枚、残りは1万円札でお願いします。', romaji: 'dekireba 1000 en satsu wo 10 mai , nokori ha 1 mansatsu deo negai shimasu .', cn: '可以的话，1000日元的给我10张，剩下的用1万日元的。' },
+        { speaker: '店员', jp: 'かしこまりました。それでは、一緒にご確認お願いいたします。1000円札が10枚と1万円札が4枚です。', romaji: 'kashikomarimashita . soredeha , isshoni go kakunin o negai itashimasu . 1000 en satsu ga 10 mai to 1 mansatsu ga 4 mai desu .', cn: '好的。那么请和我一起确认。1000日元10张、1万日元4张。' },
+        { speaker: '我', mine: true, jp: 'ありがとうございます。', romaji: 'arigatougozaimasu .', cn: '谢谢。' },
+      ]
+    },
+  ]
 };
 
 function renderTopicsGrid() {

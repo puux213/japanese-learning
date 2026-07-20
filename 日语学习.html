@@ -5390,6 +5390,7 @@ function exportVocab() {
 const TOPIC_CATEGORIES = [
   { id: 'sports', icon: '🏸', name_cn: '运动系列', name_jp: 'スポーツ' },
   { id: 'restaurant', icon: '🍽️', name_cn: '餐厅', name_jp: 'レストラン' },
+  { id: 'hotel', icon: '🏨', name_cn: '酒店入住', name_jp: 'ホテル' },
   // ↓ 900句·玩转日语（14 大场景，段育文）
   { id: 'travel', icon: '🛫', name_cn: '交通出行', name_jp: '交通・移動' },
   { id: 'housing', icon: '🏠', name_cn: '住宿安家', name_jp: '宿泊・住まい' },
@@ -5656,10 +5657,11 @@ const PRESET_TOPICS_DATA = {
       ]
     }
   ],
-  housing: [
+  housing: [],
+  hotel: [
     {
       id: 'phone_booking', icon: '📞', title_cn: '电话预订房间', title_jp: '電話予約',
-      audio: '日常用语音频/housing_phone_booking/audio.m4a',
+      audio: '日常用语音频/hotel_phone_booking/audio.m4a',
       times: [5.84, 9.08, 12.6, 14.78, 18.72, 21.6, 23.46, 27.56, 31.5, 33.36, 38.54, 42.72, 50.6, 51.96],
       items: [
         { speaker: '我', mine: true, jp: 'もしもし、予約したいんですけど。', romaji: 'moshimoshi , yoyaku shitaindesukedo .', cn: '喂，我想订房。' },
@@ -5680,7 +5682,7 @@ const PRESET_TOPICS_DATA = {
     },
     {
       id: 'checkin', icon: '🏨', title_cn: '入住登记', title_jp: 'チェックイン',
-      audio: '日常用语音频/housing_checkin/audio.m4a',
+      audio: '日常用语音频/hotel_checkin/audio.m4a',
       times: [7.73, 10.85, 13.17, 19.43, 21.67, 29.53, 32.59, 34.55, 38.75, 44.17, 48.87, 52.13],
       items: [
         { speaker: '店员', jp: '本日ご宿泊でございますか？', romaji: 'honjitsu go shukuhaku degozaimasuka ？', cn: '您今天是要住宿吗？' },
@@ -5699,7 +5701,7 @@ const PRESET_TOPICS_DATA = {
     },
     {
       id: 'room_service', icon: '🍽️', title_cn: '客房送餐', title_jp: 'ルームサービス',
-      audio: '日常用语音频/housing_room_service/audio.m4a',
+      audio: '日常用语音频/hotel_room_service/audio.m4a',
       times: [8.78, 12.3, 14.9, 19.58, 24.74, 26.76, 28.72, 31.92, 33.62, 38.46, 40.72],
       items: [
         { speaker: '店员', jp: 'かしこまりました。お部屋番号をお願いします。', romaji: 'kashikomarimashita . o heya bangou woo negai shimasu .', cn: '好的。请告诉我房间号。' },
@@ -5717,7 +5719,7 @@ const PRESET_TOPICS_DATA = {
     },
     {
       id: 'onsen', icon: '♨️', title_cn: '使用温泉（包场浴）', title_jp: '貸切風呂',
-      audio: '日常用语音频/housing_onsen/audio.m4a',
+      audio: '日常用语音频/hotel_onsen/audio.m4a',
       times: [5.65, 10.15, 13.61, 16.07, 20.21, 30.47, 34.19, 39.09, 44.03, 47.93, 51.87, 54.29, 58.39],
       items: [
         { speaker: '工作人员', jp: 'それでは、貸切風呂についてご説明いたします。', romaji: 'soredeha , kashikiri furo nitsuitego setsumei itashimasu .', cn: '那么，我来为您说明一下包场浴的事项。' },
@@ -5737,7 +5739,7 @@ const PRESET_TOPICS_DATA = {
     },
     {
       id: 'checkout', icon: '🔑', title_cn: '退房结账', title_jp: 'チェックアウト',
-      audio: '日常用语音频/housing_checkout/audio.m4a',
+      audio: '日常用语音频/hotel_checkout/audio.m4a',
       times: [8.69, 10.45, 19.87, 21.25, 24.73, 26.25, 29.95, 33.17, 40.18, 42.96, 46.48, 49.74, 55.1, 57.66],
       items: [
         { speaker: '我', mine: true, jp: 'チェックアウトお願いします。', romaji: 'chekkuauto o negai shimasu .', cn: '麻烦办理退房。' },

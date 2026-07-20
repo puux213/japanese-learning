@@ -298,7 +298,7 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 **2026-07-20（一次性导入 18 段真人对话，覆盖 5 大模块）**
 - 用户一批发来 18 个录屏 MP4，走「对话音频」标准指令（提音频 → faster-whisper 词级转写 → 人工修 ASR/拆轮次 → `mine` 标右侧 → 生成 m4a(`+faststart`) + `times` → 本地浏览器实测）。全部真人录音，音频存 `日常用语音频/<module>_<entry>/audio.m4a`。分配如下：
-  - **住宿安家 `housing`**（此前空）新增 5 张卡片：📞电话预订房间`phone_booking`、🏨入住登记`checkin`、🍽️客房送餐`room_service`、♨️使用温泉`onsen`、🔑退房结账`checkout`
+  - **酒店入住 `hotel`**（🏨，`TOPIC_CATEGORIES` 里新开的独立模块，排在 `restaurant` 之后）新增 5 张卡片：📞电话预订房间`phone_booking`、🏨入住登记`checkin`、🍽️客房送餐`room_service`、♨️使用温泉`onsen`、🔑退房结账`checkout`。音频文件夹 `日常用语音频/hotel_*`。（⚠️ 最初误放进了书框架自带的「住宿安家 `housing`」模块，用户要求单开 `hotel` 模块并移过去，`housing` 已重新置空占位）
   - **公共服务 `service`**（此前空）新增 💱换钱`exchange`
   - **交通出行 `travel`**：填了此前空占位的 🧭问路`directions`、🚕坐出租车`taxi`、并把 ✈️`airplane` 占位**改成 🛫值机 check-in**`airplane`（title 改了，id 不变）；新增 🎫买车票`buy_ticket`、📢车站·列车广播`station_broadcast`、💺坐错座位`wrong_seat`、📢飞机广播`airplane_broadcast`。（🚇地铁/🚌公车/🚆火车/🚗自驾 仍空占位）
   - **逛街购物 `shopping`**（此前空）新增 4 张：🏪便利店结账`convenience_store`、🛒超市购物`supermarket`、👕买衣服·试穿`clothes`、💳买衣服结账·会员积分`clothes_checkout`

@@ -830,6 +830,7 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   <button class="tab-btn" data-tab="listening" onclick="switchTab('listening')">🎧 跟读练习</button>
   <button class="tab-btn" data-tab="listening-en" onclick="switchTab('listening-en')">🎤 英语跟读</button>
   <button class="tab-btn" data-tab="topics" onclick="switchTab('topics')">📚 日常用语</button>
+  <button class="tab-btn" data-tab="special" onclick="switchTab('special')">🎯 专题</button>
 </div>
 
 <div class="container">
@@ -865,6 +866,11 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
     <div id="tab-topics" class="tab-content">
       <div id="topics-grid" class="icon-grid"></div>
       <div id="topics-detail" style="display:none;"></div>
+    </div>
+
+    <div id="tab-special" class="tab-content">
+      <div id="special-grid" class="icon-grid"></div>
+      <div id="special-detail" style="display:none;"></div>
     </div>
   </div>
 
@@ -993,6 +999,8 @@ let state = {
   listeningSpeed: 1,        // playback speed for 跟读/英语跟读 audio (persisted)
   topicsCategory: null,
   topicsExpanded: {},
+  specialCategory: null,
+  specialExpanded: {},
   activeTab: 'speaking',
   settings: { apiKey: '', geminiKey: '', groqKey: '', deepseekKey: '', zhipuKey: '', voiceLang: 'ja-JP' }
 };
@@ -3833,6 +3841,9 @@ function load() {
   if (raw) {
     try {
       state = { ...state, ...JSON.parse(raw) };
+      // 老用户的存档里没有专题模块的字段，补上默认值
+      if (!state.specialExpanded) state.specialExpanded = {};
+      if (state.specialCategory === undefined) state.specialCategory = null;
     } catch(e) { console.error(e); }
   }
 }
@@ -5331,12 +5342,12 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// 日常用语（对话）标签页的键盘快捷键：空格播放/暂停、←/→ 快退快进
+// 日常用语 / 专题（对话）标签页的键盘快捷键：空格播放/暂停、←/→ 快退快进
 document.addEventListener('keydown', (e) => {
-  if (state.activeTab !== 'topics') return;
+  if (state.activeTab !== 'topics' && state.activeTab !== 'special') return;
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
-  const scope = document.getElementById('tab-topics');
+  const scope = document.getElementById('tab-' + state.activeTab);
   if (!scope) return;
   const allAudios = scope.querySelectorAll('audio');
   let audio = null;
@@ -5959,10 +5970,31 @@ const PRESET_TOPICS_DATA = {
   ]
 };
 
-function renderTopicsGrid() {
-  const wrap = document.getElementById('topics-grid');
-  wrap.innerHTML = TOPIC_CATEGORIES.map(c => `
-    <div class="icon-card" onclick="openTopicCategory('${c.id}')">
+// ============ 🎯 专题（面试等目标导向的专栏，结构同日常用语：图标网格 → 折叠卡片） ============
+// 以后要加新专栏（商务礼仪、演讲…），往 SPECIAL_CATEGORIES 加一项 + PRESET_SPECIAL_DATA 加一组即可
+const SPECIAL_CATEGORIES = [
+  { id: 'interview', icon: '💼', name_cn: '面试', name_jp: '面接' }
+];
+
+const PRESET_SPECIAL_DATA = {
+  interview: [
+    { id: 'iv_grad', icon: '🎓', title_cn: '大学院面试', title_jp: '大学院面接', items: [] },
+    { id: 'iv_job', icon: '💼', title_cn: '就职面试', title_jp: '就職面接', items: [] },
+    { id: 'iv_parttime', icon: '🕐', title_cn: '兼职面试', title_jp: 'アルバイト面接', items: [] }
+  ]
+};
+
+// 两个板块共用同一套渲染引擎，只是数据源和 DOM 容器不同（跟 LISTENING_KINDS 一个套路）
+const SECTIONS = {
+  topics:  { categories: TOPIC_CATEGORIES,   data: PRESET_TOPICS_DATA,  gridId: 'topics-grid',  detailId: 'topics-detail',  entriesId: 'topic-entries',   catKey: 'topicsCategory',  expandKey: 'topicsExpanded' },
+  special: { categories: SPECIAL_CATEGORIES, data: PRESET_SPECIAL_DATA, gridId: 'special-grid', detailId: 'special-detail', entriesId: 'special-entries', catKey: 'specialCategory', expandKey: 'specialExpanded' }
+};
+
+function renderTopicsGrid(sec = 'topics') {
+  const S = SECTIONS[sec];
+  const wrap = document.getElementById(S.gridId);
+  wrap.innerHTML = S.categories.map(c => `
+    <div class="icon-card" onclick="openTopicCategory('${c.id}', '${sec}')">
       <span class="icon">${c.icon}</span>
       <span class="name">${escapeHtml(c.name_cn)}</span>
       <span class="name-jp">${escapeHtml(c.name_jp)}</span>
@@ -5970,48 +6002,51 @@ function renderTopicsGrid() {
   `).join('');
 }
 
-function openTopicCategory(id) {
-  state.topicsCategory = id;
+function openTopicCategory(id, sec = 'topics') {
+  state[SECTIONS[sec].catKey] = id;
   save();
-  renderTopicsView();
+  renderTopicsView(sec);
 }
-function closeTopicCategory() {
-  state.topicsCategory = null;
+function closeTopicCategory(sec = 'topics') {
+  state[SECTIONS[sec].catKey] = null;
   save();
-  renderTopicsView();
+  renderTopicsView(sec);
 }
 
-function renderTopicsView() {
-  const grid = document.getElementById('topics-grid');
-  const detail = document.getElementById('topics-detail');
-  if (!state.topicsCategory) {
+function renderTopicsView(sec = 'topics') {
+  const S = SECTIONS[sec];
+  const grid = document.getElementById(S.gridId);
+  const detail = document.getElementById(S.detailId);
+  if (!state[S.catKey]) {
     grid.style.display = '';
     detail.style.display = 'none';
     return;
   }
   grid.style.display = 'none';
   detail.style.display = 'block';
-  const cat = TOPIC_CATEGORIES.find(c => c.id === state.topicsCategory);
+  const cat = S.categories.find(c => c.id === state[S.catKey]);
+  if (!cat) { state[S.catKey] = null; save(); renderTopicsView(sec); return; }
   detail.innerHTML = `
     <div class="topic-category-header">
-      <button class="topic-back-btn" onclick="closeTopicCategory()">← 返回</button>
+      <button class="topic-back-btn" onclick="closeTopicCategory('${sec}')">← 返回</button>
       <span style="font-size:18px;">${cat.icon} ${escapeHtml(cat.name_cn)}</span>
     </div>
-    <div id="topic-entries"></div>
+    <div id="${S.entriesId}"></div>
   `;
-  renderTopicEntries();
+  renderTopicEntries(sec);
 }
 
-function renderTopicEntries() {
-  const list = document.getElementById('topic-entries');
-  const entries = PRESET_TOPICS_DATA[state.topicsCategory] || [];
+function renderTopicEntries(sec = 'topics') {
+  const S = SECTIONS[sec];
+  const list = document.getElementById(S.entriesId);
+  const entries = S.data[state[S.catKey]] || [];
   if (entries.length === 0) {
     list.innerHTML = '<div class="empty-hint">内容还在补充中，敬请期待 ✍️</div>';
     return;
   }
   list.innerHTML = entries.map(e => `
-    <div class="listening-item ${state.topicsExpanded[e.id] ? 'expanded' : ''}" data-id="${e.id}">
-      <div class="listening-header" onclick="toggleTopicEntry('${e.id}')">
+    <div class="listening-item ${state[S.expandKey][e.id] ? 'expanded' : ''}" data-id="${e.id}">
+      <div class="listening-header" onclick="toggleTopicEntry('${e.id}', '${sec}')">
         <div class="topic-title">
           <span class="topic-name">${e.icon ? e.icon + ' ' : ''}${escapeHtml(e.title_cn)}<span class="topic-name-jp">${escapeHtml(e.title_jp)}</span></span>
         </div>
@@ -6151,17 +6186,21 @@ function topicAudioTime(entryId) {
 }
 
 function findTopicEntry(entryId) {
-  for (const cat in PRESET_TOPICS_DATA) {
-    const hit = (PRESET_TOPICS_DATA[cat] || []).find(x => x.id === entryId);
-    if (hit) return hit;
+  for (const sec in SECTIONS) {
+    const data = SECTIONS[sec].data;
+    for (const cat in data) {
+      const hit = (data[cat] || []).find(x => x.id === entryId);
+      if (hit) return hit;
+    }
   }
   return null;
 }
 
-function toggleTopicEntry(id) {
-  state.topicsExpanded[id] = !state.topicsExpanded[id];
+function toggleTopicEntry(id, sec = 'topics') {
+  const key = SECTIONS[sec].expandKey;
+  state[key][id] = !state[key][id];
   save();
-  renderTopicEntries();
+  renderTopicEntries(sec);
 }
 
 // ============ FINISH ANSWER (generate follow-ups) ============
@@ -6301,6 +6340,8 @@ sortListening('en');
 renderListening('en');
 renderTopicsGrid();
 renderTopicsView();
+renderTopicsGrid('special');
+renderTopicsView('special');
 if (state.activeTab && state.activeTab !== 'speaking') switchTab(state.activeTab);
 
 // Close modals on background click

@@ -296,6 +296,14 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 ## 更新日志
 
+**2026-07-22（跟读练习「关闭原文」两处体验修复）**
+- **关闭原文不再打断播放**：`toggleHideJapanese()` 原来调 `renderListening()` 整块重渲染，`<audio>` 元素被重建导致播放中断。改成只切 DOM class（和 `toggleTranslation()` 同一套做法），音频元素不动。⚠️ **以后凡是「展开的篇目里的开关类操作」都别调 `renderListening()`**，一律走 DOM 局部更新，否则音频必断。
+- **关闭原文时点句子改成三段式循环**：① 点一次展开这句原文（加 `.jp-shown` class）② 点两次 seek + 播放这句 ③ 点三次收回原文（再点又回到 ①）。显示原文状态下行为不变，一点就跳。每句的阶段存在内存变量 `jpRevealed`（id → `{段落下标: 0/1/2}`，配 `jpPhase()`/`setJpPhase()`/`isJpRevealed()`，不写 localStorage），切换「关闭原文/显示原文」按钮时清空。CSS 新增 `.paragraph.hide-jp.jp-shown .jp{display:block}`。
+- **点句子能直接开播**（不用先点进度条的播放键）：音频是 `preload="none"`，首次点击时 `audio.duration` 还是 `null`，旧逻辑 `if(!audio.duration) return` 直接吞掉了点击 → 表现为「第一下点句子没反应」。新抽出的 `seekAndPlay(audio, l, idx)` 在未就绪时挂一次性 `loadedmetadata` 监听 +（必要时）`audio.load()`，就绪后再 seek + play；并用 `audio._pendingSeek` 只保留最后一次点击的目标，避免加载期间连点多句后乱跳。
+- 顺手修了 `toggleTranslation()` 里按钮文案写错（「折叠翻译/展开翻译」，与渲染时的「关闭翻译/显示翻译」不一致）和 `btn-ghost` 判断反了的小 bug。
+- 改的是渲染层，跟读练习 + 英语跟读共用引擎两个模块同时生效，老数据刷新即可，不用点「🔄 更新讲稿」。
+- ⚠️ **本地实测踩坑（下次省时间用）**：① `python3 -m http.server` 把 `.m4a` 的 MIME 返回成 `audio/mp4a-latm`，Chrome 认不了（线上 EdgeOne 是正常的 `audio/mp4`）；写个几行的 server 覆盖 `extensions_map['.m4a']='audio/mp4'` 可修。② 但即使 MIME 修好，Claude 驱动的那个 Chrome 实例本身就加载不了媒体（`readyState` 恒为 0，连 blob/wav 都一样），所以**播放/跳转类逻辑一律靠给 audio 实例打桩验证**（`Object.defineProperty` 覆写 `duration`/`currentTime`/`readyState`，替换 `play()`，手动 `dispatchEvent(new Event('loadedmetadata'))`）——很好用，别再浪费时间调音频。③ `loadNextWeek()` 结尾有 `alert`，在扩展里直接调会把页面彻底冻住（连导航前的点击都失效，`osascript` 也无权限敲回车），调用前先 `window.alert=()=>{}`。
+
 **2026-07-20（一次性导入 18 段真人对话，覆盖 5 大模块）**
 - 用户一批发来 18 个录屏 MP4，走「对话音频」标准指令（提音频 → faster-whisper 词级转写 → 人工修 ASR/拆轮次 → `mine` 标右侧 → 生成 m4a(`+faststart`) + `times` → 本地浏览器实测）。全部真人录音，音频存 `日常用语音频/<module>_<entry>/audio.m4a`。分配如下：
   - **酒店入住 `hotel`**（🏨，`TOPIC_CATEGORIES` 里新开的独立模块，排在 `restaurant` 之后）新增 5 张卡片：📞电话预订房间`phone_booking`、🏨入住登记`checkin`、🍽️客房送餐`room_service`、♨️使用温泉`onsen`、🔑退房结账`checkout`。音频文件夹 `日常用语音频/hotel_*`。（⚠️ 最初误放进了书框架自带的「住宿安家 `housing`」模块，用户要求单开 `hotel` 模块并移过去，`housing` 已重新置空占位）

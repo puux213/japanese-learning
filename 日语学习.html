@@ -5150,9 +5150,12 @@ function toggleListeningComplete(id) {
   const { kind, entry: l } = findListeningEntry(id);
   if (l) { l.completed = !l.completed; renderListening(kind); save(); }
 }
-// 「关闭原文」时被单独点开的句子（内存态，id -> Set(段落下标)），不进 localStorage
+// 「关闭原文」时每句的点击阶段（内存态，id -> {段落下标: 0 隐藏 / 1 已露出 / 2 已播放}），不进 localStorage
+// 点一次展开原文 → 点两次播放 → 点三次收回原文
 const jpRevealed = {};
-function isJpRevealed(id, idx) { return !!(jpRevealed[id] && jpRevealed[id].has(idx)); }
+function jpPhase(id, idx) { return (jpRevealed[id] && jpRevealed[id][idx]) || 0; }
+function setJpPhase(id, idx, ph) { (jpRevealed[id] = jpRevealed[id] || {})[idx] = ph; }
+function isJpRevealed(id, idx) { return jpPhase(id, idx) > 0; }
 
 function toggleHideJapanese(id) {
   const l = findListeningEntry(id).entry;
@@ -5161,7 +5164,7 @@ function toggleHideJapanese(id) {
   // When hiding original text, force show Chinese
   if (l.hideJapanese) l.showTranslation = true;
   // 切换时清掉单句露出的记录
-  jpRevealed[id] = new Set();
+  jpRevealed[id] = {};
   // 只改 DOM，不整块重渲染（重渲染会重建 audio 元素，导致播放中断）
   document.querySelectorAll(`[data-id="${id}"] .paragraph`).forEach(el => {
     el.classList.toggle('hide-jp', l.hideJapanese);
@@ -5359,16 +5362,42 @@ function jumpToParagraph(id, idx) {
   const audio = document.getElementById('audio-' + id);
   const l = findListeningEntry(id).entry;
   if (!l) return;
-  // 关闭原文时：第一次点击先露出这句原文，第二次点击才跳转播放
-  if (l.hideJapanese && !isJpRevealed(id, idx)) {
-    (jpRevealed[id] = jpRevealed[id] || new Set()).add(idx);
-    document.querySelector(`[data-id="${id}"] .paragraph[data-idx="${idx}"]`)?.classList.add('jp-shown');
+  const el = document.querySelector(`[data-id="${id}"] .paragraph[data-idx="${idx}"]`);
+  // 关闭原文时点击分三步：① 展开这句原文 ② 播放这句 ③ 收回原文
+  if (l.hideJapanese) {
+    const ph = jpPhase(id, idx);
+    if (ph === 0) {            // ① 展开
+      setJpPhase(id, idx, 1);
+      el?.classList.add('jp-shown');
+      return;
+    }
+    if (ph === 1) {            // ② 播放
+      setJpPhase(id, idx, 2);
+      seekAndPlay(audio, l, idx);
+      return;
+    }
+    setJpPhase(id, idx, 0);    // ③ 收回原文
+    el?.classList.remove('jp-shown');
     return;
   }
-  if (!audio || !audio.duration) return;
-  const targetTime = l.timestamps[idx] * audio.duration;
-  audio.currentTime = targetTime;
-  audio.play().catch(() => {});
+  seekAndPlay(audio, l, idx);
+}
+
+// 跳到某段并播放。音频是 preload="none"，首次点击时还没有 duration，
+// 这里负责先触发加载、等 metadata 就绪后再 seek，避免「第一下点句子没反应」
+function seekAndPlay(audio, l, idx) {
+  if (!audio) return;
+  const doSeek = () => {
+    if (!audio.duration) return;
+    audio.currentTime = l.timestamps[idx] * audio.duration;
+    audio.play().catch(() => {});
+  };
+  if (audio.duration) { doSeek(); return; }
+  // 音频还没就绪：只保留最后一次点击的目标，避免连点多句时就绪后连续乱跳
+  if (audio._pendingSeek) audio.removeEventListener('loadedmetadata', audio._pendingSeek);
+  audio._pendingSeek = doSeek;
+  audio.addEventListener('loadedmetadata', doSeek, { once: true });
+  if (audio.readyState === 0 && audio.networkState !== HTMLMediaElement.NETWORK_LOADING) audio.load();
 }
 
 function setTimestamp(id, idx) {

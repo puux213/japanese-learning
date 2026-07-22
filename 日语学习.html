@@ -583,6 +583,9 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .paragraph.show-cn .cn { display: block; }
   .paragraph.hide-jp .jp { display: none; }
   .paragraph.hide-jp .cn { display: block; margin-top: 0; padding-top: 0; border-top: none; }
+  /* 关闭原文时，单句被点开后临时露出原文（第二次点击才跳转播放） */
+  .paragraph.hide-jp.jp-shown .jp { display: block; }
+  .paragraph.hide-jp.jp-shown .cn { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #ddd; }
   .paragraph .ts-btn {
     background: none;
     border: 1px solid #ccc;
@@ -5091,7 +5094,7 @@ function renderListening(kind) {
             </div>
           ` : ''}
           ${l.paragraphs.map((p, idx) => `
-            <div class="paragraph ${l.showTranslation ? 'show-cn' : ''} ${l.hideJapanese ? 'hide-jp' : ''}" data-idx="${idx}" onclick="jumpToParagraph('${l.id}', ${idx})">
+            <div class="paragraph ${l.showTranslation ? 'show-cn' : ''} ${l.hideJapanese ? 'hide-jp' : ''} ${isJpRevealed(l.id, idx) ? 'jp-shown' : ''}" data-idx="${idx}" onclick="jumpToParagraph('${l.id}', ${idx})">
               <span class="idx">${idx + 1}</span>
               <div class="content">
                 <div class="jp">${escapeHtml(p.jp)}</div>
@@ -5147,13 +5150,33 @@ function toggleListeningComplete(id) {
   const { kind, entry: l } = findListeningEntry(id);
   if (l) { l.completed = !l.completed; renderListening(kind); save(); }
 }
+// 「关闭原文」时被单独点开的句子（内存态，id -> Set(段落下标)），不进 localStorage
+const jpRevealed = {};
+function isJpRevealed(id, idx) { return !!(jpRevealed[id] && jpRevealed[id].has(idx)); }
+
 function toggleHideJapanese(id) {
-  const { kind, entry: l } = findListeningEntry(id);
+  const l = findListeningEntry(id).entry;
   if (!l) return;
   l.hideJapanese = !l.hideJapanese;
   // When hiding original text, force show Chinese
   if (l.hideJapanese) l.showTranslation = true;
-  renderListening(kind);
+  // 切换时清掉单句露出的记录
+  jpRevealed[id] = new Set();
+  // 只改 DOM，不整块重渲染（重渲染会重建 audio 元素，导致播放中断）
+  document.querySelectorAll(`[data-id="${id}"] .paragraph`).forEach(el => {
+    el.classList.toggle('hide-jp', l.hideJapanese);
+    el.classList.toggle('show-cn', l.showTranslation);
+    el.classList.remove('jp-shown');
+  });
+  const ctrls = document.querySelectorAll(`[data-id="${id}"] .transcript-controls button`);
+  if (ctrls[0]) {
+    ctrls[0].textContent = l.showTranslation ? '🙈 关闭翻译' : '👁 显示翻译';
+    ctrls[0].classList.toggle('btn-ghost', l.showTranslation);
+  }
+  if (ctrls[1]) {
+    ctrls[1].textContent = l.hideJapanese ? '👁 显示原文' : '🙈 关闭原文';
+    ctrls[1].classList.toggle('btn-ghost', !l.hideJapanese);
+  }
   save();
 }
 
@@ -5168,8 +5191,8 @@ function toggleTranslation(id) {
   // Update button text
   const btn = document.querySelector(`[data-id="${id}"] .transcript-controls button:first-child`);
   if (btn) {
-    btn.textContent = l.showTranslation ? '🙈 折叠翻译' : '👁 展开翻译';
-    btn.classList.toggle('btn-ghost', !l.showTranslation);
+    btn.textContent = l.showTranslation ? '🙈 关闭翻译' : '👁 显示翻译';
+    btn.classList.toggle('btn-ghost', l.showTranslation);
   }
   save();
 }
@@ -5335,7 +5358,14 @@ document.addEventListener('keydown', (e) => {
 function jumpToParagraph(id, idx) {
   const audio = document.getElementById('audio-' + id);
   const l = findListeningEntry(id).entry;
-  if (!audio || !l || !audio.duration) return;
+  if (!l) return;
+  // 关闭原文时：第一次点击先露出这句原文，第二次点击才跳转播放
+  if (l.hideJapanese && !isJpRevealed(id, idx)) {
+    (jpRevealed[id] = jpRevealed[id] || new Set()).add(idx);
+    document.querySelector(`[data-id="${id}"] .paragraph[data-idx="${idx}"]`)?.classList.add('jp-shown');
+    return;
+  }
+  if (!audio || !audio.duration) return;
   const targetTime = l.timestamps[idx] * audio.duration;
   audio.currentTime = targetTime;
   audio.play().catch(() => {});

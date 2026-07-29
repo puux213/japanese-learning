@@ -1,11 +1,26 @@
 {
   "targetUrl": "日语学习.html",
   "validCodes": [
-    "LEARN2024A",
-    "LEARN2024B",
-    "LEARN2024C",
-    "STUDY001",
-    "STUDY002"
+    "JP-XGNPUT",
+    "JP-KBJDTL",
+    "JP-2LX6XK",
+    "JP-Q4JRR2",
+    "JP-SFJNZH",
+    "JP-Z4AX5L",
+    "JP-2YBR6K",
+    "JP-JB7HCB",
+    "JP-JVMJLC",
+    "JP-V5QBEC",
+    "JP-HYMKLD",
+    "JP-NLFX2N",
+    "JP-EQHNA2",
+    "JP-LB9FYT",
+    "JP-L639LA",
+    "JP-MHFCHE",
+    "JP-72DKFU",
+    "JP-4BKWV9",
+    "JP-4HMAHS",
+    "JP-43KFFQ"
   ],
-  "description": "邀请码列表 - 修改 validCodes 数组来添加或删除邀请码"
+  "description": "邀请码列表 - 修改 validCodes 数组增删邀请码。这批是随机正式码(发一个在Notion客户表登记一个)，占位测试码已于2026-07-23替换。"
 }

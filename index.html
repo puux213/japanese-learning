@@ -332,7 +332,8 @@
 
             loginPage.style.display = 'none';
             contentArea.classList.add('active');
-            contentArea.src = CONFIG.targetUrl;
+            // 加时间戳参数：iframe 里的页面不受外层强制刷新影响，不加的话浏览器会一直用缓存的旧版内容
+            contentArea.src = CONFIG.targetUrl + (CONFIG.targetUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();
         }
 
         function checkVerified() {

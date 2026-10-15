@@ -5083,6 +5083,25 @@ function refreshPresetContent(kind) {
   alert(`已刷新 ${updated} 篇的讲稿和生词`);
 }
 
+// 带精确 timestamps 的篇目（如自定义篇「1」）：每次打开页面按 PRESET 自动校正本地存档的分段和时间戳，
+// 避免老存档（或用缓存旧代码点过「更新讲稿」）里残留错误时间戳，导致点段落跳不到正确位置
+function syncExactTimestamps(kind) {
+  let changed = false;
+  getListeningState(kind).forEach(l => {
+    const p = cfg(kind).preset().find(x => x.presetId === l.presetId);
+    if (!p || !p.timestamps) return;
+    const paras = autoSplitParagraphs(Object.assign([...p.paragraphs], { noSplit: p.noSplit }), kind);
+    if (paras.length !== p.timestamps.length) return;
+    if (JSON.stringify(l.timestamps) === JSON.stringify(p.timestamps) && l.paragraphs.length === paras.length && l.audioFile === p.audioFile) return;
+    l.paragraphs = paras;
+    l.timestamps = [...p.timestamps];
+    l.folder = LISTENING_ASSET_BASE + p.folder;
+    l.audioFile = p.audioFile;
+    changed = true;
+  });
+  if (changed) save();
+}
+
 function sortListening(kind) {
   getListeningState(kind).sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -6381,6 +6400,7 @@ if (state.topics.length === 0) {
 sortAndRender();
 renderVocab();
 sortListening('jp');
+syncExactTimestamps('jp');
 renderListening('jp');
 sortListening('en');
 renderListening('en');

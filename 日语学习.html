@@ -813,6 +813,39 @@ if (localStorage.getItem('inviteCodeVerified') !== 'true') {
   .chat-row.playing.right .chat-bubble {
     box-shadow: 0 0 0 2px #f2a17a, 0 2px 8px rgba(0,0,0,0.15);
   }
+
+  /* 手机窄屏：收紧层层叠加的内边距，tab 改成单行横向滑动 */
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; gap: 10px; }
+    header h1 { font-size: 20px; letter-spacing: 1px; }
+    .header-btns { gap: 6px; flex-wrap: wrap; }
+    .header-btns button { padding: 6px 10px; font-size: 13px; white-space: nowrap; }
+
+    .tab-nav {
+      margin-top: 8px; padding: 0 8px; gap: 0;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { flex-shrink: 0; white-space: nowrap; padding: 10px 12px; font-size: 14px; }
+
+    .container { margin: 12px auto; padding: 0 8px; gap: 12px; }
+    .main-panel { padding: 12px; }
+    .card { padding: 14px; }
+
+    .topic-controls { padding: 10px; }
+    .topic-controls input[type="date"] { max-width: none; }
+
+    .listening-header { padding: 12px; gap: 8px; }
+    .listening-body { padding: 12px; }
+    .audio-player { margin: 8px 10px 10px; padding: 10px; }
+    .paragraph { padding: 8px 10px; gap: 6px; }
+    .paragraph .idx { min-width: 18px; }
+
+    .topic-audio-sticky { margin: -12px -12px 4px; }
+    .chat-bubble { max-width: 80%; }
+    .modal { padding: 10px; }
+    .modal-content { padding: 18px; }
+  }
 </style>
 </head>
 <body>
@@ -1013,6 +1046,12 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
   });
+  // 手机上 tab 栏横向滑动：把当前 tab 滚进可见区域（只滚 tab 栏自身，不动页面）
+  const nav = document.querySelector('.tab-nav');
+  const activeBtn = document.querySelector('.tab-btn.active');
+  if (nav && activeBtn && nav.scrollWidth > nav.clientWidth) {
+    nav.scrollTo({ left: activeBtn.offsetLeft - (nav.clientWidth - activeBtn.offsetWidth) / 2, behavior: 'smooth' });
+  }
   document.querySelectorAll('.tab-content').forEach(c => {
     c.classList.toggle('active', c.id === 'tab-' + tab);
   });

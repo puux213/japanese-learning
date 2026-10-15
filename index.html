@@ -162,9 +162,18 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 手机上进入内容后去掉登录页的居中布局和紫色外边距，iframe 铺满整屏（电脑端保留紫边） */
+        @media (max-width: 600px) {
+            body.content-mode {
+                display: block;
+                padding: 0;
+            }
+        }
+
         .content-area {
             width: 100%;
             height: 100vh;
+            height: 100dvh;
             display: none;
         }
 
@@ -331,6 +340,7 @@
             const contentArea = document.getElementById('contentArea');
 
             loginPage.style.display = 'none';
+            document.body.classList.add('content-mode');
             contentArea.classList.add('active');
             // 加时间戳参数：iframe 里的页面不受外层强制刷新影响，不加的话浏览器会一直用缓存的旧版内容
             contentArea.src = CONFIG.targetUrl + (CONFIG.targetUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();

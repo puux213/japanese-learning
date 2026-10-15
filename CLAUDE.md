@@ -336,6 +336,16 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 ## 更新日志
 
+**2026-10-15（跟读练习新增自定义篇「1」）**
+- `PRESET_LISTENING` **最前面**插入 `presetId: 'custom_1'`，标题「1」（日文副标题「プラズマの実験」），内容是用户粘贴的等离子体科学实验讲解（实验1-5），Claude 补了中文对照 + 27 个生词（原文括号里的读音/中文注释移进了生词表，正文已去掉括号）。
+- **无音频**：`audioFile: ''`，渲染层改成 `audioFile` 为空时不渲染 `<audio>`/变速条，只显示「📝 本篇暂无音频，纯文字阅读」。以后加无音频的篇目同样留空 `audioFile` 即可。
+- 已加载过 7 篇以上的老用户：这篇在「📅 加载下一周」时会被优先加载（`loadNextWeek` 取未加载的前 7 篇）。已用 `node --check` 校验语法，未做浏览器实测。
+
+**2026-07-29（关闭原文时点句子改成两段开关）**
+- 按用户要求，「关闭原文」状态下点句子从三段式循环（展开 → 播放 → 收回）**简化成开关**：**点一次展开这句原文，再点一次收回**。改的是 `jumpToParagraph()`（`日语学习.html:5372` 附近），`jpRevealed` 阶段值只剩 0/1，`jpPhase()`/`setJpPhase()`/`isJpRevealed()` 和 `.jp-shown` CSS 都不变。
+- **副作用（已告知用户，用户未要求改回）**：关闭原文时点句子**不再跳到那句播放**了；显示原文状态下点句子照旧 seek + play（`seekAndPlay()` 仍在用），空格/←→ 快捷键和进度条不受影响。如果以后用户想要「展开的同时也跳播」，在展开那一支里补一句 `seekAndPlay(audio, l, idx)` 即可。
+- 改的是渲染层，跟读练习 + 英语跟读两个模块同时生效，老数据刷新即可，不用点「🔄 更新讲稿」。已用 node 抽出内联 JS 做语法校验（`node --check`），未做浏览器实测。
+
 **2026-07-22（新增「🎯 专题」顶层模块，框架先行）**
 - 新开第 5 个顶层 tab「🎯 专题」，装目标导向的专栏；首个专栏「💼 面试」，下挂 🎓大学院面试 / 💼就职面试 / 🕐兼职面试 三张空占位卡片。详见上方「专题模块」
 - 实现方式是**抽了个 `SECTIONS` 注册表让专题和日常用语共用整套渲染引擎**（仿 `LISTENING_KINDS`），没复制代码——对话气泡/音频播放器/点句跳转/生词本/快捷键全部白拿
@@ -344,7 +354,7 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 
 **2026-07-22（跟读练习「关闭原文」两处体验修复）**
 - **关闭原文不再打断播放**：`toggleHideJapanese()` 原来调 `renderListening()` 整块重渲染，`<audio>` 元素被重建导致播放中断。改成只切 DOM class（和 `toggleTranslation()` 同一套做法），音频元素不动。⚠️ **以后凡是「展开的篇目里的开关类操作」都别调 `renderListening()`**，一律走 DOM 局部更新，否则音频必断。
-- **关闭原文时点句子改成三段式循环**：① 点一次展开这句原文（加 `.jp-shown` class）② 点两次 seek + 播放这句 ③ 点三次收回原文（再点又回到 ①）。显示原文状态下行为不变，一点就跳。每句的阶段存在内存变量 `jpRevealed`（id → `{段落下标: 0/1/2}`，配 `jpPhase()`/`setJpPhase()`/`isJpRevealed()`，不写 localStorage），切换「关闭原文/显示原文」按钮时清空。CSS 新增 `.paragraph.hide-jp.jp-shown .jp{display:block}`。
+- **关闭原文时点句子改成三段式循环**（⚠️ 2026-07-29 已简化成两段开关，见上方最新条目）：① 点一次展开这句原文（加 `.jp-shown` class）② 点两次 seek + 播放这句 ③ 点三次收回原文（再点又回到 ①）。显示原文状态下行为不变，一点就跳。每句的阶段存在内存变量 `jpRevealed`（id → `{段落下标: 0/1/2}`，配 `jpPhase()`/`setJpPhase()`/`isJpRevealed()`，不写 localStorage），切换「关闭原文/显示原文」按钮时清空。CSS 新增 `.paragraph.hide-jp.jp-shown .jp{display:block}`。
 - **点句子能直接开播**（不用先点进度条的播放键）：音频是 `preload="none"`，首次点击时 `audio.duration` 还是 `null`，旧逻辑 `if(!audio.duration) return` 直接吞掉了点击 → 表现为「第一下点句子没反应」。新抽出的 `seekAndPlay(audio, l, idx)` 在未就绪时挂一次性 `loadedmetadata` 监听 +（必要时）`audio.load()`，就绪后再 seek + play；并用 `audio._pendingSeek` 只保留最后一次点击的目标，避免加载期间连点多句后乱跳。
 - 顺手修了 `toggleTranslation()` 里按钮文案写错（「折叠翻译/展开翻译」，与渲染时的「关闭翻译/显示翻译」不一致）和 `btn-ghost` 判断反了的小 bug。
 - 改的是渲染层，跟读练习 + 英语跟读共用引擎两个模块同时生效，老数据刷新即可，不用点「🔄 更新讲稿」。

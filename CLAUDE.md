@@ -340,6 +340,7 @@ Notion「日语学习工具」页面（https://app.notion.com/p/39b0009ab78681c2
 - `PRESET_LISTENING` **最前面**插入 `presetId: 'custom_1'`，标题「1」（日文副标题「プラズマの実験」），内容是用户粘贴的等离子体科学实验讲解（实验1-5），Claude 补了中文对照 + 27 个生词（原文括号里的读音/中文注释移进了生词表，正文已去掉括号）。
 - **无音频**：`audioFile: ''`，渲染层改成 `audioFile` 为空时不渲染 `<audio>`/变速条，只显示「📝 本篇暂无音频，纯文字阅读」。以后加无音频的篇目同样留空 `audioFile` 即可。
 - 已加载过 7 篇以上的老用户：这篇在「📅 加载下一周」时会被优先加载（`loadNextWeek` 取未加载的前 7 篇）。已用 `node --check` 校验语法，未做浏览器实测。
+- **同日二次调整**：① 改成**一个实验一整段**（共 5 段，段内用 `\n` 分行，`.paragraph .jp/.cn` 加了 `white-space: pre-line`）；preset 新增可选字段 **`noSplit: true`**（`autoSplitParagraphs` 跳过逐句拆分）和 **`timestamps`**（每段起点占总时长的比例，`buildListeningEntry`/`refreshPresetContent` 优先用它，不再按字数估算）。② **加了音频**：edge-tts `ja-JP-NanamiNeural` 逐段生成 → wav → 段间 0.8s 静音拼接 → m4a（`+faststart`），约 8 分 56 秒，存 `50篇演讲/S01.等离子体实验/audio.m4a`，`folder` 也改成了这个。⚠️ edge-tts 旧版会报 **403**（微软改了接口校验），`pip install --user -U edge-tts` 升级即可。已加载过这篇的用户要点「🔄 更新讲稿」才会变成 5 段并带上音频。
 
 **2026-07-29（关闭原文时点句子改成两段开关）**
 - 按用户要求，「关闭原文」状态下点句子从三段式循环（展开 → 播放 → 收回）**简化成开关**：**点一次展开这句原文，再点一次收回**。改的是 `jumpToParagraph()`（`日语学习.html:5372` 附近），`jpRevealed` 阶段值只剩 0/1，`jpPhase()`/`setJpPhase()`/`isJpRevealed()` 和 `.jp-shown` CSS 都不变。

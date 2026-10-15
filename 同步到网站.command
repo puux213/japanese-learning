@@ -5,7 +5,8 @@ echo "════════════════════════�
 echo "  🔄 同步日语工具到网站"
 echo "═══════════════════════════════════════════════════"
 echo ""
-if [ -z "$(git status --porcelain)" ]; then
+# 没有新改动、也没有之前推送失败遗留的未推送提交，才算真的无需同步
+if [ -z "$(git status --porcelain)" ] && [ -z "$(git log @{u}..HEAD --oneline 2>/dev/null)" ]; then
   echo "  ✓ 没有需要同步的改动"
   echo ""
   echo "  按任意键退出..."
@@ -16,8 +17,12 @@ echo "  📝 检测到以下改动："
 git status --short
 echo ""
 COMMIT_MSG="更新 $(date '+%Y-%m-%d %H:%M')"
-git add -A
-git commit -m "$COMMIT_MSG"
+if [ -n "$(git status --porcelain)" ]; then
+  git add -A
+  git commit -m "$COMMIT_MSG"
+else
+  echo "  （上次推送失败的提交，这次补推）"
+fi
 echo ""
 echo "  ⬆️  正在推送到 GitHub..."
 if git push; then

@@ -5094,6 +5094,13 @@ function refreshPresetContent(kind) {
 
 // 带精确 timestamps 的篇目（如自定义篇「1」）：每次打开页面按 PRESET 自动校正本地存档的分段和时间戳，
 // 避免老存档（或用缓存旧代码点过「更新讲稿」）里残留错误时间戳，导致点段落跳不到正确位置
+// 有精确 timestamps 的篇目：跳转/高亮一律用 PRESET 里的值，不受本地存档或 ⏱ 手动校准影响
+function exactTimestamps(l) {
+  const p = [...PRESET_LISTENING, ...PRESET_LISTENING_EN].find(x => x.presetId === l.presetId);
+  return (p && p.timestamps && p.timestamps.length === l.paragraphs.length) ? p.timestamps : null;
+}
+function entryTimestamps(l) { return exactTimestamps(l) || l.timestamps; }
+
 function syncExactTimestamps(kind) {
   let changed = false;
   getListeningState(kind).forEach(l => {
@@ -5191,7 +5198,7 @@ function renderListening(kind) {
                 <div class="jp">${escapeHtml(p.jp)}</div>
                 <div class="cn">${escapeHtml(p.cn)}</div>
               </div>
-              <button class="ts-btn ${l.timestamps[idx] > 0 ? 'has-ts' : ''}" onclick="event.stopPropagation(); setTimestamp('${l.id}', ${idx})" title="记录当前音频时间为本段起点">⏱</button>
+              ${exactTimestamps(l) ? '' : `<button class="ts-btn ${l.timestamps[idx] > 0 ? 'has-ts' : ''}" onclick="event.stopPropagation(); setTimestamp('${l.id}', ${idx})" title="记录当前音频时间为本段起点">⏱</button>`}
             </div>
           `).join('')}
         </div>
@@ -5368,8 +5375,9 @@ function onAudioTime(id) {
   const currentFrac = audio.currentTime / audio.duration;
   // Find the paragraph whose timestamp is closest to but not exceeding current
   let activeIdx = -1;
-  for (let i = 0; i < l.timestamps.length; i++) {
-    if (l.timestamps[i] <= currentFrac) activeIdx = i;
+  const ts = entryTimestamps(l);
+  for (let i = 0; i < ts.length; i++) {
+    if (ts[i] <= currentFrac) activeIdx = i;
     else break;
   }
   let activeEl = null;
@@ -5474,7 +5482,7 @@ function seekAndPlay(audio, l, idx) {
   if (!audio) return;
   const doSeek = () => {
     if (!audio.duration) return;
-    audio.currentTime = l.timestamps[idx] * audio.duration;
+    audio.currentTime = entryTimestamps(l)[idx] * audio.duration;
     audio.play().catch(() => {});
   };
   if (audio.duration) { doSeek(); return; }
